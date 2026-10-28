@@ -1,177 +1,99 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Top Skills for Development</title>
-<meta name="description" content="The 10 most popular agent skills for software development, and how to use each one.">
-<link rel="stylesheet" href="styles.css">
-</head>
-<body>
-<header class="hero">
-  <div class="wrap">
-    <p class="eyebrow">Agent skills · For developers</p>
-    <h1>Top Skills for Development</h1>
-    <p class="subtitle">The 10 most popular agent skills for software development, and how to use each one.</p>
-    <div class="controls">
-      <label class="search" for="search">
-        <span>Search skills</span>
-        <input id="search" type="search" placeholder="Search by name or summary…" autocomplete="off">
-      </label>
-      <div class="filters" role="group" aria-label="Filter by category">
-        <button class="chip active" data-filter="all">All</button>
-        <button class="chip" data-filter="Workflow">Workflow</button>
-        <button class="chip" data-filter="Quality">Quality</button>
-        <button class="chip" data-filter="Design">Design</button>
-        <button class="chip" data-filter="Knowledge">Knowledge</button>
-        <button class="chip" data-filter="Efficiency">Efficiency</button>
-        <button class="chip" data-filter="Discovery">Discovery</button>
-      </div>
-    </div>
-  </div>
-</header>
-
-<main class="wrap">
-  <p class="results" id="results" aria-live="polite"></p>
-  <section class="grid" id="grid">
-
-    <article class="card" data-category="Workflow" data-search="superpowers comprehensive proven techniques patterns coding agents general development workflows">
-      <div class="card-top"><span class="rank">01</span><span class="category">Workflow</span><span class="level">Intermediate</span></div>
-      <h2>Superpowers</h2>
-      <p class="repo"><a href="https://github.com/obra/superpowers">View on GitHub</a> <span class="stars">★ 307,155 stars</span></p>
-      <p class="summary">A comprehensive library of proven techniques, patterns, and tools that give a coding agent a stronger, more reliable workflow.</p>
-      <p class="best"><strong>Best for:</strong> General development workflows, from planning to shipping.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Install it as a skill or plugin in your coding agent.</li><li>Start a task with a clear goal and the files or area in scope.</li><li>Let the skill guide planning, implementation, and checks — don't skip its review steps.</li><li>Keep the parts that fit your project and drop the rest.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Use the Superpowers workflow to plan, implement, and verify a small feature, with tests and a review at the end.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-    <article class="card" data-category="Workflow" data-search="ecc agent harness optimization memory security research-first workflows">
-      <div class="card-top"><span class="rank">02</span><span class="category">Workflow</span><span class="level">Advanced</span></div>
-      <h2>ECC</h2>
-      <p class="repo"><a href="https://github.com/affaan-m/ECC">View on GitHub</a> <span class="stars">★ 291,489 stars</span></p>
-      <p class="summary">An agent-harness optimisation system with skills, memory, security practices, and research-first workflows.</p>
-      <p class="best"><strong>Best for:</strong> Teams and long-running agent setups that need consistency and safety.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Set it up as your agent's harness, not as a one-off prompt.</li><li>Research first: gather docs and codebase context before writing code.</li><li>Use its memory and security practices across sessions.</li><li>Review agent changes against its checks before merging.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Research this codebase first, then propose a safe, minimal change following the ECC workflow.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-    <article class="card" data-category="Quality" data-search="karpathy skills behaviour guide llm coding pitfalls mistakes">
-      <div class="card-top"><span class="rank">03</span><span class="category">Quality</span><span class="level">Beginner</span></div>
-      <h2>Karpathy Skills</h2>
-      <p class="repo"><a href="https://github.com/multica-ai/andrej-karpathy-skills">View on GitHub</a> <span class="stars">★ 225,828 stars</span></p>
-      <p class="summary">A single behaviour guide distilled from common LLM coding pitfalls, helping agents avoid the mistakes developers see most.</p>
-      <p class="best"><strong>Best for:</strong> Avoiding overcomplicated, untested, or assumption-heavy agent output.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Add the guide to your agent's instructions or project guidance.</li><li>Ask the agent to keep changes small and explain its assumptions.</li><li>Require tests or a manual check for anything non-trivial.</li><li>When output looks too clever, ask for the simpler version.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Follow the Karpathy guidance: keep this change simple, state your assumptions, and verify it before finishing.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-    <article class="card" data-category="Workflow" data-search="matt pocock skills real engineers alignment interviews tdd discipline">
-      <div class="card-top"><span class="rank">04</span><span class="category">Workflow</span><span class="level">Intermediate</span></div>
-      <h2>Matt Pocock Skills</h2>
-      <p class="repo"><a href="https://github.com/mattpocock/skills">View on GitHub</a> <span class="stars">★ 305,511 stars</span></p>
-      <p class="summary">Skills for real engineers, including alignment interviews that clarify a plan before code, and disciplined test-driven loops.</p>
-      <p class="best"><strong>Best for:</strong> Getting the right thing built, not just something that compiles.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Start with an alignment step: let the agent interview you about the plan.</li><li>Resolve edge cases and trade-offs before implementation.</li><li>Use the TDD loop: failing test, minimal code, refactor.</li><li>Review the result against the original intent, not just the tests.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Interview me about this design until every open question is resolved, then build it test-first.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-    <article class="card" data-category="Design" data-search="ui ux pro max design intelligence professional polished user interfaces">
-      <div class="card-top"><span class="rank">05</span><span class="category">Design</span><span class="level">Intermediate</span></div>
-      <h2>UI/UX Pro Max</h2>
-      <p class="repo"><a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill">View on GitHub</a> <span class="stars">★ 141,949 stars</span></p>
-      <p class="summary">Design intelligence for building professional, polished user interfaces across platforms.</p>
-      <p class="best"><strong>Best for:</strong> Turning a functional prototype into an interface people enjoy using.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Share the product goal, audience, and any brand or style constraints.</li><li>Ask for layout, hierarchy, and spacing decisions, not just colours.</li><li>Check the result on mobile and desktop widths.</li><li>Refine accessibility: contrast, focus states, and readable type.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Redesign this page with professional UI/UX: clear hierarchy, generous spacing, and a mobile-first layout.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-    <article class="card" data-category="Efficiency" data-search="caveman concise token-efficient agent communication technical accuracy">
-      <div class="card-top"><span class="rank">06</span><span class="category">Efficiency</span><span class="level">Beginner</span></div>
-      <h2>Caveman</h2>
-      <p class="repo"><a href="https://github.com/JuliusBrussee/caveman">View on GitHub</a> <span class="stars">★ 115,725 stars</span></p>
-      <p class="summary">A concise, token-efficient way for agents to communicate, cutting verbose output while keeping technical accuracy.</p>
-      <p class="best"><strong>Best for:</strong> Long sessions, large codebases, and keeping costs and context down.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Enable it for sessions where brevity matters more than explanation.</li><li>Ask for short, direct summaries of each change.</li><li>Request detail only when you need to dig into a decision.</li><li>Turn it off for teaching, docs, or stakeholder-facing output.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Work concisely: short summaries only, no extra explanation unless I ask for detail.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-    <article class="card" data-category="Knowledge" data-search="graphify codebase explorable knowledge graph">
-      <div class="card-top"><span class="rank">07</span><span class="category">Knowledge</span><span class="level">Intermediate</span></div>
-      <h2>Graphify</h2>
-      <p class="repo"><a href="https://github.com/Graphify-Labs/graphify">View on GitHub</a> <span class="stars">★ 137,533 stars</span></p>
-      <p class="summary">Turns a codebase into an explorable knowledge graph, so you can see how modules, data, and features connect.</p>
-      <p class="best"><strong>Best for:</strong> Onboarding, refactoring, and understanding unfamiliar code.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Point it at the repository or folder you want to understand.</li><li>Explore the graph from the feature or module you care about.</li><li>Follow connections to find dependencies and side effects.</li><li>Use what you learn to scope a change before writing code.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Map this codebase as a knowledge graph and show how the checkout flow connects to payments and orders.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-    <article class="card" data-category="Quality" data-search="agent skills production-grade engineering skills ai coding agents">
-      <div class="card-top"><span class="rank">08</span><span class="category">Quality</span><span class="level">Advanced</span></div>
-      <h2>Agent Skills</h2>
-      <p class="repo"><a href="https://github.com/addyosmani/agent-skills">View on GitHub</a> <span class="stars">★ 111,372 stars</span></p>
-      <p class="summary">Production-grade engineering skills for AI coding agents, focused on reliable, maintainable, real-world code.</p>
-      <p class="best"><strong>Best for:</strong> Production work where correctness and maintainability matter most.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Choose the skill that matches the task: review, testing, migration, or architecture.</li><li>Give it the repo context and the definition of done.</li><li>Let it enforce checks, then review its diff like a teammate's PR.</li><li>Keep successful patterns as project guidance for next time.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Apply production-grade engineering skills to this change: tests, edge cases, and a careful review.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-    <article class="card" data-category="Knowledge" data-search="understand-anything codebase interactive knowledge graph explore ask questions">
-      <div class="card-top"><span class="rank">09</span><span class="category">Knowledge</span><span class="level">Intermediate</span></div>
-      <h2>Understand-Anything</h2>
-      <p class="repo"><a href="https://github.com/Egonex-AI/Understand-Anything">View on GitHub</a> <span class="stars">★ 88,717 stars</span></p>
-      <p class="summary">Turns any codebase into an interactive knowledge graph you can explore, search, and ask questions about.</p>
-      <p class="best"><strong>Best for:</strong> Asking “how does this work?” and getting grounded, explorable answers.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Load the codebase you want to explore.</li><li>Ask a specific question, not just “explain everything”.</li><li>Follow the graph to the relevant files and functions.</li><li>Verify the answer in the code before acting on it.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Using this codebase's knowledge graph, explain how user authentication works, file by file.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-    <article class="card" data-category="Discovery" data-search="agentic awesome skills catalog discovering planning skills">
-      <div class="card-top"><span class="rank">10</span><span class="category">Discovery</span><span class="level">Beginner</span></div>
-      <h2>Agentic Awesome Skills</h2>
-      <p class="repo"><a href="https://github.com/sickn33/agentic-awesome-skills">View on GitHub</a> <span class="stars">★ 48,666 stars</span></p>
-      <p class="summary">A large catalog of agentic skills, with tools for discovering, comparing, and planning which skills to use.</p>
-      <p class="best"><strong>Best for:</strong> Finding the right skill for a new kind of task.</p>
-      <details><summary>How to use it</summary>
-        <ol><li>Search the catalog by task, not by tool name.</li><li>Shortlist two or three skills that fit your workflow.</li><li>Try one on a small, real task before adopting it widely.</li><li>Keep a short personal list of the skills you actually reuse.</li></ol>
-        <p class="prompt-label">Example prompt</p>
-        <div class="prompt-row"><code>Find the best agent skills for code review and testing, and compare them for a small TypeScript project.</code><button class="copy" type="button">Copy</button></div>
-      </details>
-    </article>
-
-  </section>
-
-  <footer>
-    <p>Popularity is indicative from community listings and changes over time; star counts were checked on GitHub on 29 October 2026 and will change over time. Check each skill's own repo for install instructions.</p>
-    <p>A beautiful, elegant, static site — no build step, no framework, no tracking.</p>
-  </footer>
-</main>
-<script src="script.js"></script>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Discover 10 popular agent skills for development, with practical guides, example prompts, and original GitHub repositories."><meta name="theme-color" content="#233e33"><title>Top Skills for Development — A developer’s field guide</title><link rel="stylesheet" href="styles.css"><script src="script.js" defer></script></head>
+<body><a class="skip-link" href="#collection">Skip to the collection</a>
+<header class="site-header"><div class="header-inner"><a class="brand" href="./" aria-label="Top Skills for Development home"><span class="brand-mark" aria-hidden="true">ts.</span><span>Top Skills<span class="brand-sub">for Development</span></span></a><a class="collection-link" href="#collection">The collection <span aria-hidden="true">↗</span></a></div></header>
+<main class="container"><section class="hero" aria-labelledby="page-title"><div><h1 id="page-title">Better skills.<br>Better <em>builds.</em></h1><p class="hero-description">A considered collection of 10 popular agent skills for development. Find your next advantage. Put it to work.</p></div><aside class="hero-note"><span class="note-number">10</span><p>Skills worth knowing.<br>Workflows worth refining.</p><span class="note-line"></span><small>A practical field guide for<br>the way we build with AI.</small></aside></section>
+<section id="collection" class="collection" aria-label="Skill collection"><div class="search-row"><label class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><span class="sr-only">Search skills</span><input id="search" type="search" placeholder="Find a skill, workflow, or idea…" autocomplete="off"></label><p class="snapshot">GitHub stars · <time datetime="2026-10-29">29 Oct 2026</time></p></div>
+<div class="filter-row"><div class="filters" role="group" aria-label="Filter skills by category"><button type="button" class="filter active" data-filter="All skills" aria-pressed="true">All skills</button><button type="button" class="filter" data-filter="Workflow" aria-pressed="false">Workflow</button><button type="button" class="filter" data-filter="Quality" aria-pressed="false">Quality</button><button type="button" class="filter" data-filter="Design" aria-pressed="false">Design</button><button type="button" class="filter" data-filter="Efficiency" aria-pressed="false">Efficiency</button><button type="button" class="filter" data-filter="Knowledge" aria-pressed="false">Knowledge</button><button type="button" class="filter" data-filter="Discovery" aria-pressed="false">Discovery</button></div><p id="results-count" role="status" aria-live="polite">10 skills in the collection</p></div>
+<div class="skill-grid"><article class="skill-card" data-category="Workflow" aria-labelledby="skill-1">
+ <div class="card-meta"><span class="number">01</span><span class="category">Workflow</span><span class="dot">·</span><span>Intermediate</span></div>
+ <h2 id="skill-1">Superpowers</h2><p class="description">A comprehensive library of proven techniques for a stronger, more reliable coding agent workflow.</p>
+ <p class="best"><strong>Best for</strong>Developers who want a repeatable path from idea to tested implementation.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Read the repository’s setup guide for your coding agent and install the supported integration.</li><li>Start with brainstorming to clarify the problem and agree on a design.</li><li>Move through planning, implementation, testing, and review using the relevant skills.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for Superpowers">Copy prompt</button></div><p class="prompt-text">Use Superpowers to help me plan and implement a settings page. Clarify the requirements first, propose a design, then break the work into small, testable steps.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/obra/superpowers" target="_blank" rel="noopener noreferrer" aria-label="Superpowers original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="307,155 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>307,155</span></div>
+ </article>
+<article class="skill-card" data-category="Workflow" aria-labelledby="skill-2">
+ <div class="card-meta"><span class="number">02</span><span class="category">Workflow</span><span class="dot">·</span><span>Advanced</span></div>
+ <h2 id="skill-2">ECC</h2><p class="description">An agent-harness optimisation system with skills, memory, security practices, and research-first workflows.</p>
+ <p class="best"><strong>Best for</strong>Experienced builders tuning a complete agent environment.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Review the README and choose the setup that matches your agent harness.</li><li>Select the skills, memory configuration, and security practices relevant to your project.</li><li>Research the existing code before making a plan; validate changes with the project’s checks.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for ECC">Copy prompt</button></div><p class="prompt-text">Use ECC’s research-first workflow to investigate our authentication code. Map the existing patterns, identify security concerns, and propose a tested implementation plan before editing.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/affaan-m/ECC" target="_blank" rel="noopener noreferrer" aria-label="ECC original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="291,489 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>291,489</span></div>
+ </article>
+<article class="skill-card" data-category="Quality" aria-labelledby="skill-3">
+ <div class="card-meta"><span class="number">03</span><span class="category">Quality</span><span class="dot">·</span><span>Beginner</span></div>
+ <h2 id="skill-3">Karpathy Skills</h2><p class="description">A single behaviour guide distilled from common LLM coding pitfalls.</p>
+ <p class="best"><strong>Best for</strong>Keeping everyday agent changes focused, simple, and easy to review.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Read the behaviour guide in the repository.</li><li>Follow its instructions for adding the guide to your agent’s project context.</li><li>Ask the agent to state assumptions, make minimal changes, and verify the result.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for Karpathy Skills">Copy prompt</button></div><p class="prompt-text">Follow the Karpathy Skills guide while fixing this bug. State your assumptions, keep the change focused, avoid speculative abstractions, and explain how you verified the fix.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/multica-ai/andrej-karpathy-skills" target="_blank" rel="noopener noreferrer" aria-label="Karpathy Skills original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="225,828 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>225,828</span></div>
+ </article>
+<article class="skill-card" data-category="Workflow" aria-labelledby="skill-4">
+ <div class="card-meta"><span class="number">04</span><span class="category">Workflow</span><span class="dot">·</span><span>Intermediate</span></div>
+ <h2 id="skill-4">Matt Pocock Skills</h2><p class="description">Skills for real engineers, including alignment interviews and disciplined test-driven loops.</p>
+ <p class="best"><strong>Best for</strong>Engineers turning ambiguous requirements into carefully tested features.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Follow the repository’s installation instructions for your agent.</li><li>Choose the skill that matches your task, such as grilling, diagnosing bugs, or TDD.</li><li>Invoke that skill with project context and work through its questions or development loop.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for Matt Pocock Skills">Copy prompt</button></div><p class="prompt-text">Use the grilling skill to stress-test my plan for a notification system. Ask about requirements, edge cases, and tradeoffs before we use TDD to implement it.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/mattpocock/skills" target="_blank" rel="noopener noreferrer" aria-label="Matt Pocock Skills original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="305,511 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>305,511</span></div>
+ </article>
+<article class="skill-card" data-category="Design" aria-labelledby="skill-5">
+ <div class="card-meta"><span class="number">05</span><span class="category">Design</span><span class="dot">·</span><span>Intermediate</span></div>
+ <h2 id="skill-5">UI/UX Pro Max</h2><p class="description">Design intelligence for professional, polished user interfaces.</p>
+ <p class="best"><strong>Best for</strong>Building cohesive interfaces with deliberate typography, colour, and spacing.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Install the skill using the repository’s instructions for your coding tool.</li><li>Describe the product, audience, platform, and visual constraints.</li><li>Ask for a coherent design system, then implement and review the interface across screen sizes.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for UI/UX Pro Max">Copy prompt</button></div><p class="prompt-text">Use UI/UX Pro Max to design a calm, professional analytics dashboard. Define typography, colour, spacing, and accessible states, then build a responsive interface using our existing stack.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill" target="_blank" rel="noopener noreferrer" aria-label="UI/UX Pro Max original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="141,949 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>141,949</span></div>
+ </article>
+<article class="skill-card" data-category="Efficiency" aria-labelledby="skill-6">
+ <div class="card-meta"><span class="number">06</span><span class="category">Efficiency</span><span class="dot">·</span><span>Beginner</span></div>
+ <h2 id="skill-6">Caveman</h2><p class="description">Concise, token-efficient agent communication.</p>
+ <p class="best"><strong>Best for</strong>Developers who prefer compact updates and direct answers.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Read the repository’s setup and usage instructions.</li><li>Enable the communication guide in your agent’s context.</li><li>Request concise output while preserving essential reasoning, risks, and verification results.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for Caveman">Copy prompt</button></div><p class="prompt-text">Use Caveman-style communication for this task. Keep updates brief and actionable. Implement the fix, then report the files changed, checks run, and any remaining blockers.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/JuliusBrussee/caveman" target="_blank" rel="noopener noreferrer" aria-label="Caveman original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="115,725 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>115,725</span></div>
+ </article>
+<article class="skill-card" data-category="Knowledge" aria-labelledby="skill-7">
+ <div class="card-meta"><span class="number">07</span><span class="category">Knowledge</span><span class="dot">·</span><span>Intermediate</span></div>
+ <h2 id="skill-7">Graphify</h2><p class="description">Turns a codebase into an explorable knowledge graph.</p>
+ <p class="best"><strong>Best for</strong>Understanding dependencies and finding your way around unfamiliar code.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Follow the repository’s installation and codebase indexing instructions.</li><li>Generate a graph for the project or the area you want to understand.</li><li>Explore connections and use the graph to trace dependencies before making changes.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for Graphify">Copy prompt</button></div><p class="prompt-text">Use Graphify to map this codebase. Trace the checkout flow from UI to persistence, identify its dependencies, and point out the best places to investigate a payment failure.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/Graphify-Labs/graphify" target="_blank" rel="noopener noreferrer" aria-label="Graphify original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="137,533 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>137,533</span></div>
+ </article>
+<article class="skill-card" data-category="Quality" aria-labelledby="skill-8">
+ <div class="card-meta"><span class="number">08</span><span class="category">Quality</span><span class="dot">·</span><span>Advanced</span></div>
+ <h2 id="skill-8">Agent Skills</h2><p class="description">Production-grade engineering skills for AI coding agents.</p>
+ <p class="best"><strong>Best for</strong>Experienced teams applying engineering discipline to agent-assisted work.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Browse the repository and select a skill that fits the engineering task.</li><li>Install or load it according to the instructions for your agent.</li><li>Provide project constraints, apply the skill, and verify the output against production requirements.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for Agent Skills">Copy prompt</button></div><p class="prompt-text">Apply the relevant Agent Skills to review this feature for production readiness. Examine correctness, maintainability, performance, and test coverage, then prioritise concrete improvements.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" aria-label="Agent Skills original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="111,372 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>111,372</span></div>
+ </article>
+<article class="skill-card" data-category="Knowledge" aria-labelledby="skill-9">
+ <div class="card-meta"><span class="number">09</span><span class="category">Knowledge</span><span class="dot">·</span><span>Intermediate</span></div>
+ <h2 id="skill-9">Understand-Anything</h2><p class="description">Turns any codebase into an interactive knowledge graph to explore, search, and ask questions about.</p>
+ <p class="best"><strong>Best for</strong>Onboarding into a project and investigating how its pieces fit together.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Follow the repository’s setup instructions and connect the codebase.</li><li>Build the knowledge graph and explore the project’s structure.</li><li>Search or ask questions about a flow, then confirm findings against the source files.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for Understand-Anything">Copy prompt</button></div><p class="prompt-text">Use Understand-Anything to explain how this application handles user sessions. Trace the main components, show their relationships, and cite the source files I should read first.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/Egonex-AI/Understand-Anything" target="_blank" rel="noopener noreferrer" aria-label="Understand-Anything original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="88,717 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>88,717</span></div>
+ </article>
+<article class="skill-card" data-category="Discovery" aria-labelledby="skill-10">
+ <div class="card-meta"><span class="number">10</span><span class="category">Discovery</span><span class="dot">·</span><span>Beginner</span></div>
+ <h2 id="skill-10">Agentic Awesome Skills</h2><p class="description">A large catalog of agentic skills for discovering, comparing, and planning which skills to use.</p>
+ <p class="best"><strong>Best for</strong>Finding a suitable skill before starting a new kind of task.</p>
+ <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+ <div class="guide"><ol><li>Browse the catalog by category and identify skills relevant to your goal.</li><li>Read each candidate’s instructions, requirements, and original source.</li><li>Choose a small set that fits your agent and project; follow its installation guide.</li></ol>
+ <div class="prompt"><div class="prompt-heading"><span>Example prompt</span><button class="copy-button" type="button" aria-label="Copy example prompt for Agentic Awesome Skills">Copy prompt</button></div><p class="prompt-text">Use Agentic Awesome Skills to find skills for improving our frontend accessibility. Compare a few relevant options, explain their requirements, and recommend a focused sequence to use them.</p></div></div></details>
+ <div class="card-footer"><a href="https://github.com/sickn33/agentic-awesome-skills" target="_blank" rel="noopener noreferrer" aria-label="Agentic Awesome Skills original GitHub repository (opens in new tab)">GitHub repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><span class="stars" aria-label="48,666 GitHub stars"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg>48,666</span></div>
+ </article></div><div id="empty-state" hidden><h2>No skills found.</h2><p>Try another search or explore a different category.</p><button type="button" id="reset-filters">Show all skills</button></div><noscript><p class="noscript">All 10 skills are available below. Enable JavaScript to search, filter, and copy prompts.</p></noscript></section>
+<section class="closing"><p>A better workflow starts<br>with the <em>right skill.</em></p><span>Explore. Experiment. Build something good.</span></section></main>
+<footer class="site-footer"><div><span>Top Skills for Development</span><p>10 skills, thoughtfully collected. Star counts are a snapshot supplied for 29 Oct 2026.</p><a href="#page-title">Back to top ↑</a></div></footer><p id="copy-status" class="sr-only" role="status" aria-live="polite"></p></body></html>
