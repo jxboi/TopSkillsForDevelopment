@@ -21,7 +21,10 @@ main{padding:28px 0 48px}
 .rank{font-family:Georgia,serif;font-size:22px;color:var(--accent)}
 .category{background:var(--accent-soft);color:var(--accent);padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600}
 .level{margin-left:auto;color:var(--muted);font-size:12px}
-.card h2{margin:0 0 8px;font-size:24px;line-height:1.2}
+.card h2{margin:0 0 4px;font-size:24px;line-height:1.2}
+.repo{margin:0 0 10px;font-size:14px}
+.repo a{color:var(--accent);font-weight:650}
+.stars{color:var(--muted);margin-left:8px}
 .summary{margin:0 0 10px}
 .best{margin:0 0 14px;font-size:15px}
 details{border-top:1px solid var(--line);padding-top:12px}
