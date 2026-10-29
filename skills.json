@@ -1203,7 +1203,7 @@
       "description": "The official Anthropic-managed directory of high quality Claude Code plugins.",
       "use_when": "When you want to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code.",
       "top_inside": {
-        "label": "Top inside:",
+        "label": "Featured:",
         "names": [
           "skill-creator",
           "plugin-dev"

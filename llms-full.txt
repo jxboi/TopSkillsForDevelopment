@@ -417,7 +417,7 @@ Catalogs and directories for finding the right skill.
 - Category: Discovery · Level: Intermediate · Stars: 45,134 · Repo: https://github.com/anthropics/claude-plugins-official · Card: https://topskillsfordevelopment.vercel.app#skill-15
 - Description: The official Anthropic-managed directory of high quality Claude Code plugins.
 - Use when: When you want to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code.
-- Top inside: Top inside: skill-creator, plugin-dev
+- Top inside: Featured: skill-creator, plugin-dev
 - Inside: 5 first-party plugins
 - skill-creator [Writing] — Guides users through creating, refining, evaluating, and benchmarking custom Claude Code agent skills with variance analysis.
   > I want to make a new skill for automating database migrations, so help me design, draft, and run evaluations on it.
