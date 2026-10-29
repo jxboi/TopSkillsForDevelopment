@@ -2,11 +2,11 @@
   "styles.css": "8b2601b309c4e6947c3d36e0dbf0b2315c15b6c720d035792cde73ab931b21e1",
   "script.js": "54c74dd5029521a0f8d1e749ad0e846563d87a393eb02c12af3d7805e97c2b50",
   "index.html": "92be40ed62f16ae2287551aee28bdbe1f1f64672b251fdf189ef9a664beb1e1e",
-  "footer": "<footer class=\"site-footer\"><div><span>Top Skills for Development</span><p>22 skills. Star counts are a snapshot supplied for 29 Oct 2026.</p><a href=\"#page-title\">Back to top ↑</a></div></footer>",
+  "footer": "<footer class=\"site-footer\"><div><span>Top Skills for Development</span><p>22 skills. Star counts are a snapshot supplied for 29 Oct 2026.</p><a href=\"#page-title\">Back to top \u2191</a></div></footer>",
   "visible": [
     59,
     49,
-    58,
+    56,
     56,
     57,
     77,
@@ -30,7 +30,7 @@
   "expanded": [
     272,
     275,
-    280,
+    877,
     250,
     258,
     319,
@@ -50,5 +50,41 @@
     245,
     226,
     299
-  ]
+  ],
+  "originalMattCard": "<article class=\"skill-card\" data-category=\"Workflow\" aria-labelledby=\"skill-4\">\n <div class=\"card-meta\"><span class=\"number\">04</span><span class=\"category\">Workflow</span><span class=\"dot\">\u00b7</span><span>Intermediate</span> <span class=\"meta-stars\" aria-label=\"305,511 GitHub stars\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><use href=\"#icon-star\"/></svg>305,511</span></div>\n <h3 id=\"skill-4\">Matt Pocock Skills</h3>\n <p class=\"top-inside\"><span class=\"top-inside-label\">Top inside:</span> <code class=\"inside-name\">grill-with-docs</code> \u00b7 <code class=\"inside-name\">grill-me</code></p>\n <p class=\"description\">Skills for real engineers, including alignment interviews and disciplined test-driven loops.</p>\n <div class=\"fit\">\n  <p class=\"fit-use\"><strong>Use when</strong> At the start of feature or bug work, when human grilling should settle ambiguity and shared terminology before tickets and test-driven development.</p>\n </div>\n <details class=\"inside\"><summary>Inside this repo \u2014 5 of 31 skills<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"/></svg></summary>\n <ul class=\"inside-list\">\n <li><code class=\"inside-name\">grill-with-docs</code> \u2014 Interrogates the user in depth about planned changes while writing Architecture Decision Records (ADRs) and maintaining a ubiquitous project domain glossary (`GLOSSARY.md`) before work starts.<p class=\"example-prompt\">/grill-with-docs Interview me about our proposed caching architecture while recording architectural decision records and updating our project glossary.</p></li>\n <li><code class=\"inside-name\">grill-me</code> \u2014 Recursively interviews the user on an idea, plan, or general proposal until every branch of the design decision tree is explored and aligned.<p class=\"example-prompt\">/grill-me Interview me relentlessly about my proposal for a team on-call rotation until every branch of the plan is resolved.</p></li>\n <li><code class=\"inside-name\">to-spec</code> \u2014 Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut. (Source: skills/engineering/to-spec/SKILL.md, description + Process steps 2\u20133; orchestrator-verified 2026-10-29.)<p class=\"example-prompt\">/to-spec Turn our conversation into a complete feature specification, proposing test seams and publishing it to our issue tracker.</p></li>\n <li><code class=\"inside-name\">implement</code> \u2014 Executes tasks defined by a specification or ticket list, triggering `/tdd` across identified seams and terminating with `/code-review` before committing changes.<p class=\"example-prompt\">/implement Build the feature described in ticket #104, using test-driven development at identified seams and running code review before committing.</p></li>\n <li><code class=\"inside-name\">code-review</code> \u2014 Performs a dual-axis evaluation of repository diffs comparing code against standards and against the originating spec using parallel, isolated subagents.<p class=\"example-prompt\">Review our current changes since main against repo coding standards and originating issue #45 using parallel subagents for evaluation.</p></li>\n </ul>\n </details>\n <div class=\"card-footer\"><a href=\"https://github.com/mattpocock/skills\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Matt Pocock Skills original GitHub repository (opens in new tab)\">GitHub repository <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><use href=\"#icon-external-link\"/></svg></a></div>\n </article>",
+  "protectedCards": [
+    "068c0d7bd52ec5743cbef9d89b5e5cae62408910b9a99dd6f029c3fea6b9394f",
+    "02404532ad0e82f3e2d0475583e1f60bf0fd742a3c9f4ba7d56ff046cfb427fe",
+    "6c0851281c22638f2e0ca73a415dad42a70aa5f8cf4b091284df900209598d63",
+    "3d3a674d874126e29ce176efcb17b05578ec9d8f91687e23a992863e2c8b3417",
+    "61eb4b9578ee7e0dfafb4bb0c07191cf9cdabafbc56f77141bb08a586aaf1129",
+    "f05e4d4ec3934aef41e60001b269134ce6420c1612358458d4359b513a0d04a5",
+    "3673a32b464fb7c5bd897ff9c277a1fe0f210514817e6aa601dd7e196eea4cfa",
+    "e8a9a5ed14d31b253960ddb3967bae7933102c8832a9a7eb7e1eec8c2864ded2",
+    "2a37c336b2c28c9e81b4523a96ba734ac63bbaf8d0cae0c298098c69757b3cb3",
+    "a5c56e247c4c0df903a8178b8a404f97d9de5ca0b814b073a17fac9fcb9a6d15",
+    "42318a23c36e01e9897d69a5c0b8d6620baaf67ad20d3b1ad2f29597e5bca3cd",
+    "53949d17e906b2ac5f131b1783e01c29ba6c251d7e3ebd61227fb65e77fc58be",
+    "17a47da9f37fe4fb65706568f61610080f80b2521677ffa89107c8ea20df7bee",
+    "ba223b0b3788608d184d328b5d979dde9319dfede50b077485b52ce17cdb79d5",
+    "2ba0fcb2d246631dd14003f84c8f2297820f24f56443c3f3ae78b6a8e44e1de9",
+    "d51a8f4bc004a9ff20d9621367157f120e00ffdbac28419e83388ea9e3cf3a2f",
+    "36a1663a399de7248b99fdcaafc4e0a98ca940931337a672d59f4f6263f26382",
+    "c8b9ab1afe8381d72d591ac8986cdb8bc11720d651d4422a6fb11bb454059a80",
+    "d392e39a27e86db04d4c6212d34bf483cf0d2cc1cac70313883d12bb475b003c",
+    "75f045727021823bbd212a986b468335bc47368c4c4d88b716ed7cf2a2c2b219",
+    "5c1521ad08f3e03ff57903b4e5aeaf106aa31d746d4c12a81eb27f3565b67fa9"
+  ],
+  "budgets": {
+    "visible": {
+      "max": 77,
+      "total": 1224,
+      "mean": 55.64
+    },
+    "expanded": {
+      "max": 877,
+      "total": 6125,
+      "mean": 278.41
+    }
+  }
 }
