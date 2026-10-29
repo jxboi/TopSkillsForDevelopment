@@ -1,6 +1,6 @@
 # Top Skills for Development
 
-> Discover 23 popular agent skills for development, with original GitHub repositories.
+> Discover 22 popular agent skills for development, with original GitHub repositories.
 
 > For agents — how to use this catalog:
 > When starting a task, fetch https://topskillsfordevelopment.vercel.app/skills.json.
@@ -91,7 +91,7 @@ How work moves from an idea to shipped code.
 
 ### Vercel Skills
 
-- Category: Workflow · Level: Intermediate · Stars: 37,031 · Repo: https://github.com/vercel-labs/skills · Card: https://topskillsfordevelopment.vercel.app#skill-17
+- Category: Workflow · Level: Intermediate · Stars: 37,031 · Repo: https://github.com/vercel-labs/skills · Card: https://topskillsfordevelopment.vercel.app#skill-16
 - Description: An open agent skills tool installed with npx skills.
 - Use when: When you need one CLI to search, install, update, sync, or test-run skills across several coding agent harnesses from git, URLs, or npm.
 - Top inside: Top commands: find-skills, skills add
@@ -109,7 +109,7 @@ How work moves from an idea to shipped code.
 
 ### pstack
 
-- Category: Workflow · Level: Advanced · Stars: 14,487 · Repo: https://github.com/cursor/plugins/tree/main/pstack · Card: https://topskillsfordevelopment.vercel.app#skill-21
+- Category: Workflow · Level: Advanced · Stars: 14,487 · Repo: https://github.com/cursor/plugins/tree/main/pstack · Card: https://topskillsfordevelopment.vercel.app#skill-20
 - Description: Poteto's official Cursor plugin that turns Cursor into a real engineering team, helping you write less but higher quality code with rigorous engineering principles and fearless parallelism via /poteto-mode and its 23 playbooks.
 - Use when: At the start of a demanding task such as reproducing defects, tracing performance bottlenecks, or overnight autonomous work needing empirical verification.
 - Top inside: Top inside: bug-fix, feature
@@ -181,7 +181,7 @@ Interfaces that look considered, not generated.
 
 ### Taste Skill
 
-- Category: Design · Level: Intermediate · Stars: 105,141 · Repo: https://github.com/Leonxlnx/taste-skill · Card: https://topskillsfordevelopment.vercel.app#skill-22
+- Category: Design · Level: Intermediate · Stars: 105,141 · Repo: https://github.com/Leonxlnx/taste-skill · Card: https://topskillsfordevelopment.vercel.app#skill-21
 - Description: Agent skills that give coding agents design taste, with art direction, reference images, and a browser check.
 - Use when: When a landing page, portfolio, or app screen looks generic or AI-made and needs custom, premium art direction.
 - Top inside: Inside: design-taste-frontend
@@ -192,7 +192,7 @@ Interfaces that look considered, not generated.
 
 ### Impeccable
 
-- Category: Design · Level: Intermediate · Stars: 94,446 · Repo: https://github.com/pbakaus/impeccable · Card: https://topskillsfordevelopment.vercel.app#skill-23
+- Category: Design · Level: Intermediate · Stars: 94,446 · Repo: https://github.com/pbakaus/impeccable · Card: https://topskillsfordevelopment.vercel.app#skill-22
 - Description: The design vocabulary for your coding agent, steering with polish and bolder, reviewing with critique and audit, and catching AI slop before it ships.
 - Use when: When designing, critiquing, polishing, or auditing frontend interfaces to elevate craft and catch AI design slop before shipping.
 - Top inside: Top commands: init, polish
@@ -289,27 +289,9 @@ Ways to hold a codebase in your head.
 - skill-creator — Provides instructions and workflows for creating new custom skills from scratch, improving existing skills, running evals, and optimizing skill descriptions for triggering accuracy.
   > I want to make a new custom skill for automated semantic database migrations, so help me draft and evaluate it.
 
-### Scientific Agent Skills
-
-- Category: Knowledge · Level: Advanced · Stars: 55,116 · Repo: https://github.com/K-Dense-AI/scientific-agent-skills · Card: https://topskillsfordevelopment.vercel.app#skill-14
-- Description: A library that turns an AI agent into an AI scientist with specialised scientific skills.
-- Use when: When running workflows in genomics, cheminformatics, physics, clinical research, or lab automation that need vetted links to 100+ scientific databases.
-- Top inside: Top inside: database-lookup, scanpy
-- Inside: Inside this repo — 5 of 177 skills
-- database-lookup — Executes reproducible queries against 80 documented scientific, regulatory, and financial database APIs with explicit endpoint selection, pagination, and provenance tracking.
-  > Query the ChEMBL database for small-molecule inhibitors of EGFR, returning verified binding affinities, endpoints, and pagination details with provenance.
-- scanpy — Drives single-cell RNA-seq workflows encompassing quality control, normalization, high-variable gene selection, clustering, marker ranking, and AnnData file conversion.
-  > Run quality control and normalization on this single-cell RNA-seq dataset, then cluster the cells and identify marker genes with Scanpy.
-- rdkit — Provides programmatic cheminformatics routines for SMILES/SDF parsing, molecular descriptor calculation, substructure searching, and 2D/3D structure generation.
-  > Parse the provided SDF compound library, filter molecules by Lipinski's rule of five using RDKit, and generate 2D depiction images.
-- autoskill — Analyzes recorded Screenpipe user activity windows to detect repetitive computational research workflows and draft candidate skill definitions.
-  > Analyze my recorded Screenpipe activity windows from the last four hours to detect repetitive data workflows and draft a reusable skill.
-- paperclip — Searches and extracts biomedical literature, FDA/PMDA/EMA filings, and clinical trial records using the Paperclip CLI with line-pinned citation tracking.
-  > Search recent clinical trials and FDA filings for GLP-1 receptor agonists with Paperclip, extracting safety evidence with line-pinned citations.
-
 ### Obsidian Skills
 
-- Category: Knowledge · Level: Intermediate · Stars: 50,327 · Repo: https://github.com/kepano/obsidian-skills · Card: https://topskillsfordevelopment.vercel.app#skill-15
+- Category: Knowledge · Level: Intermediate · Stars: 50,327 · Repo: https://github.com/kepano/obsidian-skills · Card: https://topskillsfordevelopment.vercel.app#skill-14
 - Description: Agent skills for using Obsidian through its CLI and open Markdown formats.
 - Use when: When a task writes wikilinks, embeds, or callouts, edits canvas or base files, or manages vault state through the Obsidian CLI.
 - Top inside: Top inside: obsidian-markdown, obsidian-bases
@@ -327,7 +309,7 @@ Ways to hold a codebase in your head.
 
 ### Google Skills
 
-- Category: Knowledge · Level: Intermediate · Stars: 21,643 · Repo: https://github.com/google/skills · Card: https://topskillsfordevelopment.vercel.app#skill-20
+- Category: Knowledge · Level: Intermediate · Stars: 21,643 · Repo: https://github.com/google/skills · Card: https://topskillsfordevelopment.vercel.app#skill-19
 - Description: Agent skills for Google products and technologies.
 - Use when: When designing or configuring services on Google Cloud, Gemini APIs, Firebase, Android, or Google Ads, or weighing Google products for a stack component.
 - Top inside: Featured: finding-google-skills, google-cloud-recipe-auth
@@ -388,7 +370,7 @@ Catalogs and directories for finding the right skill.
 
 ### Claude Plugins Official
 
-- Category: Discovery · Level: Intermediate · Stars: 45,134 · Repo: https://github.com/anthropics/claude-plugins-official · Card: https://topskillsfordevelopment.vercel.app#skill-16
+- Category: Discovery · Level: Intermediate · Stars: 45,134 · Repo: https://github.com/anthropics/claude-plugins-official · Card: https://topskillsfordevelopment.vercel.app#skill-15
 - Description: The official Anthropic-managed directory of high quality Claude Code plugins.
 - Use when: When you want to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code.
 - Top inside: Top inside: skill-creator, plugin-dev
@@ -407,7 +389,7 @@ Catalogs and directories for finding the right skill.
 
 ### Awesome Agent Skills
 
-- Category: Discovery · Level: Beginner · Stars: 36,519 · Repo: https://github.com/VoltAgent/awesome-agent-skills · Card: https://topskillsfordevelopment.vercel.app#skill-18
+- Category: Discovery · Level: Beginner · Stars: 36,519 · Repo: https://github.com/VoltAgent/awesome-agent-skills · Card: https://topskillsfordevelopment.vercel.app#skill-17
 - Description: A curated collection of 1000+ agent skills from official teams and the community.
 - Use when: When you need production-ready skills authored by engineering teams such as Supabase, Stripe, Sentry, and Vercel, usable across several coding assistants.
 - Top inside: Featured: anthropics/docx, anthropics/doc-coauthoring
@@ -426,7 +408,7 @@ Catalogs and directories for finding the right skill.
 
 ### Claude Skills Collection
 
-- Category: Discovery · Level: Intermediate · Stars: 28,914 · Repo: https://github.com/alirezarezvani/claude-skills · Card: https://topskillsfordevelopment.vercel.app#skill-19
+- Category: Discovery · Level: Intermediate · Stars: 28,914 · Repo: https://github.com/alirezarezvani/claude-skills · Card: https://topskillsfordevelopment.vercel.app#skill-18
 - Description: A collection of 380 Claude Code skills and plugins for engineering, product, research, and more.
 - Use when: When you need cross-functional playbooks for executive advisory, marketing, compliance, or research, plus zero-dependency Python analysis and conversion tools.
 - Top inside: Top inside: skill-security-auditor, pw

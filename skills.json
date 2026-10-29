@@ -1,6 +1,6 @@
 {
   "site": "Top Skills for Development",
-  "description": "Discover 23 popular agent skills for development, with original GitHub repositories.",
+  "description": "Discover 22 popular agent skills for development, with original GitHub repositories.",
   "star_snapshot": "29 Oct 2026",
   "agent_guide": "llms.txt",
   "chapters": [
@@ -11,7 +11,7 @@
     "Knowledge",
     "Discovery"
   ],
-  "count": 23,
+  "count": 22,
   "cards": [
     {
       "id": "skill-1",
@@ -222,8 +222,8 @@
       ]
     },
     {
-      "id": "skill-17",
-      "number": 17,
+      "id": "skill-16",
+      "number": 16,
       "title": "Vercel Skills",
       "category": "Workflow",
       "level": "Intermediate",
@@ -274,8 +274,8 @@
       ]
     },
     {
-      "id": "skill-21",
-      "number": 21,
+      "id": "skill-20",
+      "number": 20,
       "title": "pstack",
       "category": "Workflow",
       "level": "Advanced",
@@ -457,8 +457,8 @@
       ]
     },
     {
-      "id": "skill-22",
-      "number": 22,
+      "id": "skill-21",
+      "number": 21,
       "title": "Taste Skill",
       "category": "Design",
       "level": "Intermediate",
@@ -484,8 +484,8 @@
       ]
     },
     {
-      "id": "skill-23",
-      "number": 23,
+      "id": "skill-22",
+      "number": 22,
       "title": "Impeccable",
       "category": "Design",
       "level": "Intermediate",
@@ -746,58 +746,6 @@
     {
       "id": "skill-14",
       "number": 14,
-      "title": "Scientific Agent Skills",
-      "category": "Knowledge",
-      "level": "Advanced",
-      "stars": 55116,
-      "repo": "https://github.com/K-Dense-AI/scientific-agent-skills",
-      "description": "A library that turns an AI agent into an AI scientist with specialised scientific skills.",
-      "use_when": "When running workflows in genomics, cheminformatics, physics, clinical research, or lab automation that need vetted links to 100+ scientific databases.",
-      "top_inside": {
-        "label": "Top inside:",
-        "names": [
-          "database-lookup",
-          "scanpy"
-        ]
-      },
-      "inside_summary": "Inside this repo — 5 of 177 skills",
-      "inside_note": null,
-      "inside": [
-        {
-          "name": "database-lookup",
-          "kind": null,
-          "function": "Executes reproducible queries against 80 documented scientific, regulatory, and financial database APIs with explicit endpoint selection, pagination, and provenance tracking.",
-          "example_prompt": "Query the ChEMBL database for small-molecule inhibitors of EGFR, returning verified binding affinities, endpoints, and pagination details with provenance."
-        },
-        {
-          "name": "scanpy",
-          "kind": null,
-          "function": "Drives single-cell RNA-seq workflows encompassing quality control, normalization, high-variable gene selection, clustering, marker ranking, and AnnData file conversion.",
-          "example_prompt": "Run quality control and normalization on this single-cell RNA-seq dataset, then cluster the cells and identify marker genes with Scanpy."
-        },
-        {
-          "name": "rdkit",
-          "kind": null,
-          "function": "Provides programmatic cheminformatics routines for SMILES/SDF parsing, molecular descriptor calculation, substructure searching, and 2D/3D structure generation.",
-          "example_prompt": "Parse the provided SDF compound library, filter molecules by Lipinski's rule of five using RDKit, and generate 2D depiction images."
-        },
-        {
-          "name": "autoskill",
-          "kind": null,
-          "function": "Analyzes recorded Screenpipe user activity windows to detect repetitive computational research workflows and draft candidate skill definitions.",
-          "example_prompt": "Analyze my recorded Screenpipe activity windows from the last four hours to detect repetitive data workflows and draft a reusable skill."
-        },
-        {
-          "name": "paperclip",
-          "kind": null,
-          "function": "Searches and extracts biomedical literature, FDA/PMDA/EMA filings, and clinical trial records using the Paperclip CLI with line-pinned citation tracking.",
-          "example_prompt": "Search recent clinical trials and FDA filings for GLP-1 receptor agonists with Paperclip, extracting safety evidence with line-pinned citations."
-        }
-      ]
-    },
-    {
-      "id": "skill-15",
-      "number": 15,
       "title": "Obsidian Skills",
       "category": "Knowledge",
       "level": "Intermediate",
@@ -848,8 +796,8 @@
       ]
     },
     {
-      "id": "skill-20",
-      "number": 20,
+      "id": "skill-19",
+      "number": 19,
       "title": "Google Skills",
       "category": "Knowledge",
       "level": "Intermediate",
@@ -1004,8 +952,8 @@
       ]
     },
     {
-      "id": "skill-16",
-      "number": 16,
+      "id": "skill-15",
+      "number": 15,
       "title": "Claude Plugins Official",
       "category": "Discovery",
       "level": "Intermediate",
@@ -1056,8 +1004,8 @@
       ]
     },
     {
-      "id": "skill-18",
-      "number": 18,
+      "id": "skill-17",
+      "number": 17,
       "title": "Awesome Agent Skills",
       "category": "Discovery",
       "level": "Beginner",
@@ -1108,8 +1056,8 @@
       ]
     },
     {
-      "id": "skill-19",
-      "number": 19,
+      "id": "skill-18",
+      "number": 18,
       "title": "Claude Skills Collection",
       "category": "Discovery",
       "level": "Intermediate",
