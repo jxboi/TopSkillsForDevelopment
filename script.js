@@ -30,7 +30,10 @@ function updateResults() {
     if (visible) count++;
   });
   chapters.forEach(chapter => {
-    chapter.hidden = ![...chapter.querySelectorAll('.skill-card')].some(card => !card.hidden);
+    const members = [...chapter.querySelectorAll('.skill-card')];
+    const firstVisible = members.find(card => !card.hidden);
+    members.forEach(card => card.classList.toggle('first-visible', card === firstVisible));
+    chapter.hidden = !members.some(card => !card.hidden);
   });
   if (resultsCount) resultsCount.textContent = `${count} ${count === 1 ? 'skill' : 'skills'} in the collection`;
   if (emptyState) emptyState.hidden = count !== 0;
@@ -82,6 +85,7 @@ toggleGuides?.addEventListener('click', () => {
 });
 guides.forEach(guide => guide.addEventListener('toggle', updateGuideControl));
 function revealControls() {
+  if (searchInput) searchInput.disabled = false;
   filterButtons.forEach(button => { button.hidden = false; });
   if (toggleGuides && guides.length) toggleGuides.hidden = false;
 }
@@ -117,7 +121,7 @@ document.querySelectorAll('.copy-button').forEach(button => {
       await copyText(prompt.textContent);
       button.textContent = 'Copied!';
       resetTimer = setTimeout(() => { button.textContent = 'Copy prompt'; }, 3000);
-      if (copyStatus) copyStatus.textContent = `Example prompt copied for ${button.closest('.skill-card')?.querySelector('h2')?.textContent ?? 'this skill'}.`;
+      if (copyStatus) copyStatus.textContent = `Example prompt copied for ${button.closest('.skill-card')?.querySelector('[id^="skill-"]')?.textContent ?? 'this skill'}.`;
     } catch {
       button.textContent = 'Select prompt to copy';
       const selection = window.getSelection();
