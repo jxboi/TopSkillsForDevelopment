@@ -1,5 +1,5 @@
 /* Tokens */
-:root{--paper:#fafaf7;--surface:#ffffff;--ink:#1a1a18;--body:#3d3d38;--line:#d9d7d0;--accent:#b3401e;--muted:#6b6b64;--prompt-background:#efede8;--search-border:#c9c6bf;--touch:44px;--space-1:8px;--space-2:16px;--space-3:24px;--space-4:32px;--space-5:40px;--space-6:48px;--space-8:64px;--space-10:80px;--serif:Georgia,'Times New Roman',serif;--sans:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+:root{--paper:#fafaf7;--surface:#ffffff;--ink:#1a1a18;--body:#3d3d38;--line:#d9d7d0;--accent:#b3401e;--muted:#6b6b64;--prompt-background:#e9e6de;--search-border:#c9c6bf;--touch:44px;--space-1:8px;--space-2:16px;--space-3:24px;--space-4:32px;--space-5:40px;--space-6:48px;--space-8:64px;--space-10:80px;--serif:Georgia,'Times New Roman',serif;--sans:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 
 /* Entries follow their content; chapter rules organize the collection. */
 
@@ -34,7 +34,8 @@ h1 em,.closing em{font-weight:normal;color:var(--ink)}
 /* Collection */
 .collection-link{text-decoration:none;border-bottom:1px solid var(--ink);padding:8px 0;font-size:13px;min-height:var(--touch);display:inline-flex;align-items:center;justify-content:center}
 .collection-link span{margin-left:18px}
-.collection{scroll-margin-top:var(--space-4)}
+.collection{scroll-margin-top:var(--space-4);counter-reset:chapter}
+#collection-title{font-size:44px;border-bottom:3px solid var(--ink);padding-bottom:16px;max-width:100%}
 .search-row{display:flex;align-items:center;justify-content:space-between;gap:20px}
 .search-box{display:flex;align-items:center;gap:13px;border:1px solid var(--search-border);border-radius:6px;background:var(--surface);padding:0 17px;width:min(560px,100%)}
 .search-box input{width:100%;height:53px;border:0;background:transparent;color:var(--ink);outline-offset:0;min-width:0}
@@ -50,12 +51,18 @@ h1 em,.closing em{font-weight:normal;color:var(--ink)}
 .filter-controls,.filters{display:flex;flex-wrap:wrap;gap:8px}
 
 /* Chapters and entries */
-.chapter+.chapter{margin-top:var(--space-8)}
-.chapter-heading{display:flex;align-items:baseline;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:16px;margin:0 0 32px}
+.chapter{counter-increment:chapter;margin-top:0}
+/* A lone filtered chapter starts directly below the controls. */
+.collection:has(> .chapter:not([hidden]) ~ .chapter:not([hidden])) > .chapter:not([hidden]){margin-top:88px}
+.chapter-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px;border-bottom:4px double var(--ink);padding-bottom:16px;margin:0 0 32px;font-size:46px}
+.chapter-heading::before{content:counter(chapter,upper-roman);content:counter(chapter,upper-roman) / "";font:normal 64px/1 var(--serif);color:var(--ink)}
 .chapter-heading span{font:13px var(--sans);letter-spacing:0;color:var(--muted)}
 .skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);align-items:start}
-/* Desktop cards use 32px on both axes for an even inset; responsive insets stay tuned. */
-.skill-card{padding:var(--space-4) var(--space-4) 0;border-top:1px solid var(--ink)}
+/* Reserve two rule pixels; the resting rule uses only the upper pixel. */
+.skill-card{padding:31px var(--space-4) 0;border-top:2px solid transparent;position:relative}
+.skill-card::before{content:"";position:absolute;top:-2px;left:0;right:0;border-top:1px solid var(--ink)}
+.skill-grid > .skill-card:first-child::before{border-top:0}
+.skill-card:hover,.skill-card:focus-within{border-top-color:var(--ink)}
 .card-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted);white-space:nowrap}
 .number{font:18px var(--serif);color:var(--accent);margin-right:10px}
 .category{color:var(--ink);font-size:12px;font-variant-caps:small-caps;letter-spacing:.08em;flex-shrink:0}
@@ -73,7 +80,7 @@ details[open] summary svg{transform:rotate(180deg)}
 .guide ol{list-style:none;counter-reset:step;padding:0;margin:7px 0 24px}
 .guide li{font-family:var(--serif);counter-increment:step;position:relative;padding-left:34px;margin:13px 0;font-size:13px;color:var(--body)}
 .guide li:before{content:counter(step);position:absolute;left:0;top:0;width:23px;height:23px;border:1px solid var(--line);border-radius:50%;display:grid;place-content:center;font:12px var(--serif);color:var(--ink)}
-.prompt{background:var(--prompt-background);padding:var(--space-2);border-radius:6px}
+.prompt{background:var(--prompt-background);padding:var(--space-2);border-radius:0}
 .prompt-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px}
 .copy-button{font-size:10px;padding:5px 8px;border:1px solid var(--search-border);border-radius:6px;background:var(--surface);color:var(--ink);min-width:144px;flex-shrink:0;text-align:center;white-space:nowrap;min-height:var(--touch);display:inline-flex;align-items:center;justify-content:center}
 .copy-button:hover{background:var(--ink);color:var(--paper)}
@@ -109,15 +116,28 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 .noscript{padding:20px;color:var(--body)}
 
 /* Media queries */
+@media(min-width:641px){
+  .skill-grid > .skill-card:nth-child(2)::before{border-top:0}
+  .skill-grid:has(> article:only-child) > article{grid-column:1 / -1}
+  .skill-grid:has(> article:only-child) .description{max-width:62ch}
+}
+@media(min-width:1000px){
+  /* The numeral consumes zero row width, hanging inside the 32px inset. */
+  .number{flex:0 0 32px;margin-left:-32px;margin-right:-10px;font:28px/22px var(--serif)}
+}
+
 @media(min-width:1400px){
   .hero{padding-top:90px}
 }
 @media(max-width:1000px){
   .container,.header-inner,.site-footer>div{width:calc(100% - 56px)}
   .filter-row{align-items:start;flex-direction:column;gap:13px}
-  .skill-card{padding:24px 23px 0}
+  .skill-card{padding:23px 23px 0}
   .site-footer>div{flex-wrap:wrap}
   .site-footer p{order:3;width:100%;margin:0}
+}
+@media(min-width:1000px){
+  .skill-card{padding:31px 32px 0}
 }
 @media(max-width:640px){
   .container,.header-inner,.site-footer>div{width:calc(100% - 36px)}
@@ -140,7 +160,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
   .filter-row{margin:19px 0}
   .filter{padding:7px 12px;font-size:11px}
   .skill-grid{grid-template-columns:1fr;gap:var(--space-2)}
-  .skill-card{padding:24px 22px 0}
+  .skill-card{padding:23px 22px 0}
   h2{font-size:32px}
   .description,.best{min-height:0}
   .closing{display:block;padding:var(--space-5) 0}
