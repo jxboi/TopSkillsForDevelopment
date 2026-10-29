@@ -71,6 +71,83 @@ assert.match(source, /searchInput\.disabled = false/);
 const articles = [...html.matchAll(/<article class="skill-card" data-category="([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)];
 assert.equal(articles.length, 21);
 
+
+// Top-5 seams: rendered inventory, honest kinds, preserved page, and inherited tokens.
+// Read the approved source in place; do not duplicate the editorial source as a fixture.
+const copyPath = path.resolve(root, '../workflow-run-top5/lists.md');
+const approvedCopy = fs.readFileSync(copyPath, 'utf8');
+const expectedInside = [...approvedCopy.matchAll(/^### (.+?) — summary: "([^"]+)"([^\n]*)\n([\s\S]*?)(?=^### |^## |$(?![\s\S]))/gm)].map(([, title, summary, annotations, body]) => ({
+  title, summary, note: annotations.match(/note: "([^"]+)"/)?.[1],
+  items: [...body.matchAll(/^\d+\. `([^`]+)`[^\n]*? — (.+)$/gm)].map(([, name, fn]) => ({ name, fn })),
+}));
+assert.equal(expectedInside.length, 21, 'Approved copy must cover all 21 cards');
+assert.equal(expectedInside.reduce((n, card) => n + card.items.length, 0), 101);
+const decodeHTML = value => value.replace(/&(#x[\da-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (entity, key) =>
+  key[0] === '#' ? String.fromCodePoint(key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1))) :
+    ({ amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0' })[key.toLowerCase()]);
+const renderedText = markup => decodeHTML(markup.replace(/<[^>]*>/g, '')).trim();
+const insideBlocks = [...html.matchAll(/<details class="inside"([^>]*)>([\s\S]*?)<\/details>/g)];
+assert.equal(insideBlocks.length, 21, 'Expected 21 inside details blocks');
+assert.equal(insideBlocks.reduce((n, block) => n + [...block[2].matchAll(/<li>/g)].length, 0), 101);
+for (const [index, [, , markup]] of articles.entries()) {
+  const expected = expectedInside[index];
+  assert.equal(renderedText(markup.match(/<h3[^>]*>([\s\S]*?)<\/h3>/)[1]), expected.title);
+  const blocks = [...markup.matchAll(/<details class="inside"([^>]*)>([\s\S]*?)<\/details>/g)];
+  assert.equal(blocks.length, 1, expected.title + ': one inside block');
+  const [, attrs, inside] = blocks[0];
+  const summary = renderedText(inside.match(/<summary>([\s\S]*?)<\/summary>/)[1]);
+  assert.equal(summary, expected.summary);
+  assert.equal(/\bopen\b/.test(attrs), expected.title === 'Karpathy Skills');
+  const items = [...inside.matchAll(/<li>([\s\S]*?)<\/li>/g)];
+  assert.equal(items.length, expected.title === 'Karpathy Skills' ? 1 : 5);
+  assert.doesNotMatch(inside, /<a\b|<h[1-6]\b/);
+  items.forEach(([, item], itemIndex) => {
+    const name = item.match(/^<code class="inside-name">([\s\S]*?)<\/code> — ([\s\S]*)$/);
+    assert.ok(name, 'Name, em dash, function markup');
+    assert.equal(decodeHTML(name[1]), expected.items[itemIndex].name);
+    assert.equal(renderedText(name[2].replace(/\s*<span class="inside-kind">[^<]*<\/span>$/, '')), expected.items[itemIndex].fn);
+    const kind = item.match(/<span class="inside-kind">([^<]+)<\/span>/)?.[1];
+    const expectedKind = itemIndex > 0 ? ({ 'Vercel Skills': 'command', Graphify: 'subcommand' })[expected.title] : undefined;
+    assert.equal(kind, expectedKind);
+  });
+  if (expected.title === 'Matt Pocock Skills') {
+    assert.ok(expected.items.some(item => item.name === 'to-spec'));
+    assert.ok(!items.some(([, item]) => renderedText(item.match(/<code[^>]*>(.*?)<\/code>/)[1]) === 'tdd'));
+  }
+  const notes = [...inside.matchAll(/<p class="inside-note">([\s\S]*?)<\/p>/g)];
+  assert.deepEqual(notes.map(([, note]) => renderedText(note)), expected.note ? [expected.note] : []);
+  if (expected.note) {
+    assert.match(renderedText(notes[0][1]), /not the whole catalog/);
+    assert.doesNotMatch(summary, /\bof \d/);
+  }
+  if (['Vercel Skills', 'Graphify', 'Spec Kit'].includes(expected.title)) assert.doesNotMatch(summary, /\bskills\b/);
+  const markers = ['<div class="card-meta">', '<h3', '<p class="description">', '<div class="fit">', '<details class="inside"', '<details class="guide">', '<div class="card-footer">'];
+  const positions = markers.map(marker => markup.indexOf(marker));
+  assert.ok(positions.every((position, i) => position >= 0 && (!i || position > positions[i - 1])), expected.title + ': card field order');
+  assert.equal((markup.match(/<details class="guide">/g) || []).length, 1);
+  const guideChevron = markup.match(/<details class="guide"><summary>How to use it(<svg[\s\S]*?<\/svg>)/)[1];
+  assert.ok(inside.includes(guideChevron), 'Reuse guide chevron');
+}
+const digest = value => require('node:crypto').createHash('sha256').update(value).digest('hex');
+const originalSurface = html.replace(/ <details class="inside"[^>]*>[\s\S]*?<\/details>\n/g, '').replace(/<details class="guide">/g, '<details>');
+assert.equal(digest(originalSurface), '6252a608fc985c2b47de60dd33bc09ad9315accf9d824a8f7ca5726748c0c14e', 'All pre-existing HTML remains byte-for-byte unchanged');
+assert.equal(digest(source.replace("querySelectorAll('.skill-card details.guide')", "querySelectorAll('.skill-card details')")), '68fa14b25a2139a9580090586669df57372d525d715ff7148e07edb2d6dbc6f6', 'Only guide selector may change');
+assert.match(source, /querySelectorAll\('\.skill-card details\.guide'\)/);
+const rootTokens = new Set([...styles.match(/:root\s*\{([^}]*)}/)[1].matchAll(/(--[\w-]+):/g)].map(([, token]) => token));
+for (const selector of ['.inside-list', '.inside-list li', '.inside-name', '.inside-note', '.inside-kind']) {
+  const rule = visualRules.find(([, candidate]) => candidate.trim() === selector);
+  assert.ok(rule, selector + ' CSS rule');
+  assert.doesNotMatch(rule[2], /#|\b(?:rgb|hsl|oklch)\(|\b(?:border|background|box-shadow)\s*:|var\(--accent\)/i);
+  for (const [, token] of rule[2].matchAll(/var\((--[\w-]+)\)/g)) assert.ok(rootTokens.has(token), 'Existing token: ' + token);
+  const values = rule[2].replace(/var\(--[\w-]+\)/g, '').replace(/font-family:[^;}]*/g, '');
+  assert.doesNotMatch(values, /(?:\d*\.)?[1-9]\d*(?:\.\d+)?(?:px|rem|em|ch|%)?\b/, 'No literal nonzero sizes or spacing');
+}
+for (const [selector, declarations] of [
+  ['.inside-list li', ['font-size:var(--type-small)', 'line-height:var(--type-prose-leading)', 'color:var(--body)']],
+  ['.inside-name', ['font-size:var(--type-mono)', 'color:var(--ink)', 'font-family:ui-monospace,SFMono-Regular,Consolas,monospace']],
+  ['.inside-note', ['color:var(--muted)']], ['.inside-kind', ['color:var(--muted)']],
+]) for (const declaration of declarations) assert.ok(visualRules.find(([, candidate]) => candidate.trim() === selector)[2].includes(declaration));
+
 // Depth field T1: agreed fit markup, copy, order, and CSS seams.
 const removedClass = 'fit-' + 'avoid';
 for (const contents of [html, styles, fs.readFileSync(__filename, 'utf8')]) {
@@ -112,7 +189,7 @@ for (const [, , declarations] of fitRules) {
     assert.match(token, /^--(?:type-small|type-prose-leading|space-[\w-]+|body|ink)$/);
   }
 }
-assert.match(plainCSS, /\.skill-grid:has\(> article:only-child\) :is\(\.description,\.fit p,\.guide,\.prompt-text\)\s*\{\s*max-width:\s*62ch\s*;?\s*}/);
+assert.match(plainCSS, /\.skill-grid:has\(> article:only-child\) :is\(\.description,\.fit p,\.inside-list li,\.inside-note,\.guide,\.prompt-text\)\s*\{\s*max-width:\s*62ch\s*;?\s*}/);
 
 assert.match(html, /How this site was built/);
 const filterTags = [...html.matchAll(/<button[^>]*data-filter="([^"]+)"[^>]*>/g)];
@@ -183,6 +260,7 @@ function setup(missing = '', options = {}) {
     return Object.assign(element(), { querySelectorAll: selector => selector === '.skill-card' ? members : [] });
   });
   const guides = cards.map(() => element());
+  const insides = insideBlocks.map(([, attrs]) => Object.assign(element(), { open: /\bopen\b/.test(attrs) }));
   const filters = missing === 'filters' ? [] : filterTags.map(([, category]) => Object.assign(element(), { dataset: { filter: category } }));
   const copies = articles.map(([, , markup]) => {
     const button = element('Copy prompt');
@@ -195,7 +273,7 @@ function setup(missing = '', options = {}) {
   const selected = [];
   const document = {
     querySelector: selector => ids[selector.slice(1)] ?? null,
-    querySelectorAll: selector => ({ '.chapter': chapters, '.skill-card': cards, '.skill-card details': guides, '[data-filter]': filters, '.copy-button': copies })[selector] ?? [],
+    querySelectorAll: selector => ({ '.chapter': chapters, '.skill-card': cards, '.skill-card details.guide': guides, '.skill-card details': [...guides, ...insides], '[data-filter]': filters, '.copy-button': copies })[selector] ?? [],
     createElement: () => element(), body: { append() {} },
     execCommand: () => { copied.push('fallback'); return !options.failCopy; },
     createRange: () => ({ selectNodeContents: prompt => selected.push(prompt.textContent) }),
@@ -205,7 +283,7 @@ function setup(missing = '', options = {}) {
     window: { isSecureContext: !options.fallback, getSelection: () => ({ removeAllRanges() {}, addRange() {} }) },
     console: { warn() {} }, setTimeout: callback => { timers.push(callback); return timers.length; }, clearTimeout() {},
   });
-  return { ids, cards, chapters, guides, filters, copies, copied, selected, timers,
+  return { ids, cards, chapters, guides, insides, filters, copies, copied, selected, timers,
     visible: () => cards.filter(card => !card.hidden),
     search(query) { ids.search.value = query; ids.search.fire('input'); },
   };
@@ -226,6 +304,27 @@ async function check() {
   app.search(uniqueFitWord.word);
   assert.deepEqual(app.visible(), [app.cards[uniqueFitWord.index]], 'Searching a derived fit word shows exactly its card');
   app.search('');
+
+  // Derive matching owners from inside-only text, then exercise the shipped search.
+  for (const term of ['worktrees', 'god nodes', 'Playwright']) {
+    const needle = term.toLowerCase();
+    const owners = articles.map(([, , markup], index) => ({ markup, index })).filter(({ markup }) => {
+      const inside = markup.match(/<details class="inside"[^>]*>[\s\S]*?<\/details>/)[0];
+      assert.ok(!renderedText(markup.replace(inside, '')).toLowerCase().includes(needle), term + ' must be list-only');
+      return renderedText(inside).toLowerCase().includes(needle);
+    }).map(({ index }) => index);
+    assert.ok(owners.length > 0, term + ' has an owning list');
+    app.search(term);
+    assert.deepEqual(app.visible(), owners.map(index => app.cards[index]));
+  }
+  app.search('');
+  const insideOpenBefore = app.insides.map(inside => inside.open);
+  app.ids['toggle-guides'].click();
+  assert.deepEqual(app.insides.map(inside => inside.open), insideOpenBefore, 'Guide expansion leaves inside lists alone');
+  app.ids['toggle-guides'].click();
+  app.insides[0].open = true;
+  app.insides[0].fire('toggle');
+  assert.equal(app.ids['toggle-guides'].textContent, 'Expand all guides');
 
   app.search('  SUPERPOWERS   settings  ');
   assert.equal(app.visible().length, 1);
