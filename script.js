@@ -1,6 +1,9 @@
 'use strict';
 
 const searchInput = document.querySelector('#search');
+const clearSearch = document.querySelector('#clear-search');
+const toggleGuides = document.querySelector('#toggle-guides');
+const guides = [...document.querySelectorAll('.skill-card details')];
 const filterButtons = [...document.querySelectorAll('[data-filter]')];
 const cards = [...document.querySelectorAll('.skill-card')];
 const resultsCount = document.querySelector('#results-count');
@@ -10,6 +13,7 @@ let selectedCategory = 'All skills';
 const searchableCards = cards.map(card => ({ card, text: card.textContent.toLocaleLowerCase() }));
 
 function updateResults() {
+  clearSearch.hidden = searchInput.value.length === 0;
   const terms = searchInput.value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   let count = 0;
   searchableCards.forEach(({ card, text }) => {
@@ -33,11 +37,27 @@ filterButtons.forEach(button => button.addEventListener('click', () => {
   updateResults();
 }));
 
-document.querySelector('#reset-filters').addEventListener('click', () => {
+function resetFilters() {
   searchInput.value = '';
   filterButtons[0].click();
   searchInput.focus();
+}
+
+document.querySelector('#reset-filters').addEventListener('click', resetFilters);
+clearSearch.addEventListener('click', resetFilters);
+
+function updateGuideControl() {
+  const allOpen = guides.every(guide => guide.open);
+  toggleGuides.textContent = allOpen ? 'Collapse all' : 'Expand all guides';
+  toggleGuides.setAttribute('aria-expanded', String(allOpen));
+}
+
+toggleGuides.addEventListener('click', () => {
+  const open = !guides.every(guide => guide.open);
+  guides.forEach(guide => { guide.open = open; });
+  updateGuideControl();
 });
+guides.forEach(guide => guide.addEventListener('toggle', updateGuideControl));
 
 async function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
