@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
-assert.ok(styles.includes('#5a665e'));
+assert.ok(styles.includes('#6b6b64'));
 assert.ok(styles.includes('--touch:44px'));
 assert.ok(styles.includes('min-width:144px'));
 const mainStart = html.indexOf('<main>');
