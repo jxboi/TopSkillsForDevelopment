@@ -1,0 +1,1163 @@
+{
+  "site": "Top Skills for Development",
+  "description": "Discover 23 popular agent skills for development, with original GitHub repositories.",
+  "star_snapshot": "29 Oct 2026",
+  "agent_guide": "llms.txt",
+  "chapters": [
+    "Workflow",
+    "Quality",
+    "Design",
+    "Efficiency",
+    "Knowledge",
+    "Discovery"
+  ],
+  "count": 23,
+  "cards": [
+    {
+      "id": "skill-1",
+      "number": 1,
+      "title": "Superpowers",
+      "category": "Workflow",
+      "level": "Intermediate",
+      "stars": 307155,
+      "repo": "https://github.com/obra/superpowers",
+      "description": "A comprehensive library of proven techniques for a stronger, more reliable coding agent workflow.",
+      "use_when": "At the start of a new task, before any code, when you want spec brainstorming, worktree isolation, bite-sized planning, and test-driven development.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "brainstorming",
+          "using-git-worktrees"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 15 skills",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "brainstorming",
+          "kind": null,
+          "function": "Explores and clarifies user requirements through iterative questioning before building begins, synthesizing understanding into a written design specification.",
+          "example_prompt": "Help me brainstorm the requirements and architecture for our new user authentication system before we write any code."
+        },
+        {
+          "name": "using-git-worktrees",
+          "kind": null,
+          "function": "Provisions an isolated development workspace on a separate branch using harness-native tooling or git worktree fallbacks, verifying clean baseline test status before implementation starts.",
+          "example_prompt": "Set up an isolated git worktree on a new feature branch and verify a clean test baseline before starting work."
+        },
+        {
+          "name": "writing-plans",
+          "kind": null,
+          "function": "Decomposes an approved design document into granular, bite-sized tasks (2–5 minutes each) specifying exact file paths, full code implementations, and explicit test verification steps.",
+          "example_prompt": "Create a granular implementation plan with bite-sized tasks, exact file paths, and test verification steps for our approved design."
+        },
+        {
+          "name": "subagent-driven-development",
+          "kind": null,
+          "function": "Coordinates implementation by dispatching an isolated subagent for each task, followed by two-stage reviews (spec compliance and code quality) after every step.",
+          "example_prompt": "Execute the plan in docs/superpowers/plans/auth-system.md using subagent-driven development, dispatching fresh subagents with reviews for each task."
+        },
+        {
+          "name": "test-driven-development",
+          "kind": null,
+          "function": "Enforces a strict Red-Green-Refactor discipline that requires writing a failing test and observing it fail before producing the minimal code required to pass.",
+          "example_prompt": "Implement the user profile service using strict test-driven development by writing a failing test first before adding production code."
+        }
+      ]
+    },
+    {
+      "id": "skill-2",
+      "number": 2,
+      "title": "ECC",
+      "category": "Workflow",
+      "level": "Advanced",
+      "stars": 291489,
+      "repo": "https://github.com/affaan-m/ECC",
+      "description": "An agent-harness optimisation system with skills, memory, security practices, and research-first workflows.",
+      "use_when": "When running a full-lifecycle workflow in a supported harness that needs planning, test-driven implementation, fresh-context review, and build repair.",
+      "top_inside": {
+        "label": "Featured:",
+        "names": [
+          "tdd-workflow",
+          "/ecc:plan"
+        ]
+      },
+      "inside_summary": "Featured skills and commands",
+      "inside_note": "Featured entries, not the whole catalog.",
+      "inside": [
+        {
+          "name": "tdd-workflow",
+          "kind": null,
+          "function": "Directs a complete test-driven development cycle requiring a failing test prior to code implementation, followed by incremental greening and refactoring targeting 80%+ test coverage across unit, integration, and E2E suites.",
+          "example_prompt": "Reproduce the shopping cart checkout bug with a failing test first, then use tdd-workflow to implement the fix."
+        },
+        {
+          "name": "/ecc:plan",
+          "kind": null,
+          "function": "Clarifies user requirements, assesses architectural and operational risks, and structures a step-by-step implementation plan while halting for explicit confirmation before code edits occur.",
+          "example_prompt": "/ecc:plan \"Implement user authentication with JWT tokens, role-based access control, and password reset endpoints in our API.\""
+        },
+        {
+          "name": "/code-review",
+          "kind": null,
+          "function": "Conducts a structured, fresh-context code review on uncommitted local modifications or GitHub pull requests using a multi-phase checklist for bugs, style, and security.",
+          "example_prompt": "/code-review Run a fresh-context review on uncommitted local modifications to check for bugs, styling issues, and potential security vulnerabilities."
+        },
+        {
+          "name": "/build-fix",
+          "kind": null,
+          "function": "Inspects the repository to detect its active build system and iteratively resolves compiler, linter, and type-check errors using minimal, localized changes.",
+          "example_prompt": "/build-fix Inspect the repository build system and incrementally resolve all TypeScript compiler and linter errors using minimal, localized changes."
+        },
+        {
+          "name": "security-scan",
+          "kind": null,
+          "function": "Scans the agent harness setup (`.claude/` directory, MCP servers, hooks, and prompt guidelines) for configuration flaws, injection vulnerabilities, and credential exposure using AgentShield.",
+          "example_prompt": "/security-scan .claude/ to audit our configuration for hardcoded secrets, injection vulnerabilities, and overly permissive MCP server settings."
+        }
+      ]
+    },
+    {
+      "id": "skill-4",
+      "number": 4,
+      "title": "Matt Pocock Skills",
+      "category": "Workflow",
+      "level": "Intermediate",
+      "stars": 305511,
+      "repo": "https://github.com/mattpocock/skills",
+      "description": "Skills for real engineers, including alignment interviews and disciplined test-driven loops.",
+      "use_when": "At the start of feature or bug work, when human grilling should settle ambiguity and shared terminology before tickets and test-driven development.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "grill-with-docs",
+          "grill-me"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 31 skills",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "grill-with-docs",
+          "kind": null,
+          "function": "Interrogates the user in depth about planned changes while writing Architecture Decision Records (ADRs) and maintaining a ubiquitous project domain glossary (`GLOSSARY.md`) before work starts.",
+          "example_prompt": "/grill-with-docs Interview me about our proposed caching architecture while recording architectural decision records and updating our project glossary."
+        },
+        {
+          "name": "grill-me",
+          "kind": null,
+          "function": "Recursively interviews the user on an idea, plan, or general proposal until every branch of the design decision tree is explored and aligned.",
+          "example_prompt": "/grill-me Interview me relentlessly about my proposal for a team on-call rotation until every branch of the plan is resolved."
+        },
+        {
+          "name": "to-spec",
+          "kind": null,
+          "function": "Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut. (Source: skills/engineering/to-spec/SKILL.md, description + Process steps 2–3; orchestrator-verified 2026-10-29.)",
+          "example_prompt": "/to-spec Turn our conversation into a complete feature specification, proposing test seams and publishing it to our issue tracker."
+        },
+        {
+          "name": "implement",
+          "kind": null,
+          "function": "Executes tasks defined by a specification or ticket list, triggering `/tdd` across identified seams and terminating with `/code-review` before committing changes.",
+          "example_prompt": "/implement Build the feature described in ticket #104, using test-driven development at identified seams and running code review before committing."
+        },
+        {
+          "name": "code-review",
+          "kind": null,
+          "function": "Performs a dual-axis evaluation of repository diffs comparing code against standards and against the originating spec using parallel, isolated subagents.",
+          "example_prompt": "Review our current changes since main against repo coding standards and originating issue #45 using parallel subagents for evaluation."
+        }
+      ]
+    },
+    {
+      "id": "skill-12",
+      "number": 12,
+      "title": "Spec Kit",
+      "category": "Workflow",
+      "level": "Intermediate",
+      "stars": 143671,
+      "repo": "https://github.com/github/spec-kit",
+      "description": "A toolkit for spec-driven development that helps agents build from a specification.",
+      "use_when": "When building a greenfield app or complex multi-step feature whose requirements and tasks must become executable specifications before code is generated.",
+      "top_inside": {
+        "label": "Top commands:",
+        "names": [
+          "speckit-specify",
+          "speckit-plan"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 core commands",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "speckit-specify",
+          "kind": null,
+          "function": "Creates or updates a detailed feature specification (`spec.md`) from natural language requirements, defining functional scope, user stories, and technical constraints.",
+          "example_prompt": "/speckit-specify Build a photo organizer with albums grouped by date and a tile preview of each album."
+        },
+        {
+          "name": "speckit-plan",
+          "kind": null,
+          "function": "Executes implementation planning using design templates to generate technical design artifacts, technology choices, and architectural boundaries.",
+          "example_prompt": "/speckit-plan Use .NET Aspire with Postgres, Blazor Server for the drag-and-drop frontend, and REST APIs for task management."
+        },
+        {
+          "name": "speckit-tasks",
+          "kind": null,
+          "function": "Decomposes the architectural plan and specification into an actionable, dependency-ordered `tasks.md` checklist for systematic implementation.",
+          "example_prompt": "/speckit-tasks Break down our technical plan into an actionable, dependency-ordered checklist in tasks.md for systematic feature implementation."
+        },
+        {
+          "name": "speckit-implement",
+          "kind": null,
+          "function": "Executes the implementation plan by processing and building out each task defined in `tasks.md` with prerequisite validation checks.",
+          "example_prompt": "/speckit-implement Implement only the Setup and Foundational phases: project scaffolding and the project/task data model with basic CRUD."
+        },
+        {
+          "name": "speckit-converge",
+          "kind": null,
+          "function": "Audits the codebase against the spec, plan, and tasks, automatically appending any missing or incomplete work as new tasks to `tasks.md` until full convergence is reached.",
+          "example_prompt": "/speckit-converge Audit our codebase against the spec, plan, and tasks, appending any missing requirements to tasks.md until fully converged."
+        }
+      ]
+    },
+    {
+      "id": "skill-17",
+      "number": 17,
+      "title": "Vercel Skills",
+      "category": "Workflow",
+      "level": "Intermediate",
+      "stars": 37031,
+      "repo": "https://github.com/vercel-labs/skills",
+      "description": "An open agent skills tool installed with npx skills.",
+      "use_when": "When you need one CLI to search, install, update, sync, or test-run skills across several coding agent harnesses from git, URLs, or npm.",
+      "top_inside": {
+        "label": "Top commands:",
+        "names": [
+          "find-skills",
+          "skills add"
+        ]
+      },
+      "inside_summary": "Inside this repo — 1 skill, 4 commands",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "find-skills",
+          "kind": null,
+          "function": "Instructs an AI coding agent on how to query and install agent skills via the Skills CLI when a user requests capabilities not natively supported.",
+          "example_prompt": "Find a skill for building responsive HTML emails and install it directly into our current project workspace to style newsletters."
+        },
+        {
+          "name": "skills add",
+          "kind": "command",
+          "function": "Downloads and installs agent skills from GitHub repositories, URLs, or local paths directly into the active project or globally.",
+          "example_prompt": "skills add vercel-labs/agent-skills --skill web-design-guidelines to configure our project with responsive layout rules and typography standards."
+        },
+        {
+          "name": "skills find",
+          "kind": "command",
+          "function": "Interactively searches the open agent skills ecosystem by keyword query or scopes results to a specific GitHub owner.",
+          "example_prompt": "skills find react performance --owner vercel-labs to discover verified optimization skills for our frontend application codebase."
+        },
+        {
+          "name": "skills use",
+          "kind": "command",
+          "function": "Generates prompt text or temporarily initializes a coding agent with a specified skill without permanently adding it to project dependencies.",
+          "example_prompt": "skills use vercel-labs/agent-skills@web-design-guidelines to temporarily load styling rules into this agent session without installing them permanently."
+        },
+        {
+          "name": "skills update",
+          "kind": "command",
+          "function": "Checks for and updates installed project and global skills to their latest upstream releases.",
+          "example_prompt": "skills update to refresh all installed agent skills to their latest upstream versions and check for breaking configuration changes."
+        }
+      ]
+    },
+    {
+      "id": "skill-21",
+      "number": 21,
+      "title": "pstack",
+      "category": "Workflow",
+      "level": "Advanced",
+      "stars": 14487,
+      "repo": "https://github.com/cursor/plugins/tree/main/pstack",
+      "description": "Poteto's official Cursor plugin that turns Cursor into a real engineering team, helping you write less but higher quality code with rigorous engineering principles and fearless parallelism via /poteto-mode and its 23 playbooks.",
+      "use_when": "At the start of a demanding task such as reproducing defects, tracing performance bottlenecks, or overnight autonomous work needing empirical verification.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "bug-fix",
+          "feature"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 23 playbooks",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "bug-fix",
+          "kind": null,
+          "function": "Mandates reproducing a reported defect directly on the matching target surface first, binary-searching root causes with runtime evidence, and staging a failing repro test commit before landing the fix.",
+          "example_prompt": "/poteto-mode users get two notifications after a retry: repro first with a failing test, then fix and verify."
+        },
+        {
+          "name": "feature",
+          "kind": null,
+          "function": "Orchestrates implementing new or modified behavior by establishing domain data shapes, conducting parallel architectural exploration, writing a four-dimension throughput checkpoint, and delegating scoped implementation.",
+          "example_prompt": "/poteto-mode Implement webhook signature verification for inbound Stripe events, establishing domain data shapes and throughput checkpoints before delegating scoped code changes."
+        },
+        {
+          "name": "investigation",
+          "kind": null,
+          "function": "Executes read-only inquiry into how a subsystem functions or why an architectural decision was made, producing cited explanations and tradeoff matrices without introducing code modifications.",
+          "example_prompt": "/poteto-mode Investigate how our session expiration and token refresh pipeline works, providing cited code explanations and tradeoff analysis without modifying any files."
+        },
+        {
+          "name": "refactoring",
+          "kind": null,
+          "function": "Performs behavior-preserving structural alterations by first pinning existing contracts with characterization tests, eliminating dead code, and migrating callers and legacy APIs simultaneously in a single wave.",
+          "example_prompt": "/poteto-mode Refactor the legacy billing service into modular handlers, pinning existing behavior with characterization tests first to ensure zero functional regressions."
+        },
+        {
+          "name": "perf-issue",
+          "kind": null,
+          "function": "Traces measured slowness against an established baseline trace, systematically applies performance mantras in order of cost, and independently verifies post-fix metric improvements before shipping.",
+          "example_prompt": "/poteto-mode Trace database query latency on the dashboard endpoint against our baseline profile and optimize the slow queries with verified post-fix benchmarks."
+        }
+      ]
+    },
+    {
+      "id": "skill-3",
+      "number": 3,
+      "title": "Karpathy Skills",
+      "category": "Quality",
+      "level": "Beginner",
+      "stars": 225828,
+      "repo": "https://github.com/multica-ai/andrej-karpathy-skills",
+      "description": "A single behaviour guide distilled from common LLM coding pitfalls.",
+      "use_when": "During a non-trivial coding task where models tend to assume silently, add speculative abstractions, edit unrelated code, or skip verifiable test loops.",
+      "top_inside": {
+        "label": "Inside:",
+        "names": [
+          "karpathy-guidelines"
+        ]
+      },
+      "inside_summary": "Inside this repo — the only skill",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "karpathy-guidelines",
+          "kind": null,
+          "function": "Enforces four foundational behavioral principles (Think Before Coding, Simplicity First, Surgical Changes, and Goal-Driven Execution) to curb AI over-engineering, unstated assumptions, and extraneous edits.",
+          "example_prompt": "Follow the karpathy-guidelines to add a feature to export user data, clarifying assumptions and delivering minimal surgical changes with verified tests."
+        }
+      ]
+    },
+    {
+      "id": "skill-8",
+      "number": 8,
+      "title": "Agent Skills",
+      "category": "Quality",
+      "level": "Advanced",
+      "stars": 111372,
+      "repo": "https://github.com/addyosmani/agent-skills",
+      "description": "Production-grade engineering skills for AI coding agents.",
+      "use_when": "When guiding an agent through multi-stage feature delivery that needs requirements, specs, tests, security passes, and human checkpoints to prevent shortcuts.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "/spec",
+          "/plan"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 25 skills",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "/spec",
+          "kind": null,
+          "function": "Authors a comprehensive PRD covering objectives, commands, directory structure, testing strategy, and boundaries before writing any code.",
+          "example_prompt": "/spec Author a complete product requirements document for adding role-based access control with admin permissions and audit logging before implementation."
+        },
+        {
+          "name": "/plan",
+          "kind": null,
+          "function": "Decomposes specifications into small, atomic, verifiable implementation tasks ordered by dependency with clear acceptance criteria.",
+          "example_prompt": "/plan Decompose our user authentication specification into small, atomic implementation tasks ordered by dependency with explicit acceptance criteria."
+        },
+        {
+          "name": "/build",
+          "kind": null,
+          "function": "Implements changes in vertical slices—coding, testing, verifying, and committing atomically with safe defaults and feature flags.",
+          "example_prompt": "/build Implement the user registration slice from our plan, writing tests and verifying functionality before committing each change atomically."
+        },
+        {
+          "name": "/test",
+          "kind": null,
+          "function": "Enforces a strict Red-Green-Refactor cycle following the test pyramid to verify functional correctness and prevent regressions.",
+          "example_prompt": "/test Apply a strict Red-Green-Refactor cycle to implement input validation for email signups, writing failing tests first before production code."
+        },
+        {
+          "name": "/review",
+          "kind": null,
+          "function": "Conducts a five-axis pre-merge quality and code health review evaluating architecture, correctness, tests, security, and maintainability.",
+          "example_prompt": "/review Conduct a five-axis pre-merge review of our authentication pull request, evaluating correctness, architecture, tests, security, and maintainability."
+        }
+      ]
+    },
+    {
+      "id": "skill-5",
+      "number": 5,
+      "title": "UI/UX Pro Max",
+      "category": "Design",
+      "level": "Intermediate",
+      "stars": 141949,
+      "repo": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "description": "Design intelligence for professional, polished user interfaces.",
+      "use_when": "When building, refactoring, or auditing an interface that needs concrete choices on palette, font pairing, responsive layout, and accessibility compliance.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "ui-ux-pro-max",
+          "design-system"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 7 skills",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "ui-ux-pro-max",
+          "kind": null,
+          "function": "Delivers searchable, stack-specific design intelligence across 22 frameworks, covering UI styles, color palettes, font pairings, animations, and UX best practices.",
+          "example_prompt": "Build a landing page for my SaaS product with dark mode, modern typography pairings, and accessible shadcn/ui components."
+        },
+        {
+          "name": "design-system",
+          "kind": null,
+          "function": "Generates multi-tiered design token architectures (primitive, semantic, component), CSS variables, component specifications, and presentation slide structures.",
+          "example_prompt": "Generate a complete design system for our analytics dashboard, establishing primitive, semantic, and component token layers with CSS variables."
+        },
+        {
+          "name": "ui-styling",
+          "kind": null,
+          "function": "Directs the creation of accessible web interfaces utilizing shadcn/ui components, Tailwind CSS utility patterns, and visual canvas layouts.",
+          "example_prompt": "Style our user settings dashboard using accessible shadcn/ui components, responsive Tailwind CSS utility classes, and custom dark mode themes."
+        },
+        {
+          "name": "design",
+          "kind": null,
+          "function": "Coordinates broad branding and graphic deliverables, including logo creation, corporate identity programs, social cards, mockups, and icon generation.",
+          "example_prompt": "Design a complete brand identity package including modern SVG vector icons, social preview cards, and corporate presentation slide templates."
+        },
+        {
+          "name": "banner-design",
+          "kind": null,
+          "function": "Designs responsive digital and print banners across social platforms, display advertising, and website hero sections using preset art direction styles.",
+          "example_prompt": "Create a set of responsive promotional banners for our product launch across Twitter, LinkedIn, and website hero sections using glassmorphism styling."
+        }
+      ]
+    },
+    {
+      "id": "skill-22",
+      "number": 22,
+      "title": "Taste Skill",
+      "category": "Design",
+      "level": "Intermediate",
+      "stars": 105141,
+      "repo": "https://github.com/Leonxlnx/taste-skill",
+      "description": "Agent skills that give coding agents design taste, with art direction, reference images, and a browser check.",
+      "use_when": "When a landing page, portfolio, or app screen looks generic or AI-made and needs custom, premium art direction.",
+      "top_inside": {
+        "label": "Inside:",
+        "names": [
+          "design-taste-frontend"
+        ]
+      },
+      "inside_summary": "Inside this repo — the only skill",
+      "inside_note": "Earlier classic variants moved to satellite repos.",
+      "inside": [
+        {
+          "name": "design-taste-frontend",
+          "kind": null,
+          "function": "Applies researched art directions, sources real open-archive media, and enforces an anti-slop house style with automated real-browser screenshot audits for public pages and app screens.",
+          "example_prompt": "Build a landing page for Ledgerly, an invoicing tool for freelance designers, with pricing and a short FAQ."
+        }
+      ]
+    },
+    {
+      "id": "skill-23",
+      "number": 23,
+      "title": "Impeccable",
+      "category": "Design",
+      "level": "Intermediate",
+      "stars": 94446,
+      "repo": "https://github.com/pbakaus/impeccable",
+      "description": "The design vocabulary for your coding agent, steering with polish and bolder, reviewing with critique and audit, and catching AI slop before it ships.",
+      "use_when": "When designing, critiquing, polishing, or auditing frontend interfaces to elevate craft and catch AI design slop before shipping.",
+      "top_inside": {
+        "label": "Top commands:",
+        "names": [
+          "init",
+          "polish"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 commands",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "init",
+          "kind": null,
+          "function": "Runs project discovery once per project, asking only what it cannot infer, and writes PRODUCT.md that every later command reads.",
+          "example_prompt": "Run /impeccable init for this project, discovering its users, jobs, and constraints and writing the PRODUCT.md every later command will read."
+        },
+        {
+          "name": "polish",
+          "kind": null,
+          "function": "Refines an existing interface for shipping without redesigning it, fixing blockers, missing states, drift, and visual inconsistencies in priority order.",
+          "example_prompt": "/impeccable polish the settings page, refining it for shipping without redesigning it and fixing missing states and visual inconsistencies first."
+        },
+        {
+          "name": "bolder",
+          "kind": null,
+          "function": "Amplifies a safe or bland interface to the conviction the rest of the design system already implies, scoped to the named target only.",
+          "example_prompt": "/impeccable bolder the pricing cards, amplifying their hierarchy and visual conviction without rebuilding the surrounding page or adding effects."
+        },
+        {
+          "name": "critique",
+          "kind": null,
+          "function": "Scores a design against usability heuristics with dual isolated assessments and detector evidence, ranking what to fix first.",
+          "example_prompt": "/impeccable critique the pricing cards, scoring the design against usability heuristics and ranking the fixes that matter most first."
+        },
+        {
+          "name": "audit",
+          "kind": null,
+          "function": "Checks accessibility, performance, theming, responsive behaviour, and implementation integrity, ranking findings P0 (blocking) to P3 (polish).",
+          "example_prompt": "Run /impeccable audit on the checkout flow, checking accessibility, performance, theming, and responsive behaviour and ranking findings from P0 to P3."
+        }
+      ]
+    },
+    {
+      "id": "skill-6",
+      "number": 6,
+      "title": "Caveman",
+      "category": "Efficiency",
+      "level": "Beginner",
+      "stars": 115725,
+      "repo": "https://github.com/JuliusBrussee/caveman",
+      "description": "Concise, token-efficient agent communication.",
+      "use_when": "In interactive terminal coding sessions where replies pile up token waste, latency, and conversational filler.",
+      "top_inside": {
+        "label": "Featured:",
+        "names": [
+          "/caveman",
+          "/ultracave"
+        ]
+      },
+      "inside_summary": "Featured skills and commands",
+      "inside_note": "Featured entries, not the whole catalog.",
+      "inside": [
+        {
+          "name": "/caveman",
+          "kind": null,
+          "function": "Enforces an ultra-concise, structured communication style (answer first, one idea per sentence, eliminating conversational filler) while preserving code, file paths, commands, and numbers character-for-character.",
+          "example_prompt": "/caveman explain why my React component re-renders every time the parent updates and how to memoize props without breaking state."
+        },
+        {
+          "name": "/ultracave",
+          "kind": null,
+          "function": "Compresses agent communication to maximum brevity using sentence fragments and single-word answers while stating each technical fact only once.",
+          "example_prompt": "/ultracave diagnose why my long-running Node.js worker leaks memory and recommend minimal fixes without conversational pleasantries."
+        },
+        {
+          "name": "/caveman-compress",
+          "kind": null,
+          "function": "Shrinks agent steering and memory files (e.g., `CLAUDE.md`, `AGENTS.md`) to conserve context window tokens while backing up originals and keeping headings, code blocks, and paths intact.",
+          "example_prompt": "/caveman-compress CLAUDE.md to shrink this project memory file and conserve context window tokens before starting development."
+        },
+        {
+          "name": "/caveman-review",
+          "kind": null,
+          "function": "Performs a dense code review outputting exactly one finding per line anchored to code line numbers without discursive preambles.",
+          "example_prompt": "/caveman-review the current pull request diff and output exactly one actionable finding per line with severity, location, and fix."
+        },
+        {
+          "name": "investigate-first",
+          "kind": null,
+          "function": "Enforces a disciplined debugging playbook requiring the agent to gather log/test evidence and confirm a credible failure mechanism before any code edits are authorized.",
+          "example_prompt": "Investigate the intermittent timeout failures in our payment service by tracing failure evidence and ranking hypotheses without modifying product code."
+        }
+      ]
+    },
+    {
+      "id": "skill-7",
+      "number": 7,
+      "title": "Graphify",
+      "category": "Knowledge",
+      "level": "Intermediate",
+      "stars": 137533,
+      "repo": "https://github.com/Graphify-Labs/graphify",
+      "description": "Turns a codebase into an explorable knowledge graph.",
+      "use_when": "When exploring an unfamiliar codebase or a mixed folder of code, PDFs, notes, and images that needs a persistent, queryable graph of cross-file links.",
+      "top_inside": {
+        "label": "Top subcommands:",
+        "names": [
+          "/graphify",
+          "graphify query"
+        ]
+      },
+      "inside_summary": "Inside this repo — 1 skill, 4 subcommands",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "/graphify",
+          "kind": null,
+          "function": "Executes the full deterministic AST parsing and extraction pipeline on a codebase to detect communities, identify god nodes, and generate an interactive HTML visual graph, GraphRAG-ready JSON, and a `GRAPH_REPORT.md` architecture summary.",
+          "example_prompt": "/graphify . --mode deep to extract AST dependencies, identify god nodes, and generate the architecture report for this codebase."
+        },
+        {
+          "name": "graphify query",
+          "kind": "subcommand",
+          "function": "Answers architecture and code relationship questions using deterministic graph traversal (BFS or semantic search) against local graph artifacts instead of grepping raw source files.",
+          "example_prompt": "Run graphify query \"what connects auth to the database?\" using BFS traversal to trace component dependencies without reading raw files."
+        },
+        {
+          "name": "graphify path",
+          "kind": "subcommand",
+          "function": "Traces and outputs the dependency and call connection paths between two specified components or god nodes within the knowledge graph.",
+          "example_prompt": "Run graphify path \"UserService\" \"DatabasePool\" to trace all intermediary call chains and dependencies connecting these two components."
+        },
+        {
+          "name": "graphify explain",
+          "kind": "subcommand",
+          "function": "Inspects a specific node or component in the graph and summarizes its architectural role, community membership, upstream dependencies, and downstream dependents.",
+          "example_prompt": "Run graphify explain \"RateLimiter\" to summarize its architectural role, community membership, upstream dependencies, and downstream caller components."
+        },
+        {
+          "name": "graphify add",
+          "kind": "subcommand",
+          "function": "Ingests, parses, or transcribes an external artifact (such as an arXiv paper URL, YouTube video, or document) and merges its extracted entities into the existing project graph.",
+          "example_prompt": "Run graphify add https://arxiv.org/abs/1706.03762 to ingest this transformer architecture paper and merge its concepts into our graph."
+        }
+      ]
+    },
+    {
+      "id": "skill-9",
+      "number": 9,
+      "title": "Understand-Anything",
+      "category": "Knowledge",
+      "level": "Intermediate",
+      "stars": 88717,
+      "repo": "https://github.com/Egonex-AI/Understand-Anything",
+      "description": "Turns any codebase into an interactive knowledge graph to explore, search, and ask questions about.",
+      "use_when": "When onboarding onto a large unfamiliar repository of 200,000+ lines and you need a visual dashboard of architecture layers, business flows, and diff impact.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "understand",
+          "understand-dashboard"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 9 skills",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "understand",
+          "kind": null,
+          "function": "Scans the project with tree-sitter and a multi-agent pipeline to extract files, functions, classes, and dependencies into an incremental knowledge graph saved in `.ua/knowledge-graph.json`.",
+          "example_prompt": "/understand to scan our project with tree-sitter, extract all dependencies, and generate the initial knowledge graph in .ua/."
+        },
+        {
+          "name": "understand-dashboard",
+          "kind": null,
+          "function": "Launches an interactive, web-based visual dashboard displaying the codebase knowledge graph color-coded by architectural layer with search and inspection capabilities.",
+          "example_prompt": "/understand-dashboard to launch the interactive web visualizer and inspect our project knowledge graph color-coded by architectural layer."
+        },
+        {
+          "name": "understand-chat",
+          "kind": null,
+          "function": "Answers natural language architectural and flow questions about the project by traversing the indexed knowledge graph without reading entire raw files.",
+          "example_prompt": "/understand-chat How does the payment flow work from user checkout down through the payment gateway and transaction logging?"
+        },
+        {
+          "name": "understand-diff",
+          "kind": null,
+          "function": "Evaluates git diffs and pending code modifications against the knowledge graph to determine structural impact, affected dependencies, and downstream blast radius.",
+          "example_prompt": "/understand-diff to evaluate our uncommitted git modifications against the knowledge graph and report affected downstream components and risks."
+        },
+        {
+          "name": "understand-explain",
+          "kind": null,
+          "function": "Performs a focused architectural breakdown of a specified file, class, or function, detailing its structural role, callers, callees, and dependencies.",
+          "example_prompt": "/understand-explain src/auth/login.ts to break down its structural role, callers, callees, and imported dependencies across our codebase."
+        }
+      ]
+    },
+    {
+      "id": "skill-11",
+      "number": 11,
+      "title": "Anthropic Skills",
+      "category": "Knowledge",
+      "level": "Intermediate",
+      "stars": 184517,
+      "repo": "https://github.com/anthropics/skills",
+      "description": "The official public repository for Agent Skills from Anthropic.",
+      "use_when": "When Claude needs multi-step procedural guidance for domain tasks like DOCX, PDF, PPTX, and XLSX generation, web app testing, or MCP server scaffolding.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "pdf",
+          "docx"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 19 skills",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "pdf",
+          "kind": null,
+          "function": "Reads, extracts text and tabular data, merges, splits, rotates, watermarks, creates, fills forms, encrypts/decrypts, and runs OCR on PDF files.",
+          "example_prompt": "Extract all financial summary tables from quarterly-report.pdf and merge pages one through five with our signed appendix document."
+        },
+        {
+          "name": "docx",
+          "kind": null,
+          "function": "Creates, reads, edits, and manipulates Microsoft Word documents (.docx) and templates (.dotx) with structured styling, tables of contents, letterheads, and tracked changes.",
+          "example_prompt": "Generate a professional project kickoff report as a Word document (.docx) with a table of contents, executive summary, and letterhead."
+        },
+        {
+          "name": "xlsx",
+          "kind": null,
+          "function": "Reads, edits, formats, calculates formulas, generates charts, cleans messy data, and creates Microsoft Excel spreadsheets (.xlsx, .xlsm, .csv).",
+          "example_prompt": "Clean the messy raw sales CSV in my downloads, format it as an xlsx spreadsheet, and calculate quarterly revenue formulas."
+        },
+        {
+          "name": "pptx",
+          "kind": null,
+          "function": "Creates, reads, extracts text from, updates, and formats Microsoft PowerPoint slide decks and templates (.pptx, .potx), including speaker notes and layouts.",
+          "example_prompt": "Create a ten-slide pitch deck presentation in 16:9 widescreen format (.pptx) summarizing our quarterly product roadmap and speaker notes."
+        },
+        {
+          "name": "skill-creator",
+          "kind": null,
+          "function": "Provides instructions and workflows for creating new custom skills from scratch, improving existing skills, running evals, and optimizing skill descriptions for triggering accuracy.",
+          "example_prompt": "I want to make a new custom skill for automated semantic database migrations, so help me draft and evaluate it."
+        }
+      ]
+    },
+    {
+      "id": "skill-14",
+      "number": 14,
+      "title": "Scientific Agent Skills",
+      "category": "Knowledge",
+      "level": "Advanced",
+      "stars": 55116,
+      "repo": "https://github.com/K-Dense-AI/scientific-agent-skills",
+      "description": "A library that turns an AI agent into an AI scientist with specialised scientific skills.",
+      "use_when": "When running workflows in genomics, cheminformatics, physics, clinical research, or lab automation that need vetted links to 100+ scientific databases.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "database-lookup",
+          "scanpy"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 177 skills",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "database-lookup",
+          "kind": null,
+          "function": "Executes reproducible queries against 80 documented scientific, regulatory, and financial database APIs with explicit endpoint selection, pagination, and provenance tracking.",
+          "example_prompt": "Query the ChEMBL database for small-molecule inhibitors of EGFR, returning verified binding affinities, endpoints, and pagination details with provenance."
+        },
+        {
+          "name": "scanpy",
+          "kind": null,
+          "function": "Drives single-cell RNA-seq workflows encompassing quality control, normalization, high-variable gene selection, clustering, marker ranking, and AnnData file conversion.",
+          "example_prompt": "Run quality control and normalization on this single-cell RNA-seq dataset, then cluster the cells and identify marker genes with Scanpy."
+        },
+        {
+          "name": "rdkit",
+          "kind": null,
+          "function": "Provides programmatic cheminformatics routines for SMILES/SDF parsing, molecular descriptor calculation, substructure searching, and 2D/3D structure generation.",
+          "example_prompt": "Parse the provided SDF compound library, filter molecules by Lipinski's rule of five using RDKit, and generate 2D depiction images."
+        },
+        {
+          "name": "autoskill",
+          "kind": null,
+          "function": "Analyzes recorded Screenpipe user activity windows to detect repetitive computational research workflows and draft candidate skill definitions.",
+          "example_prompt": "Analyze my recorded Screenpipe activity windows from the last four hours to detect repetitive data workflows and draft a reusable skill."
+        },
+        {
+          "name": "paperclip",
+          "kind": null,
+          "function": "Searches and extracts biomedical literature, FDA/PMDA/EMA filings, and clinical trial records using the Paperclip CLI with line-pinned citation tracking.",
+          "example_prompt": "Search recent clinical trials and FDA filings for GLP-1 receptor agonists with Paperclip, extracting safety evidence with line-pinned citations."
+        }
+      ]
+    },
+    {
+      "id": "skill-15",
+      "number": 15,
+      "title": "Obsidian Skills",
+      "category": "Knowledge",
+      "level": "Intermediate",
+      "stars": 50327,
+      "repo": "https://github.com/kepano/obsidian-skills",
+      "description": "Agent skills for using Obsidian through its CLI and open Markdown formats.",
+      "use_when": "When a task writes wikilinks, embeds, or callouts, edits canvas or base files, or manages vault state through the Obsidian CLI.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "obsidian-markdown",
+          "obsidian-bases"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 6 skills",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "obsidian-markdown",
+          "kind": null,
+          "function": "Authors and edits Obsidian Flavored Markdown notes using wikilinks, transclusions, embeds, callout blocks, and YAML frontmatter properties.",
+          "example_prompt": "Create a new project dashboard note in Obsidian Flavored Markdown using YAML frontmatter properties, embedded note transclusions, wikilinks, and warning callouts."
+        },
+        {
+          "name": "obsidian-bases",
+          "kind": null,
+          "function": "Creates and configures Obsidian Base files (`.base`) with database-like table views, filter criteria, formulas, and property summaries.",
+          "example_prompt": "Create an Obsidian Base file with a table view to organize our project tasks, filtering by status and calculating completion percentages."
+        },
+        {
+          "name": "json-canvas",
+          "kind": null,
+          "function": "Constructs and edits visual JSON Canvas files (`.canvas`) comprising nodes, directional edges, grouping boundaries, and connection metadata.",
+          "example_prompt": "Build a visual architecture diagram as an Obsidian JSON Canvas file with labeled nodes, grouped component boundaries, and directional connection edges."
+        },
+        {
+          "name": "obsidian-cli",
+          "kind": null,
+          "function": "Operates active Obsidian desktop vaults through the `obsidian` CLI to manipulate notes, search vaults, reload plugins, and execute JavaScript.",
+          "example_prompt": "Search my active Obsidian vault for uncompleted action items and append a formatted summary list into today's daily note using obsidian-cli."
+        },
+        {
+          "name": "defuddle",
+          "kind": null,
+          "function": "Extracts clean, readable Markdown from arbitrary HTML web pages via the Defuddle CLI, eliminating clutter and adverts to minimize token usage.",
+          "example_prompt": "Extract the full article from the URL I give you into clean readable Markdown using Defuddle, stripping navigation menus, banners, and advertising clutter."
+        }
+      ]
+    },
+    {
+      "id": "skill-20",
+      "number": 20,
+      "title": "Google Skills",
+      "category": "Knowledge",
+      "level": "Intermediate",
+      "stars": 21643,
+      "repo": "https://github.com/google/skills",
+      "description": "Agent skills for Google products and technologies.",
+      "use_when": "When designing or configuring services on Google Cloud, Gemini APIs, Firebase, Android, or Google Ads, or weighing Google products for a stack component.",
+      "top_inside": {
+        "label": "Featured:",
+        "names": [
+          "finding-google-skills",
+          "google-cloud-recipe-auth"
+        ]
+      },
+      "inside_summary": "Featured inside this catalog",
+      "inside_note": "Featured entries, not the whole catalog.",
+      "inside": [
+        {
+          "name": "finding-google-skills",
+          "kind": null,
+          "function": "Serves as Google's dynamic skills catalog router, inspecting user task requirements and fetching matching Google platform decision, setup, and architecture skills on demand from `index.json`.",
+          "example_prompt": "Find and load the appropriate Google Cloud database skills from the catalog index to help me migrate MySQL to Cloud SQL."
+        },
+        {
+          "name": "google-cloud-recipe-auth",
+          "kind": null,
+          "function": "Delivers authoritative guidance on Google Cloud Identity and Access Management (IAM), configuring human and service identities, Application Default Credentials (ADC), and required API attribution headers.",
+          "example_prompt": "Configure Application Default Credentials and least-privilege IAM service account roles for our backend service to securely access Google Cloud Storage."
+        },
+        {
+          "name": "google-cloud-recipe-onboarding",
+          "kind": null,
+          "function": "Provides a streamlined, non-interactive onboarding flow for individual developers getting started on Google Cloud, handling account setup, billing linkage, project creation, and initial resource deployment.",
+          "example_prompt": "Walk me through the developer onboarding flow to set up a new Google Cloud project, link billing, and enable required APIs."
+        },
+        {
+          "name": "google-cloud-recipe-foundation-builder",
+          "kind": null,
+          "function": "Deploys a baseline landing zone foundation for an enterprise Google Cloud Organization, establishing organizational security guardrails, folder hierarchies, billing links, and centralized logging.",
+          "example_prompt": "Deploy a secure baseline landing zone foundation for our enterprise Google Cloud Organization with folder hierarchies, guardrails, and centralized audit logging."
+        },
+        {
+          "name": "google-cloud-solution-architecture",
+          "kind": null,
+          "function": "Interactively gathers workload requirements to design holistic, multi-product Google Cloud solution blueprints, service integration plans, and architecture diagrams.",
+          "example_prompt": "Gather our requirements interactively and design a multi-product Google Cloud architecture blueprint for a real-time event streaming and analytics platform."
+        }
+      ]
+    },
+    {
+      "id": "skill-10",
+      "number": 10,
+      "title": "Agentic Awesome Skills",
+      "category": "Discovery",
+      "level": "Beginner",
+      "stars": 48666,
+      "repo": "https://github.com/sickn33/agentic-awesome-skills",
+      "description": "A large catalog of agentic skills for discovering, comparing, and planning which skills to use.",
+      "use_when": "When an autonomous agent should inspect your codebase, search a skill catalog over read-only MCP, and produce a validated stack manifest with plan preview.",
+      "top_inside": {
+        "label": "Featured:",
+        "names": [
+          "brainstorming",
+          "concise-planning"
+        ]
+      },
+      "inside_summary": "Featured inside this catalog",
+      "inside_note": "Featured entries, not the whole catalog.",
+      "inside": [
+        {
+          "name": "brainstorming",
+          "kind": null,
+          "function": "Guides the agent through collaborative reasoning and inquiry to refine ambiguous requirements and creative ideas into validated architectural designs before implementation.",
+          "example_prompt": "Use @brainstorming to help me design a user profile page with authentication and dark mode before writing any application code."
+        },
+        {
+          "name": "concise-planning",
+          "kind": null,
+          "function": "Generates actionable, atomic, and structured task checklists to organize coding tasks before source modification begins.",
+          "example_prompt": "Create an actionable, atomic implementation plan with ordered task items and validation steps before modifying our authentication API codebase."
+        },
+        {
+          "name": "test-driven-development",
+          "kind": null,
+          "function": "Directs implementation through failing behavioral tests first, followed by code implementation and refactoring within verified regression boundaries.",
+          "example_prompt": "Implement the shopping cart discount calculation using test-driven development, writing a failing behavioral test first before writing production code."
+        },
+        {
+          "name": "lint-and-validate",
+          "kind": null,
+          "function": "Executes configured linting and type checks, differentiates actual failures from unexecuted checks, and reports concrete validation diagnostics.",
+          "example_prompt": "Run configured linter and type-checker audits across the repository, reporting concrete diagnostics and fixing all detected syntax and style errors."
+        },
+        {
+          "name": "systematic-debugging",
+          "kind": null,
+          "function": "Investigates errors, test failures, and unexpected application behaviors methodically from empirical evidence and structured hypotheses rather than speculative guessing.",
+          "example_prompt": "Investigate our checkout timeout failure by formulating hypotheses from server logs and reproducing the root cause before attempting code fixes."
+        }
+      ]
+    },
+    {
+      "id": "skill-13",
+      "number": 13,
+      "title": "Awesome Claude Code",
+      "category": "Discovery",
+      "level": "Beginner",
+      "stars": 56772,
+      "repo": "https://github.com/hesreallyhim/awesome-claude-code",
+      "description": "A curated collection of Claude Code skills, agents, and developer tooling.",
+      "use_when": "When configuring Claude Code and you want a selective directory of vetted tools, status lines, hooks, subagents, and guides that meet maturity thresholds.",
+      "top_inside": {
+        "label": "Featured:",
+        "names": [
+          "Caveman",
+          "Claude Code Infrastructure Showcase"
+        ]
+      },
+      "inside_summary": "Featured inside this catalog",
+      "inside_note": "Featured entries, not the whole catalog.",
+      "inside": [
+        {
+          "name": "Caveman",
+          "kind": null,
+          "function": "Compresses agent communication tokens by instructing Claude Code to converse in concise, fragmented \"caveman speak.\"",
+          "example_prompt": "/caveman explain why my React component re-renders whenever its parent updates and how to memoize props without breaking state."
+        },
+        {
+          "name": "Claude Code Infrastructure Showcase",
+          "kind": null,
+          "function": "Implements dynamic skill selection by using lifecycle hooks to automatically detect and activate relevant skills based on active context.",
+          "example_prompt": "Configure dynamic skill selection using lifecycle hooks and skill-rules.json so relevant guidelines activate automatically as I edit API controllers and routes."
+        },
+        {
+          "name": "Cooklang skills",
+          "kind": null,
+          "function": "Allows AI coding agents to parse, create, and manage Cooklang recipe files (`.cook`) and meal plans (`.menu`).",
+          "example_prompt": "Plan dinners for next week using my existing recipes, format them into a menu file, and generate the shopping list."
+        },
+        {
+          "name": "daily.dev",
+          "kind": null,
+          "function": "Fetches curated developer news feeds and community insights from the daily.dev platform directly into an agent session.",
+          "example_prompt": "Fetch today's top developer news and trending articles on TypeScript architecture from daily.dev directly into this agent session."
+        },
+        {
+          "name": "fable-mode",
+          "kind": null,
+          "function": "Configures Claude Code for autonomous multi-stage planning, sub-agent delegation, and automated self-verification loops.",
+          "example_prompt": "/fable-mode Refactor our authentication middleware into modular stages with subagent delegation, automated test verification, and cold self-critique reviews."
+        }
+      ]
+    },
+    {
+      "id": "skill-16",
+      "number": 16,
+      "title": "Claude Plugins Official",
+      "category": "Discovery",
+      "level": "Intermediate",
+      "stars": 45134,
+      "repo": "https://github.com/anthropics/claude-plugins-official",
+      "description": "The official Anthropic-managed directory of high quality Claude Code plugins.",
+      "use_when": "When you want to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "skill-creator",
+          "plugin-dev"
+        ]
+      },
+      "inside_summary": "5 first-party plugins",
+      "inside_note": "Featured entries, not the whole catalog.",
+      "inside": [
+        {
+          "name": "skill-creator",
+          "kind": null,
+          "function": "Guides users through creating, refining, evaluating, and benchmarking custom Claude Code agent skills with variance analysis.",
+          "example_prompt": "I want to make a new skill for automating database migrations, so help me design, draft, and run evaluations on it."
+        },
+        {
+          "name": "plugin-dev",
+          "kind": null,
+          "function": "Provides developer tooling and procedural guidelines for constructing Claude Code plugins, custom commands, hooks, and MCP servers.",
+          "example_prompt": "/plugin-dev:create-plugin Build a plugin for managing PostgreSQL schema migrations with custom slash commands, lifecycle hooks, and validation checks."
+        },
+        {
+          "name": "feature-dev",
+          "kind": null,
+          "function": "Orchestrates a 7-phase feature development workflow utilizing specialized subagents for code exploration, architectural design, and implementation review.",
+          "example_prompt": "/feature-dev Add user authentication with OAuth and role-based permissions using specialized subagents for exploration, architecture, and code review."
+        },
+        {
+          "name": "code-review",
+          "kind": null,
+          "function": "Performs multi-agent automated code reviews on git pull requests, generating prioritized issues scored by confidence.",
+          "example_prompt": "/code-review Run automated multi-agent code review on this pull request to identify high-confidence bugs and convention issues."
+        },
+        {
+          "name": "commit-commands",
+          "kind": null,
+          "function": "Streamlines routine git repository workflows via dedicated commands for drafting commit messages (`/commit`), pushing PRs (`/commit-push-pr`), and pruning stale branches (`/clean_gone`).",
+          "example_prompt": "/commit-push-pr Stage our local changes, write a conventional commit message, push this branch, and create a GitHub pull request."
+        }
+      ]
+    },
+    {
+      "id": "skill-18",
+      "number": 18,
+      "title": "Awesome Agent Skills",
+      "category": "Discovery",
+      "level": "Beginner",
+      "stars": 36519,
+      "repo": "https://github.com/VoltAgent/awesome-agent-skills",
+      "description": "A curated collection of 1000+ agent skills from official teams and the community.",
+      "use_when": "When you need production-ready skills authored by engineering teams such as Supabase, Stripe, Sentry, and Vercel, usable across several coding assistants.",
+      "top_inside": {
+        "label": "Featured:",
+        "names": [
+          "anthropics/docx",
+          "anthropics/doc-coauthoring"
+        ]
+      },
+      "inside_summary": "Featured inside this catalog",
+      "inside_note": "Featured entries, not the whole catalog.",
+      "inside": [
+        {
+          "name": "anthropics/docx",
+          "kind": null,
+          "function": "Enables coding agents to inspect, create, edit, and format Microsoft Word (`.docx`) documents.",
+          "example_prompt": "Create a formatted project specification Word document (.docx) with a table of contents, executive summary, and custom header styling."
+        },
+        {
+          "name": "anthropics/doc-coauthoring",
+          "kind": null,
+          "function": "Structures multi-turn collaborative document authoring, drafting, and iterative editorial reviews.",
+          "example_prompt": "Help me co-author an engineering RFC for our caching architecture through iterative context gathering, outline refinement, and reader testing."
+        },
+        {
+          "name": "anthropics/pptx",
+          "kind": null,
+          "function": "Generates, updates, and formats Microsoft PowerPoint presentation slide decks (`.pptx`).",
+          "example_prompt": "Generate a ten-slide widescreen 16:9 .pptx pitch deck covering our quarterly product roadmap, with speaker notes on every slide."
+        },
+        {
+          "name": "anthropics/xlsx",
+          "kind": null,
+          "function": "Creates, edits, and analyzes Microsoft Excel spreadsheets (`.xlsx`) including cell formulas, sheets, and tabular formatting.",
+          "example_prompt": "Clean this raw customer orders CSV, convert it into an Excel spreadsheet (.xlsx), and calculate monthly revenue formulas across sheets."
+        },
+        {
+          "name": "anthropics/pdf",
+          "kind": null,
+          "function": "Extracts text and tables, parses structured forms, and compiles printable PDF documents.",
+          "example_prompt": "Pull every financial summary table out of quarterly-report.pdf and merge its first five pages with our signed appendix PDF."
+        }
+      ]
+    },
+    {
+      "id": "skill-19",
+      "number": 19,
+      "title": "Claude Skills Collection",
+      "category": "Discovery",
+      "level": "Intermediate",
+      "stars": 28914,
+      "repo": "https://github.com/alirezarezvani/claude-skills",
+      "description": "A collection of 380 Claude Code skills and plugins for engineering, product, research, and more.",
+      "use_when": "When you need cross-functional playbooks for executive advisory, marketing, compliance, or research, plus zero-dependency Python analysis and conversion tools.",
+      "top_inside": {
+        "label": "Top inside:",
+        "names": [
+          "skill-security-auditor",
+          "pw"
+        ]
+      },
+      "inside_summary": "Inside this repo — 5 of 401 skills",
+      "inside_note": null,
+      "inside": [
+        {
+          "name": "skill-security-auditor",
+          "kind": null,
+          "function": "Scans and audits AI agent skills for malicious execution patterns, subprocess calls, network data exfiltration, prompt injections, and supply-chain risks before installation, returning a strict PASS, WARN, or FAIL verdict.",
+          "example_prompt": "Audit the candidate agent skill at ./custom-skill for prompt injection vectors, malicious execution patterns, and data exfiltration before installation."
+        },
+        {
+          "name": "pw",
+          "kind": null,
+          "function": "Provides a comprehensive end-to-end Playwright testing toolkit to generate tests, diagnose and repair flaky test failures, migrate suites from Cypress or Selenium, and integrate with BrowserStack and TestRail.",
+          "example_prompt": "/pw:fix Diagnose and fix intermittent timeout failures in our checkout flow Playwright tests by analyzing test traces and updating locators."
+        },
+        {
+          "name": "self-improving-agent",
+          "kind": null,
+          "function": "Analyzes and curates auto-memory entries across agent sessions, promoting recurring patterns and debugging insights into durable project rules (`CLAUDE.md`) or extracting them into reusable custom skills.",
+          "example_prompt": "/si:memory-review Analyze our project MEMORY.md to identify recurring debugging insights and promote proven patterns into permanent CLAUDE.md rules."
+        },
+        {
+          "name": "karpathy-coder",
+          "kind": null,
+          "function": "Enforces Andrej Karpathy's four core coding principles—surfacing assumptions, radical simplicity, surgical diffs, and verifiable success criteria—using automated complexity checkers, diff linters, and review hooks.",
+          "example_prompt": "/karpathy-check Review my staged changes against the four principles to verify minimal diff noise, simple architecture, and test verification."
+        },
+        {
+          "name": "grill-me",
+          "kind": null,
+          "function": "Relentlessly interviews the user one question at a time to stress-test architectural plans and designs, exploring the codebase first before asking questions and systematically resolving decision dependencies.",
+          "example_prompt": "/cs:grill-me Grill me one question at a time to stress-test our caching architecture proposal and resolve design decision dependencies."
+        }
+      ]
+    }
+  ]
+}

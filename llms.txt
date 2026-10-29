@@ -1,0 +1,71 @@
+# Top Skills for Development
+
+> Discover 23 popular agent skills for development, with original GitHub repositories.
+
+> For agents — how to use this catalog:
+> When starting a task, fetch https://topskillsfordevelopment.vercel.app/skills.json.
+> Match the task to each skill's Use-when line and category, and pick at most 2 skills.
+> Then follow the chosen skill's own repository install instructions, and start with its example prompt.
+> Do not install every matching skill — pick the smallest set that covers the task.
+> Do not invent an install command: if the repository does not state one, say so and stop.
+> If no skill matches the task, use no skill from this catalog rather than forcing a match.
+
+> Full catalog: llms-full.txt — Structured catalog: skills.json — Star counts are a snapshot supplied for 29 Oct 2026.
+
+## Workflow
+
+- [Superpowers](https://github.com/obra/superpowers) — Workflow · 307,155 stars — A comprehensive library of proven techniques for a stronger, more reliable coding agent workflow. — Card: https://topskillsfordevelopment.vercel.app#skill-1
+
+- [ECC](https://github.com/affaan-m/ECC) — Workflow · 291,489 stars — An agent-harness optimisation system with skills, memory, security practices, and research-first workflows. — Card: https://topskillsfordevelopment.vercel.app#skill-2
+
+- [Matt Pocock Skills](https://github.com/mattpocock/skills) — Workflow · 305,511 stars — Skills for real engineers, including alignment interviews and disciplined test-driven loops. — Card: https://topskillsfordevelopment.vercel.app#skill-4
+
+- [Spec Kit](https://github.com/github/spec-kit) — Workflow · 143,671 stars — A toolkit for spec-driven development that helps agents build from a specification. — Card: https://topskillsfordevelopment.vercel.app#skill-12
+
+- [Vercel Skills](https://github.com/vercel-labs/skills) — Workflow · 37,031 stars — An open agent skills tool installed with npx skills. — Card: https://topskillsfordevelopment.vercel.app#skill-17
+
+- [pstack](https://github.com/cursor/plugins/tree/main/pstack) — Workflow · 14,487 stars — Poteto's official Cursor plugin that turns Cursor into a real engineering team, helping you write less but higher quality code with rigorous engineering principles and fearless parallelism via /poteto-mode and its 23 playbooks. — Card: https://topskillsfordevelopment.vercel.app#skill-21
+
+## Quality
+
+- [Karpathy Skills](https://github.com/multica-ai/andrej-karpathy-skills) — Quality · 225,828 stars — A single behaviour guide distilled from common LLM coding pitfalls. — Card: https://topskillsfordevelopment.vercel.app#skill-3
+
+- [Agent Skills](https://github.com/addyosmani/agent-skills) — Quality · 111,372 stars — Production-grade engineering skills for AI coding agents. — Card: https://topskillsfordevelopment.vercel.app#skill-8
+
+## Design
+
+- [UI/UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) — Design · 141,949 stars — Design intelligence for professional, polished user interfaces. — Card: https://topskillsfordevelopment.vercel.app#skill-5
+
+- [Taste Skill](https://github.com/Leonxlnx/taste-skill) — Design · 105,141 stars — Agent skills that give coding agents design taste, with art direction, reference images, and a browser check. — Card: https://topskillsfordevelopment.vercel.app#skill-22
+
+- [Impeccable](https://github.com/pbakaus/impeccable) — Design · 94,446 stars — The design vocabulary for your coding agent, steering with polish and bolder, reviewing with critique and audit, and catching AI slop before it ships. — Card: https://topskillsfordevelopment.vercel.app#skill-23
+
+## Efficiency
+
+- [Caveman](https://github.com/JuliusBrussee/caveman) — Efficiency · 115,725 stars — Concise, token-efficient agent communication. — Card: https://topskillsfordevelopment.vercel.app#skill-6
+
+## Knowledge
+
+- [Graphify](https://github.com/Graphify-Labs/graphify) — Knowledge · 137,533 stars — Turns a codebase into an explorable knowledge graph. — Card: https://topskillsfordevelopment.vercel.app#skill-7
+
+- [Understand-Anything](https://github.com/Egonex-AI/Understand-Anything) — Knowledge · 88,717 stars — Turns any codebase into an interactive knowledge graph to explore, search, and ask questions about. — Card: https://topskillsfordevelopment.vercel.app#skill-9
+
+- [Anthropic Skills](https://github.com/anthropics/skills) — Knowledge · 184,517 stars — The official public repository for Agent Skills from Anthropic. — Card: https://topskillsfordevelopment.vercel.app#skill-11
+
+- [Scientific Agent Skills](https://github.com/K-Dense-AI/scientific-agent-skills) — Knowledge · 55,116 stars — A library that turns an AI agent into an AI scientist with specialised scientific skills. — Card: https://topskillsfordevelopment.vercel.app#skill-14
+
+- [Obsidian Skills](https://github.com/kepano/obsidian-skills) — Knowledge · 50,327 stars — Agent skills for using Obsidian through its CLI and open Markdown formats. — Card: https://topskillsfordevelopment.vercel.app#skill-15
+
+- [Google Skills](https://github.com/google/skills) — Knowledge · 21,643 stars — Agent skills for Google products and technologies. — Card: https://topskillsfordevelopment.vercel.app#skill-20
+
+## Discovery
+
+- [Agentic Awesome Skills](https://github.com/sickn33/agentic-awesome-skills) — Discovery · 48,666 stars — A large catalog of agentic skills for discovering, comparing, and planning which skills to use. — Card: https://topskillsfordevelopment.vercel.app#skill-10
+
+- [Awesome Claude Code](https://github.com/hesreallyhim/awesome-claude-code) — Discovery · 56,772 stars — A curated collection of Claude Code skills, agents, and developer tooling. — Card: https://topskillsfordevelopment.vercel.app#skill-13
+
+- [Claude Plugins Official](https://github.com/anthropics/claude-plugins-official) — Discovery · 45,134 stars — The official Anthropic-managed directory of high quality Claude Code plugins. — Card: https://topskillsfordevelopment.vercel.app#skill-16
+
+- [Awesome Agent Skills](https://github.com/VoltAgent/awesome-agent-skills) — Discovery · 36,519 stars — A curated collection of 1000+ agent skills from official teams and the community. — Card: https://topskillsfordevelopment.vercel.app#skill-18
+
+- [Claude Skills Collection](https://github.com/alirezarezvani/claude-skills) — Discovery · 28,914 stars — A collection of 380 Claude Code skills and plugins for engineering, product, research, and more. — Card: https://topskillsfordevelopment.vercel.app#skill-19
