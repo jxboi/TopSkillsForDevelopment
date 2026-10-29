@@ -6,6 +6,15 @@ const path = require('node:path');
 const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const styles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+assert.ok(styles.includes('#5a665e'));
+assert.ok(styles.includes('--touch:44px'));
+assert.ok(styles.includes('min-width:144px'));
+const mainStart = html.indexOf('<main>');
+const builtWith = html.indexOf('<section class="built-with container"');
+const mainEnd = html.indexOf('</main>');
+const footerStart = html.indexOf('<footer');
+assert.ok(mainStart >= 0 && mainStart < builtWith && builtWith < mainEnd && mainEnd < footerStart);
 const source = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 const articles = [...html.matchAll(/<article class="skill-card" data-category="([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)];
 assert.equal(articles.length, 21);
@@ -35,9 +44,10 @@ function setup(missing = '', options = {}) {
   const copies = articles.map(([, , markup]) => {
     const button = element('Copy prompt');
     const prompt = options.noPrompt ? null : element(markup.match(/class="prompt-text">([^<]*)/)[1]);
-    button.closest = selector => ({ querySelector: () => selector === '.prompt' ? prompt : element('Skill') });
+    button.closest = selector => ({ querySelector: () => selector === '.prompt' ? prompt : element(markup.match(/<h2[^>]*>([^<]*)<\/h2>/)[1]) });
     return button;
   });
+  const timers = [];
   const copied = [];
   const selected = [];
   const document = {
@@ -50,9 +60,9 @@ function setup(missing = '', options = {}) {
   vm.runInNewContext(source, {
     document, navigator: { clipboard: { writeText: async text => { copied.push(text); } } },
     window: { isSecureContext: !options.fallback, getSelection: () => ({ removeAllRanges() {}, addRange() {} }) },
-    console: { warn() {} }, setTimeout: () => 1, clearTimeout() {},
+    console: { warn() {} }, setTimeout: callback => { timers.push(callback); return timers.length; }, clearTimeout() {},
   });
-  return { ids, cards, guides, filters, copies, copied, selected,
+  return { ids, cards, guides, filters, copies, copied, selected, timers,
     visible: () => cards.filter(card => !card.hidden),
     search(query) { ids.search.value = query; ids.search.fire('input'); },
   };
@@ -75,6 +85,11 @@ async function check() {
   app.search('Superpowers');
   assert.equal(app.visible().length, 0);
   assert.equal(app.ids['empty-state'].hidden, false);
+  app.ids['clear-search'].click();
+  assert.equal(app.ids.search.value, '');
+  assert.equal(app.ids.search.focused, true);
+  assert.equal(app.visible().length, app.cards.filter(card => card.dataset.category === 'Design').length);
+  assert.equal(app.filters.find(button => button.dataset.filter === 'Design').attrs['aria-pressed'], 'true');
   app.ids['reset-filters'].click();
   assert.equal(app.visible().length, 21);
   assert.equal(app.ids['empty-state'].hidden, true);
@@ -93,11 +108,16 @@ async function check() {
   app.ids['toggle-guides'].click();
   app.ids['toggle-guides'].click();
   assert.ok(app.guides.every(guide => !guide.open));
-  for (const button of app.copies) {
+  for (const [index, button] of app.copies.entries()) {
     await button.click();
     assert.equal(button.textContent, 'Copied!');
+    const title = articles[index][2].match(/<h2[^>]*>([^<]*)<\/h2>/)[1];
+    assert.equal(app.ids['copy-status'].textContent, `Example prompt copied for ${title}.`);
   }
   assert.equal(app.copied.length, 21);
+  assert.equal(app.timers.length, 21);
+  app.timers[0]();
+  assert.equal(app.copies[0].textContent, 'Copy prompt');
   const fallback = setup('', { fallback: true });
   await fallback.copies[0].click();
   assert.equal(fallback.copies[0].textContent, 'Copied!');
@@ -105,6 +125,7 @@ async function check() {
   await failed.copies[0].click();
   assert.equal(failed.copies[0].textContent, 'Select prompt to copy');
   assert.equal(failed.selected.length, 1);
+  assert.equal(failed.timers.length, 0);
   const absent = setup('', { noPrompt: true });
   await absent.copies[0].click();
   assert.equal(absent.copies[0].textContent, 'Select prompt to copy');
