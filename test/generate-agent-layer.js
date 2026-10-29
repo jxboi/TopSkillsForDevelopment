@@ -56,7 +56,7 @@ function generate(html,siteURL) {
       const prompt=singleLine(clean(cls(item,'example-prompt')));
       const fn=text(item,n=>n===nameNode||n.attrs.class==='inside-kind'||n.attrs.class==='item-category'||n.attrs.class==='example-prompt').trim();
       assert.ok(fn.startsWith('— '),'Missing item separator');
-      return {name:clean(nameNode),category:clean(cls(item,'item-category')),kind:kindNodes.length?clean(one(kindNodes)):null,function:fn.slice(2).trim(),example_prompt:prompt};
+      return {name:clean(nameNode),category:clean(cls(item,'item-category')),kind:kindNodes.length?clean(one(kindNodes)).replace(/^\((command|subcommand)\)$/,'$1'):null,function:fn.slice(2).trim(),example_prompt:prompt};
     });
     const notes=byClass(node,'inside-note');
     return {id,number:Number(clean(cls(node,'number'))),title:clean(heading),category,level,stars:Number(starText.replaceAll(',','')),

@@ -33,13 +33,29 @@ for(const item of mattRemaining) promptMap.get('Matt Pocock Skills').set(item.na
 const densityBaseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/agent-layer-baseline.json'),'utf8'));
 
 const root = path.join(__dirname, '..');
+
+// Historical gates retain their original byte comparisons after undoing only M1–M4/S1–S4.
+const monoStack='ui-monospace,SFMono-Regular,Consolas,monospace';
+const polishTokens={'--mono':monoStack,'--underline-offset':'5px','--underline-thickness':'2px','--leading-relaxed':'1.8','--tracking-tight':'-.01em'};
+const undoPolishHTML = text => text.replace('available above','available below')
+ .replace(/<article class="skill-card"[^>]*aria-labelledby="skill-15">[\s\S]*?<\/article>/,card=>card.replace('top-inside-label">Featured:', 'top-inside-label">Top inside:'))
+ .replace(/(<span class="inside-kind">)\((command|subcommand)\)(<\/span>)/g,'$1$2$3');
+const undoPolishCSS = text => {
+ for(const [name,value] of Object.entries(polishTokens))text=text.replace(';'+name+':'+value,'').replaceAll('var('+name+')',value);
+ text=text.replace('  .skill-grid > .skill-card.first-visible::before{border-top:0}\n','');
+ text=text.replace('  .skill-grid{grid-template-columns:1fr;gap:var(--space-2)}\n','  .skill-grid{grid-template-columns:1fr;gap:var(--space-2)}\n  .skill-card{padding:var(--space-3) var(--space-3) 0}\n');
+ return text.replace('.fit{margin:var(--space-3) 0}', '.fit { margin: var(--space-3) 0; }')
+ .replace('.fit p{margin:0;font-size:var(--type-small);line-height:var(--type-prose-leading);color:var(--body)}','.fit p { margin: 0; font-size: var(--type-small); line-height: var(--type-prose-leading); color: var(--body); }')
+ .replace('.fit strong{font-weight:600;color:var(--ink)}','.fit strong { font-weight: 600; color: var(--ink); }');
+};
+
 const categoryHTML = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 // Historical copy gates compare the original surface after removing only the authorized additions.
 const stripCategories = value => value.replace(/ <span class="item-category">[^<]*<\/span>/g, '');
-const html = stripCategories(categoryHTML);
+const html = stripCategories(undoPolishHTML(categoryHTML));
 const categoryCSSRule = '.item-category{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);color:var(--muted)}';
 const categoryStyles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
-const styles = categoryStyles.replace(categoryCSSRule+'\n','');
+const styles = undoPolishCSS(categoryStyles).replace(categoryCSSRule+'\n','');
 const source = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 const before = fs.readFileSync(path.join(__dirname, 'fixtures/before/index.html'), 'utf8');
 const beforeCSS = fs.readFileSync(path.join(__dirname, 'fixtures/before/styles.css'), 'utf8');
@@ -48,7 +64,7 @@ const starSnapshot = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/b
 const copy = fs.readFileSync(path.join(__dirname, 'fixtures/copy.md'), 'utf8');
 const uses = fs.readFileSync(path.join(__dirname, 'fixtures/when-avoid-copy.md'), 'utf8');
 const getCards = text => [...text.matchAll(/<article class="skill-card" data-category="([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)];
-const articles = getCards(html), categoryArticles = getCards(categoryHTML), originals = getCards(before);
+const articles = getCards(html), categoryArticles = getCards(undoPolishHTML(categoryHTML)), originals = getCards(before);
 const failures = [];
 function gate(name, fn) { try { fn(); console.log('PASS ' + name); } catch (e) { failures.push(name + ': ' + e.message); console.error('FAIL ' + name + ': ' + e.message); } }
 const copyPath = path.join(__dirname, 'fixtures/lists.md');
@@ -507,7 +523,7 @@ Do not invent an install command: if the repository does not state one, say so a
 If no skill matches the task, use no skill from this catalog rather than forcing a match.`;
 const chapterMarkup = [...html.matchAll(/<section class="chapter"[^>]*>([\s\S]*?)<\/section>/g)].map(m=>m[1]);
 const agentChapters = chapterMarkup.map(c=>renderedText(c.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)[1].replace(/<span>[\s\S]*?<\/span>/,'')));
-const agentExpectedCards = categoryArticles.map(([,category,c])=>{
+const agentExpectedCards = getCards(categoryHTML).map(([,category,c])=>{
  const heading=c.match(/<h3 id="([^"]+)">([^<]+)<\/h3>/); assert.ok(heading,'Missing shipped anchor');
  const stars=renderedText(field(c,'meta-stars','span'));
  assert.match(stars,/^\d{1,3}(?:,\d{3})*$/);
@@ -517,7 +533,7 @@ const agentExpectedCards = categoryArticles.map(([,category,c])=>{
  const items=[...c.match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1].matchAll(/<li><code class="inside-name">([^<]+)<\/code> <span class="item-category">([^<]+)<\/span> — ([\s\S]*?)<\/li>/g)].map(([,name,category,body])=>{
   const prompts=[...body.matchAll(/<p class="example-prompt">([^<]*)<\/p>/g)]; assert.equal(prompts.length,1);
   const example_prompt=decodeHTML(prompts[0][1]); assert.doesNotMatch(example_prompt,/[\r\n]/);
-  return {name:decodeHTML(name),category,kind:body.match(/<span class="inside-kind">([^<]+)<\/span>/)?.[1]??null,
+  return {name:decodeHTML(name),category,kind:body.match(/<span class="inside-kind">([^<]+)<\/span>/)?.[1].replace(/^\((command|subcommand)\)$/,'$1')??null,
    function:renderedText(body.replace(prompts[0][0],'').replace(/<span class="inside-kind">[^<]+<\/span>/,'')),example_prompt};
  });
  const description=renderedText(field(c,'description')); assert.doesNotMatch(description,/[\r\n]/);
@@ -607,6 +623,68 @@ gate('agent footer insertion only, protected bytes and unchanged per-card baseli
  assert.ok(!html.includes(agentSnippet));
  for(const name of ['styles.css','script.js'])assert.equal(sha256(name==='styles.css'?styles:fs.readFileSync(path.join(root,name))),agentBaseline[name],name+' pre-build bytes');
  for(const kind of ['visible','expanded'])assert.deepEqual(densities.map(c=>c[kind]),agentBaseline[kind],kind+' per-card baseline');
+});
+
+
+// Actual shipped surface gates supplement, rather than replace, the historical checks.
+gate('polish2 M1–M3 exact HTML scope and labels',()=>{
+ assert.equal(sha256(undoPolishHTML(categoryHTML)),densityBaseline.polish2Before['index.html']);
+ const noscript=categoryHTML.match(/<noscript>[\s\S]*?<\/noscript>/)[0];
+ assert.match(noscript,/available above/);assert.doesNotMatch(noscript,/available below/);
+ const cards=getCards(categoryHTML),catalog=JSON.parse(readAgentFile('skills.json'));
+ const labels=cards.map(([,,c])=>renderedText(field(field(c,'top-inside'),'top-inside-label','span')));
+ // Full byte scope is checked separately; these assertions make the featured inventory explicit.
+ assert.equal(labels[19],'Featured:');assert.equal(labels.filter(l=>l==='Featured:').length,7);
+ assert.deepEqual(labels,catalog.cards.map(c=>c.top_inside.label));
+ for(const [i,label] of labels.entries())if(i!==19)assert.equal(label,renderedText(field(field(articles[i][2],'top-inside'),'top-inside-label','span')));
+ const section=readAgentFile('llms-full.txt').split('### Claude Plugins Official\n')[1].split('\n### ')[0];
+ assert.match(section,/^- Top inside: Featured: /m);
+ assert.equal((categoryHTML.match(/class="inside-kind"/g)||[]).length,8);
+ for(const [title,kind] of [['Vercel Skills','command'],['Graphify','subcommand']]){
+  const c=cards.find(a=>a[2].includes('>'+title+'</h3>'))[2];
+  assert.equal((c.match(new RegExp('<span class="inside-kind">\\('+kind+'\\)</span>','g'))||[]).length,4);
+  assert.deepEqual(catalog.cards.find(c=>c.title===title).inside.filter(i=>i.kind).map(i=>i.kind),Array(4).fill(kind));
+  assert.equal((readAgentFile('llms-full.txt').match(new RegExp(' \\('+kind+'\\) \\[','g'))||[]).length,4);
+ }
+ assert.doesNotMatch(readAgentFile('llms-full.txt'),/\(\((?:sub)?command\)\)/);
+});
+gate('polish2 M4/S1–S4 exact CSS scope and preserved rendered values',()=>{
+ assert.equal(sha256(undoPolishCSS(categoryStyles)),densityBaseline.polish2Before['styles.css']);
+ const rootRule=categoryStyles.match(/:root\{([^}]*)}/)[1];
+ for(const [name,value] of Object.entries(polishTokens))assert.ok(rootRule.includes(name+':'+value));
+ const outsideRoot=categoryStyles.replace(/:root\{[^}]*}/,'');assert.ok(!outsideRoot.includes(monoStack));
+ for(const selector of ['.number','.meta-stars','.inside-name','.example-prompt','.item-category']){
+  const rule=outsideRoot.match(new RegExp('\\'+selector+'\\{([^}]*)}'))[1];assert.ok(rule.includes('var(--mono)'));
+ }
+ for(const [property,token,count] of [['text-underline-offset','--underline-offset',4],['text-decoration-thickness','--underline-thickness',2],['line-height','--leading-relaxed',2],['letter-spacing','--tracking-tight',2]]){
+  assert.equal(outsideRoot.split(property+':var('+token+')').length-1,count);
+  assert.ok(!outsideRoot.includes(property+':'+polishTokens[token]));
+ }
+ const desktop=categoryStyles.split('@media(min-width:641px){')[1].split('\n}')[0];
+ assert.ok(desktop.includes('.skill-grid > .skill-card.first-visible::before{border-top:0}'));
+ const mobile=categoryStyles.split('@media(max-width:640px){')[1].split('\n}')[0];
+ assert.doesNotMatch(mobile,/\.skill-card\{padding:/);
+ assert.match(categoryStyles,/@media\(min-width:1000px\)\{[^}]*\.skill-card\{padding:var\(--space-4\) var\(--space-4\) 0}/);
+ for(const rule of ['.fit{margin:var(--space-3) 0}', '.fit p{margin:0;font-size:var(--type-small);line-height:var(--type-prose-leading);color:var(--body)}','.fit strong{font-weight:600;color:var(--ink)}'])assert.ok(categoryStyles.includes(rule));
+});
+gate('polish2 agent-file scope: only card 15 label, short index unchanged',()=>{
+ const json=JSON.parse(readAgentFile('skills.json'));assert.equal(json.cards[19].id,'skill-15');assert.equal(json.cards[19].top_inside.label,'Featured:');
+ json.cards[19].top_inside.label='Top inside:';
+ assert.equal(sha256(JSON.stringify(json,null,2)+'\n'),densityBaseline.polish2Before['skills.json']);
+ const full=readAgentFile('llms-full.txt');
+ const restored=full.replace(/(### Claude Plugins Official\n[\s\S]*?\n- Top inside: )Featured:/,'$1Top inside:');
+ assert.notEqual(restored,full);assert.equal(sha256(restored),densityBaseline.polish2Before['llms-full.txt']);
+ assert.equal(sha256(readAgentFile('llms.txt')),densityBaseline.polish2Before['llms.txt']);
+});
+gate('polish2 recomputed shipped budgets and per-card scope',()=>{
+ const measured=getCards(categoryHTML).map(([,,c])=>({title:renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]),visible:words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1')),expanded:words(c)}));
+ for(const kind of ['visible','expanded']){
+  assert.deepEqual(measured.map(c=>c[kind]),densities.map((c,i)=>c[kind]-(i===19?1:0)));
+  const total=measured.reduce((n,c)=>n+c[kind],0),max=Math.max(...measured.map(c=>c[kind]));
+  assert.equal(total,kind==='visible'?1223:6248);
+  console.log('Shipped '+kind,JSON.stringify({total,max,mean:total/22,maxCards:measured.filter(c=>c[kind]===max).map(c=>c.title)}));
+ }
+ console.table(measured);
 });
 
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
