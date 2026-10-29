@@ -21,6 +21,9 @@ const newCards = [...designCopy.matchAll(/^## Card (22|23) — (.+)\n([\s\S]*?)(
  href:value('Footer link').split(',')[0],aria:body.match(/`([^`]+ original GitHub repository \(opens in new tab\))`/)[1]};
 });
 assert.equal(newCards.length,2);
+// Source document keeps its historical card numbers.
+for (const card of newCards) card.number=String(Number(card.number)-1);
+promptMap.delete('Scientific Agent Skills');
 for(const card of newCards) promptMap.set(card.title,new Map(card.items.map(item=>[item.name,item.prompt])));
 
 const root = path.join(__dirname, '..');
@@ -44,8 +47,9 @@ const expectedInside = [...approvedCopy.matchAll(/^### (.+?) — summary: "([^"]
   items: [...body.matchAll(/^\d+\. `([^`]+)`[^\n]*? — (.+)$/gm)].map(([, name, fn]) => ({ name, fn })),
 }));
 expectedInside.splice(9,0,...newCards);
-assert.equal(expectedInside.length, 23, 'Approved copy must cover all 23 cards');
-assert.equal(expectedInside.reduce((n, card) => n + card.items.length, 0), 107);
+expectedInside.splice(expectedInside.findIndex(c=>c.title==='Scientific Agent Skills'),1);
+assert.equal(expectedInside.length, 22, 'Approved copy must cover all 22 cards');
+assert.equal(expectedInside.reduce((n, card) => n + card.items.length, 0), 102);
 const decodeHTML = value => value.replace(/&(#x[\da-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (entity, key) =>
   key[0] === '#' ? String.fromCodePoint(key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1))) :
     ({ amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0' })[key.toLowerCase()]);
@@ -55,18 +59,26 @@ const field = (markup, cls, tag = 'p') => markup.match(new RegExp('<' + tag + ' 
 const words = text => decodeHTML(text.replace(/<[^>]*>/g, ' ')).trim().split(/\s+/).filter(Boolean).length;
 const densities = articles.map(([, , c]) => ({title: renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]), visible: words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g, '$1')), expanded: words(c)}));
 console.table(densities);
-for (const kind of ['visible', 'expanded']) console.log(kind, {max:Math.max(...densities.map(c=>c[kind])), total:densities.reduce((n,c)=>n+c[kind],0), mean:densities.reduce((n,c)=>n+c[kind],0)/23});
-gate('1 density budgets', () => { for (const [kind,max,total,mean] of [['visible',77,1286,55.92],['expanded',319,5787,251.61]]) { assert.ok(densities.every(c=>c[kind]<=max)); const sum=densities.reduce((n,c)=>n+c[kind],0); assert.equal(sum,total); assert.equal(Math.max(...densities.map(c=>c[kind])),max); assert.ok(sum/23<=mean); } });
+for (const kind of ['visible', 'expanded']) console.log(kind, {max:Math.max(...densities.map(c=>c[kind])), total:densities.reduce((n,c)=>n+c[kind],0), mean:densities.reduce((n,c)=>n+c[kind],0)/22});
+gate('1 density budgets', () => { for (const [kind,max,total,mean] of [['visible',77,1226,55.73],['expanded',319,5528,251.28]]) { assert.ok(densities.every(c=>c[kind]<=max)); const sum=densities.reduce((n,c)=>n+c[kind],0); assert.equal(sum,total); assert.equal(Math.max(...densities.map(c=>c[kind])),max); assert.ok(sum/22<=mean); } });
 gate('1b per-card expanded budgets', () => {
- const expected = [272,275,280,250,258,319,99,237,250,107,270,256,288,265,267,259,265,284,262,254,245,226,299];
+ const expected = [272,275,280,250,258,319,99,237,250,107,270,256,288,265,267,265,284,262,254,245,226,299];
  assert.deepEqual(densities.map(c=>c.expanded), expected);
 });
+gate('removal scope, numbering and counts', () => {
+ for(const name of ['index.html','skills.json','llms.txt','llms-full.txt']) assert.doesNotMatch(fs.readFileSync(path.join(root,name),'utf8'),/Scientific|scientific-agent-skills|EGFR|scanpy|rdkit/i,name);
+ assert.deepEqual(articles.map(a=>Number(a[0].match(/aria-labelledby="skill-(\d+)"/)[1])).sort((a,b)=>a-b),Array.from({length:22},(_,i)=>i+1));
+ for(const [,,card] of articles) assert.equal(card.match(/<h3 id="skill-(\d+)"/)[1],String(Number(renderedText(field(card,'number','span')))));
+ assert.equal(articles.filter(a=>a[1]==='Knowledge').length,5);
+ assert.ok(html.includes('Knowledge (5)')); assert.ok(html.includes('Knowledge <span>(5)</span>'));
+ assert.match(html,/Star counts are a snapshot supplied for 29 Oct 2026\./);
+});
 gate('2 inventory and order', () => {
- assert.equal(articles.length,23);
- assert.equal((html.match(/<p class="example-prompt">/g)||[]).length,107);
+ assert.equal(articles.length,22);
+ assert.equal((html.match(/<p class="example-prompt">/g)||[]).length,102);
  for(const [, , c] of articles) { const positions=['<div class="card-meta">','<h3','<p class="top-inside">','<p class="description">','<div class="fit">','<details class="inside"','<div class="card-footer">'].map(x=>c.indexOf(x)); assert.ok(positions.every((p,i)=>p>=0&&(!i||p>positions[i-1]))); assert.equal((c.match(/<details\b/g)||[]).length,1); }
- for(const cls of ['top-inside','inside','inside-list']) assert.equal((html.match(new RegExp('class="'+cls+'"','g'))||[]).length,23);
- assert.equal((html.match(/<li><code class="inside-name">/g)||[]).length,107);
+ for(const cls of ['top-inside','inside','inside-list']) assert.equal((html.match(new RegExp('class="'+cls+'"','g'))||[]).length,22);
+ assert.equal((html.match(/<li><code class="inside-name">/g)||[]).length,102);
  for(const file of [html,styles,source]) assert.doesNotMatch(file, /(?:class="(?:guide|prompt|copy-button)|\.(?:guide|prompt(?!-background)|copy-button)\b|toggle-guides|copy-prompt|copyStatus|updateGuideControl)/);
 });
 gate('3 protected copy and approved sources', () => {
@@ -108,8 +120,8 @@ gate('3 protected copy and approved sources', () => {
 });
 
 gate('prompt inventory, mapping, hygiene and exact change scope', () => {
- assert.equal(promptMap.size,23);
- assert.equal([...promptMap.values()].reduce((n,items)=>n+items.size,0),107);
+ assert.equal(promptMap.size,22);
+ assert.equal([...promptMap.values()].reduce((n,items)=>n+items.size,0),102);
  const actualPrompts=[];
  for(const [i,[,,card]] of articles.entries()) {
   const title=densities[i].title;
@@ -130,12 +142,17 @@ gate('prompt inventory, mapping, hygiene and exact change scope', () => {
   assert.doesNotMatch(inside,/<(?:button|input|a|select|textarea)\b|\b(?:tabindex|onclick|contenteditable)=/i);
   assert.equal((card.match(/class="example-prompt"/g)||[]).length,items.length);
  }
- assert.equal(actualPrompts.length,107); assert.equal(new Set(actualPrompts).size,107);
- assert.equal((html.match(/class="example-prompt"/g)||[]).length,107);
+ assert.equal(actualPrompts.length,102); assert.equal(new Set(actualPrompts).size,102);
+ assert.equal((html.match(/class="example-prompt"/g)||[]).length,102);
  assert.doesNotMatch(html,/\b(?:UNCONFIRMED|illustrative|not repo-quoted|research.note|Grade:\s*(?:Verified|Crafted)|Source:\s*https?:|example\.(?:com|org|net))\b/i);
  let restored=html;
- for(const card of articles.filter(a=>/aria-labelledby="skill-(?:22|23)"/.test(a[0]))) restored=restored.replace(card[0]+(restored[restored.indexOf(card[0])+card[0].length]==="\n"?"\n":""), "");
- const section6Changes = [["Discover 21 popular", "Discover 23 popular"], ["note-number\">21<", "note-number\">23<"], ["collection of 21 popular", "collection of 23 popular"], ["All skills (21)", "All skills (23)"], ["Design (1)", "Design (3)"], ["Design <span>(1)</span>", "Design <span>(3)</span>"], ["21 skills in the collection", "23 skills in the collection"], ["All 21 skills are available", "All 23 skills are available"], ["21 skills. Star counts", "23 skills. Star counts"]];
+ restored=restored.replace(/skill-(\d+)/g,(_,n)=>'skill-'+(Number(n)>=14?Number(n)+1:Number(n)))
+  .replace(/(<span class="number">)(\d+)(<\/span>)/g,(_,a,n,b)=>a+String(Number(n)>=14?Number(n)+1:Number(n)).padStart(2,'0')+b);
+ const removedOriginal=originals.find(a=>a[2].includes('>Scientific Agent Skills</h3>'))[0];
+ restored=restored.replace(/<article class="skill-card" data-category="Knowledge" aria-labelledby="skill-15">/,removedOriginal+'\n$&');
+ restored=restored.replace('Knowledge (5)','Knowledge (6)').replace('Knowledge <span>(5)</span>','Knowledge <span>(6)</span>');
+ for(const card of getCards(restored).filter(a=>/aria-labelledby="skill-(?:22|23)"/.test(a[0]))) restored=restored.replace(card[0]+(restored[restored.indexOf(card[0])+card[0].length]==="\n"?"\n":""), "");
+ const section6Changes = [["Discover 21 popular", "Discover 22 popular"], ["note-number\">21<", "note-number\">22<"], ["collection of 21 popular", "collection of 22 popular"], ["All skills (21)", "All skills (22)"], ["Design (1)", "Design (3)"], ["Design <span>(1)</span>", "Design <span>(3)</span>"], ["21 skills in the collection", "22 skills in the collection"], ["All 21 skills are available", "All 22 skills are available"], ["21 skills. Star counts", "22 skills. Star counts"]];
  for(const [oldText,newText] of section6Changes) { assert.ok(html.includes(newText),newText); restored=restored.replace(newText,oldText); }
  // The original TDD hash has no recoverable published-HEAD baseline.
  // Check restoration structurally; gate 3 protects the existing 21 cards' copy.
@@ -155,8 +172,8 @@ gate('prompt inventory, mapping, hygiene and exact change scope', () => {
 gate('new Design copy, honesty, totals and placement',()=>{
  const design=articles.filter(a=>a[1]==='Design');
  assert.deepEqual(design.map(a=>renderedText(a[2].match(/<h3[^>]*>(.*?)<\/h3>/)[1])),['UI/UX Pro Max','Taste Skill','Impeccable']);
- assert.deepEqual(design.map(a=>a[0].match(/aria-labelledby="([^"]+)"/)[1]),['skill-5','skill-22','skill-23']);
- assert.deepEqual(design.map(a=>renderedText(field(a[2],'number','span'))),['05','22','23']);
+ assert.deepEqual(design.map(a=>a[0].match(/aria-labelledby="([^"]+)"/)[1]),['skill-5','skill-21','skill-22']);
+ assert.deepEqual(design.map(a=>renderedText(field(a[2],'number','span'))),['05','21','22']);
  for(const expected of newCards) {
   const article=articles.find(a=>a[0].includes('aria-labelledby="skill-'+expected.number+'"'));
   assert.ok(article,expected.title); const markup=article[2];
@@ -200,7 +217,8 @@ gate('one exact prompt CSS rule', () => {
 
 const topRows=[...copy.matchAll(/^\| ([^|]+) \| [^|]+ \| ([^|]+) \| ([^|]+) \|$/gm)].filter(m=>!['Card','---'].includes(m[1].trim()));
 topRows.splice(9,0,...newCards.map(c=>[null,c.title,c.topLabel,c.topNames.join(', ')]));
-gate('4 exact top lines',()=>{assert.equal(topRows.length,23); articles.forEach(([,,c],i)=>{ const row=topRows[i]; const names=row[3].trim().split(', '); assert.equal(renderedText(field(c,'top-inside')),row[2].trim()+' '+names.join(' · ')); assert.deepEqual([...field(c,'top-inside').matchAll(/<code class="inside-name">(.*?)<\/code>/g)].map(m=>decodeHTML(m[1])),expectedInside[i].items.slice(0,2).map(x=>x.name)); });});
+topRows.splice(topRows.findIndex(row=>row[1].trim()==='Scientific Agent Skills'),1);
+gate('4 exact top lines',()=>{assert.equal(topRows.length,22); articles.forEach(([,,c],i)=>{ const row=topRows[i]; const names=row[3].trim().split(', '); assert.equal(renderedText(field(c,'top-inside')),row[2].trim()+' '+names.join(' · ')); assert.deepEqual([...field(c,'top-inside').matchAll(/<code class="inside-name">(.*?)<\/code>/g)].map(m=>decodeHTML(m[1])),expectedInside[i].items.slice(0,2).map(x=>x.name)); });});
 gate('5 stars and number',()=>{articles.forEach(([,,c],i)=>{if(newCards.some(n=>n.title===densities[i].title)) return; const snapshot=starSnapshot[originals.findIndex(a=>a[2].includes('>'+densities[i].title+'</h3>'))]; const meta=field(c,'card-meta','div'); const stars=meta.match(/<span class="meta-stars"[\s\S]*?<\/span>/)?.[0]; assert.equal(stars,snapshot.stars.replace('class="stars"','class="meta-stars"')); const footer=field(c,'card-footer','div'); assert.doesNotMatch(footer,/stars|icon-star/); assert.match(footer,/<a href=/); }); for(const [,rule] of styles.matchAll(/\.number\{([^}]*)}/g)){assert.doesNotMatch(rule,/--accent|--type-entry-number|--type-note|--serif/);} assert.match(styles,/\.number\{[^}]*var\(--type-mono\)[^}]*var\(--muted\)/); assert.match(styles,/\.meta-stars\{[^}]*tabular-nums/);});
 gate('6 collapsed Karpathy',()=>{for(const [,,c]of articles)assert.doesNotMatch(c,/<details class="inside"[^>]*\bopen\b/); const c=articles.find(a=>a[2].includes('>Karpathy Skills</h3>'))[2];assert.equal(renderedText(field(c,'top-inside')),'Inside: karpathy-guidelines');});
 gate('7 single scoped bulk toggle',()=>{assert.equal((html.match(/id="toggle-inside"/g)||[]).length,1); assert.equal((html.match(/id="toggle-[^"]+"/g)||[]).length,1); assert.match(source,/querySelectorAll\('\.skill-card details\.inside'\)/); for(const label of ['Expand all inside lists','Collapse all inside lists'])assert.ok(source.includes(label));assert.match(source,/setAttribute\('aria-expanded', String\(allOpen\)\)/);});
@@ -277,7 +295,7 @@ function exerciseControls() {
  // A manually opened block must survive prompt searches and clearing.
  insides[1].open=true;
  const prePromptOpen=insides.map(inside=>inside.open);
- assertPromptSearch('EGFR','Scientific Agent Skills','database-lookup');
+ search('EGFR'); assert.equal(visible().length,0); assert.equal(ids['empty-state'].hidden,false); assert.equal(ids['results-count'].textContent,'0 skills in the collection');
  search(''); assert.deepEqual(insides.map(inside=>inside.open),prePromptOpen);
  lists.forEach((list,i)=>assert.equal(list.innerHTML,originalLists[i]));
  assertPromptSearch('Ledgerly','Taste Skill','design-taste-frontend'); search('');
@@ -291,10 +309,10 @@ function exerciseControls() {
  search(''); assert.deepEqual(insides.map(inside=>inside.open),prePromptOpen);
  lists.forEach((list,i)=>assert.equal(list.innerHTML,originalLists[i]));
  filters.find(f=>f.dataset.filter==='Knowledge').click();
- assertPromptSearch('EGFR','Scientific Agent Skills','database-lookup');
+ search('EGFR'); assert.equal(visible().length,0); assert.equal(ids['empty-state'].hidden,false); assert.equal(ids['results-count'].textContent,'0 skills in the collection');
  search('auth-system.md'); assert.equal(visible().length,0); assert.equal(ids['empty-state'].hidden,false);
  search(''); allFilter(); insides.forEach(inside=>inside.open=false);
- assert.equal(ids.search.disabled,false);assert.equal(visible().length,23);assert.equal(ids['toggle-inside'].hidden,false);
+ assert.equal(ids.search.disabled,false);assert.equal(visible().length,22);assert.equal(ids['toggle-inside'].hidden,false);
  ids['toggle-inside'].click();assert.ok(insides.every(i=>i.open));assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'true');ids['toggle-inside'].click();assert.ok(insides.every(i=>!i.open));
  insides[0].open=true; search('to-spec');assert.equal(visible().length,1);assert.ok(insides[2].open);assert.equal(ids['toggle-inside'].textContent,'Collapse all inside lists'); assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'true'); assert.match(lists[2].innerHTML, /<code class="inside-name"><mark>to-spec<\/mark><\/code>/); search('worktrees');assert.equal(insides[2].open,false);assert.ok(insides[0].open);search('');assert.ok(insides[0].open);assert.equal(insides[2].open,false);lists.forEach((l,i)=>assert.equal(l.innerHTML,articles[i][2].match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1]));
  for(const f of filters){search('');f.click();assert.equal(visible().length,cards.filter(c=>f.dataset.filter==='All skills'||c.dataset.category===f.dataset.filter).length);assert.equal(f.attrs['aria-pressed'],'true');}
@@ -309,7 +327,7 @@ function exerciseControls() {
  search('intelligence');assert.ok(prose.some(p=>p.description.innerHTML.includes('<mark>')));search('');
  search('Use when');assert.ok(prose.some(p=>p['fit-use'].innerHTML.includes('<mark>')));search('');
  prose.forEach((p,i)=>Object.entries(p).forEach(([cls,node])=>assert.equal(node.innerHTML,field(articles[i][2],cls).replace(/^<p[^>]*>|<\/p>$/g,''))));
- filters.find(f=>f.dataset.filter==='Design').click();assert.equal(visible().length,3);assert.deepEqual(chapters.map(c=>c.hidden),[true,true,false,true,true,true]);search('Superpowers');assert.equal(visible().length,0);assert.equal(ids['toggle-inside'].textContent,'Expand all inside lists');assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'false');assert.equal(ids['empty-state'].hidden,false);assert.equal(ids['results-count'].textContent,'0 skills in the collection');ids['clear-search'].click();assert.equal(visible().length,3);ids['reset-filters'].click();assert.equal(visible().length,23);assert.equal(ids['empty-state'].hidden,true);assert.equal(ids['clear-search'].hidden,true);assert.ok(chapters.every(c=>!c.hidden));
+ filters.find(f=>f.dataset.filter==='Design').click();assert.equal(visible().length,3);assert.deepEqual(chapters.map(c=>c.hidden),[true,true,false,true,true,true]);search('Superpowers');assert.equal(visible().length,0);assert.equal(ids['toggle-inside'].textContent,'Expand all inside lists');assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'false');assert.equal(ids['empty-state'].hidden,false);assert.equal(ids['results-count'].textContent,'0 skills in the collection');ids['clear-search'].click();assert.equal(visible().length,3);ids['reset-filters'].click();assert.equal(visible().length,22);assert.equal(ids['empty-state'].hidden,true);assert.equal(ids['clear-search'].hidden,true);assert.ok(chapters.every(c=>!c.hidden));
 }
 gate('8 search paths' ,()=>{for(const pattern of [/originalHTML/,/preSearchOpen/,/inside\.open = true/,/createElement\('mark'\)/,/createTreeWalker/,/innerHTML = originalHTML/,/list\.textContent/,/card\.hidden/])assert.match(source,pattern);assert.match(source,/text: card\.textContent\.toLocaleLowerCase\(\)/); exerciseControls();});
 const rules = css => [...css.replace(/\/\*[\s\S]*?\*\//g,'').matchAll(/([^{}]+)\{([^{}]*)}/g)];
@@ -362,7 +380,7 @@ assert.doesNotMatch(styles, /built-with|\.closing\b|--type-(?:built|closing)(?:-
 });
 gate('10 unchanged surface and chapter ledes',()=>{
  for(const [i,[,,c]]of articles.entries()) { if(newCards.some(n=>n.title===densities[i].title)) continue; const original=originals.find(a=>a[2].includes('>'+densities[i].title+'</h3>'))[2]; assert.deepEqual(c.match(/<a href=[\s\S]*?<\/a>/g),original.match(/<a href=[\s\S]*?<\/a>/g)); }
- for(const pattern of [/<h2 class="chapter-heading"[^>]*>[\s\S]*?<\/h2>/g,/<button[^>]*data-filter=[\s\S]*?<\/button>/g,/<section class="hero[\s\S]*?<\/section>/g])assert.deepEqual([...html.replace('Design <span>(3)</span>','Design <span>(1)</span>').replace('All skills (23)','All skills (21)').replace('Design (3)','Design (1)').replace('note-number">23<','note-number">21<').replace('collection of 23 popular','collection of 21 popular').matchAll(pattern)].map(m=>m[0]),[...before.replace('<span class="note-line"></span>', '').matchAll(pattern)].map(m=>m[0]));
+ for(const pattern of [/<h2 class="chapter-heading"[^>]*>[\s\S]*?<\/h2>/g,/<button[^>]*data-filter=[\s\S]*?<\/button>/g,/<section class="hero[\s\S]*?<\/section>/g])assert.deepEqual([...html.replace('Knowledge <span>(5)</span>','Knowledge <span>(6)</span>').replace('Knowledge (5)','Knowledge (6)').replace('Design <span>(3)</span>','Design <span>(1)</span>').replace('All skills (22)','All skills (21)').replace('Design (3)','Design (1)').replace('note-number">22<','note-number">21<').replace('collection of 22 popular','collection of 21 popular').matchAll(pattern)].map(m=>m[0]),[...before.replace('<span class="note-line"></span>', '').matchAll(pattern)].map(m=>m[0]));
  for(const id of ['workflow','quality','design','efficiency','knowledge','discovery']) { const rule=styles.match(new RegExp('#chapter-'+id+'::before\\{[^}]*}'))?.[0]; assert.ok(rule);assert.ok(beforeCSS.includes(rule)); }
  const ledes=[...copy.matchAll(/^- (Workflow|Quality|Design|Efficiency|Knowledge|Discovery) — (.+)$/gm)].map(m=>m[2]); const shipped=[...html.matchAll(/<h2 class="chapter-heading"[^>]*>[\s\S]*?<\/h2>\s*<p class="chapter-lede">([^<]+)<\/p>/g)].map(m=>m[1]);assert.deepEqual(shipped,ledes); console.log('Chapter lede words:',ledes.reduce((n,l)=>n+words(l),0));
 });
@@ -399,7 +417,7 @@ gate('polish CSS, prose and portability',()=>{
  for(const prose of [html.match(/<meta name="description"[^>]*>/)[0],html.match(/<noscript>[\s\S]*?<\/noscript>/)[0]])assert.doesNotMatch(prose,/practical guides|example prompts|copy prompts/);
  assert.doesNotMatch(fs.readFileSync(__filename,'utf8').split("gate('polish CSS")[0],/['"]\/tmp\/fix-in-place-before|path.resolve\(root, ['"]\.\.\/workflow-run-/);
 });
-gate('12 highlight assertions and manual live checklist',()=>{ exerciseHighlight(); console.log('Manual live checklist (not performed; user prohibits live checking): prompt strips under items without overflow at desktop and narrowest allowed width; triple-click selects only one prompt, copy/paste exact; EGFR opens and highlights; clear restores prompts; leave All skills, empty query, all collapsed; true 320–360px rendering unverified; 23 collapsed cards with stars/top lines; expand/collapse 23; to-spec/worktrees opens and marks; Design III (3); filters, clear, reset; layout; true 320–360px phone width. Static checks do not constitute live verification.'); });
+gate('12 highlight assertions and manual live checklist',()=>{ exerciseHighlight(); console.log('Manual live checklist (not performed; user prohibits live checking): prompt strips under items without overflow at desktop and narrowest allowed width; triple-click selects only one prompt, copy/paste exact; EGFR shows the empty state; clear restores prompts; leave All skills, empty query, all collapsed; true 320–360px rendering unverified; 22 collapsed cards with stars/top lines; expand/collapse 22; to-spec/worktrees opens and marks; Design III (3); filters, clear, reset; layout; true 320–360px phone width. Static checks do not constitute live verification.'); });
 // Agent-layer public seams: shipped files versus independently extracted HTML copy.
 const agentBaseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/agent-layer-baseline.json'),'utf8'));
 const agentNav = '<nav aria-label="For agents">For agents: <a href="skills.json">skills.json</a>, <a href="llms.txt">llms.txt</a>, <a href="llms-full.txt">llms-full.txt</a></nav>';
@@ -453,7 +471,7 @@ gate('agent files: UTF-8, schema, field-by-field HTML match and hygiene',()=>{
   for(const item of card.inside){assert.deepEqual(Object.keys(item),['name','kind','function','example_prompt']);prompts.push(item.example_prompt);pairs.push(card.id+' / '+item.name);assert.doesNotMatch(item.function,/^—/);}
  }
  for(const values of [catalog.cards.map(c=>c.id),catalog.cards.map(c=>c.number),prompts,pairs])assert.equal(new Set(values).size,values.length);
- assert.equal(catalog.count,23);assert.equal(pairs.length,107);assert.equal(prompts.length,107);
+ assert.equal(catalog.count,22);assert.equal(pairs.length,102);assert.equal(prompts.length,102);
  assert.doesNotMatch(json,/"install"\s*:|Verified|Crafted|Uncertain|UNCONFIRMED|illustrative|not repo-quoted|example\.(?:com|org)/);
  // Equality above permits only verbatim page text, including the amended prompt URL/command exceptions.
  const withoutPrompts=catalog.cards.map(c=>({...c,inside:c.inside.map(({example_prompt,...item})=>item)}));
@@ -482,7 +500,7 @@ gate('agent text catalogs: exact headers, chapters, card lines, functions, kinds
  assert.equal(anchorDomain(short),expectedShort);assert.equal(anchorDomain(full),expectedFull);
  assert.equal((short.match(/^- \[/gm)||[]).length,articles.length);
  assert.equal((full.match(/^### /gm)||[]).length,articles.length);
- assert.equal((full.match(/^  > /gm)||[]).length,107);
+ assert.equal((full.match(/^  > /gm)||[]).length,102);
  for(const value of [short,full]){
   // The amendment bans added claims, not shipped phrases such as 'Production-grade'
   // or 'verified' in prompts. Remove exact HTML-derived copy before checking additions.
