@@ -72,45 +72,37 @@ const articles = [...html.matchAll(/<article class="skill-card" data-category="(
 assert.equal(articles.length, 21);
 
 // Depth field T1: agreed fit markup, copy, order, and CSS seams.
+const removedClass = 'fit-' + 'avoid';
+for (const contents of [html, styles, fs.readFileSync(__filename, 'utf8')]) {
+  assert.ok(!contents.includes(removedClass), 'Removed class must have no remaining references');
+}
 const fitParagraphs = kind => [...html.matchAll(new RegExp(`<p class="fit-${kind}">([\\s\\S]*?)</p>`, 'g'))];
 assert.equal(fitParagraphs('use').length, 21, 'Expected 21 fit-use paragraphs (one per card)');
-assert.equal(fitParagraphs('avoid').length, 21, 'Expected 21 fit-avoid paragraphs (one per card)');
+assert.equal(fitParagraphs('avoid').length, 0, 'Expected zero removed paragraphs');
 assert.doesNotMatch(html, /<[^>]+\bclass\s*=\s*["'][^"']*\bbest\b[^"']*["']/);
 // Decode the ampersand entities used in the copy before checking rendered text.
 const textOnly = markup => markup.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').trim();
 const fitSentences = articles.map(([, , markup], index) => {
   const fitBlocks = [...markup.matchAll(/<div class="fit">([\s\S]*?)<\/div>/g)];
   assert.equal(fitBlocks.length, 1, `Card ${index + 1} needs one fit block`);
-  const sentences = ['use', 'avoid'].map(kind => {
-    const paragraphs = [...markup.matchAll(new RegExp(`<p class="fit-${kind}">([\\s\\S]*?)</p>`, 'g'))];
-    assert.equal(paragraphs.length, 1, `Card ${index + 1} needs one fit-${kind}`);
-    assert.ok(fitBlocks[0][1].includes(paragraphs[0][0]), 'Fit paragraph belongs inside the fit block');
-    const label = kind === 'use' ? 'Use when' : 'Avoid when';
-    assert.ok(paragraphs[0][1].startsWith(`<strong>${label}</strong>`));
-    const sentence = textOnly(paragraphs[0][1].replace(`<strong>${label}</strong>`, ''));
-    assert.ok(sentence.length >= 20 && sentence.length <= 160, `Card ${index + 1} fit-${kind} must be 20–160 chars`);
-    assert.match(sentence, /^[^.!?]+[.!?]$/, `Card ${index + 1} fit-${kind} must be a single sentence`);
-    return sentence;
-  });
-  assert.ok(fitBlocks[0][1].indexOf('class="fit-use"') < fitBlocks[0][1].indexOf('class="fit-avoid"'), 'Use precedes Avoid in each fit block');
-  const [use, avoid] = sentences;
+  const paragraphs = [...markup.matchAll(/<p class="fit-use">([\s\S]*?)<\/p>/g)];
+  assert.equal(paragraphs.length, 1, `Card ${index + 1} needs one fit-use`);
+  assert.ok(fitBlocks[0][1].includes(paragraphs[0][0]), 'Fit paragraph belongs inside the fit block');
+  const label = '<strong>Use when</strong>';
+  assert.ok(paragraphs[0][1].startsWith(label));
+  const use = textOnly(paragraphs[0][1].replace(label, ''));
+  assert.ok(use.length >= 20 && use.length <= 160, `Card ${index + 1} fit-use must be 20–160 chars`);
+  assert.match(use, /^[^.!?]+[.!?]$/, `Card ${index + 1} fit-use must be a single sentence`);
   const description = textOnly(markup.match(/<p class="description">([\s\S]*?)<\/p>/)[1]);
   assert.ok(!description.includes(use), 'Use sentence must not duplicate the description');
-  assert.ok(!description.includes(avoid), 'Avoid sentence must not duplicate the description');
-  assert.notEqual(avoid, use);
-  assert.ok(!avoid.includes(use), 'Avoid sentence must not contain the Use sentence');
-  const firstFour = sentence => sentence.toLowerCase().split(/\s+/).slice(0, 4).join(' ');
-  assert.notEqual(firstFour(avoid), firstFour(use), 'Use and Avoid must start with different four words');
   const positions = ['<div class="card-meta">', '<h3', '<p class="description">', '<div class="fit">', '<details', '<div class="card-footer">']
     .map(marker => markup.indexOf(marker));
   assert.ok(positions.every((position, i) => position >= 0 && (i === 0 || position > positions[i - 1])), 'Card order: meta → h3 → description → fit → details → footer');
   assert.ok(markup.indexOf('</div>', positions[3]) < positions[4], 'Fit block must end before details');
-  return sentences;
+  return [use];
 });
-for (const [offset, kind] of ['use', 'avoid'].entries()) {
-  assert.deepEqual(fitParagraphs(kind).map(([, markup]) => textOnly(markup.replace(/<strong>[\s\S]*?<\/strong>/, ''))),
-    fitSentences.map(sentences => sentences[offset]), 'Fit pairs follow article document order');
-}
+assert.deepEqual(fitParagraphs('use').map(([, markup]) => textOnly(markup.replace(/<strong>[\s\S]*?<\/strong>/, ''))),
+  fitSentences.map(([use]) => use), 'Use sentences follow article document order');
 assert.doesNotMatch(plainCSS, /\.best\b/);
 const fitRules = visualRules.filter(([, selector]) => /\.fit\b/.test(selector));
 assert.ok(fitRules.some(([, selector]) => selector.trim() === '.fit'), 'Expected a .fit rule');
