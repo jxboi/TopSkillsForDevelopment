@@ -1,8 +1,8 @@
 {
   "styles.css": "8b2601b309c4e6947c3d36e0dbf0b2315c15b6c720d035792cde73ab931b21e1",
   "script.js": "54c74dd5029521a0f8d1e749ad0e846563d87a393eb02c12af3d7805e97c2b50",
-  "index.html": "64dc2156c420a58001ab9da94f8446a5015efdbc098fe59a75338a1af02892bd",
-  "footer": "<footer class=\"site-footer\"><div><span>Top Skills for Development</span><p>23 skills. Star counts are a snapshot supplied for 29 Oct 2026.</p><a href=\"#page-title\">Back to top \u2191</a></div></footer>",
+  "index.html": "92be40ed62f16ae2287551aee28bdbe1f1f64672b251fdf189ef9a664beb1e1e",
+  "footer": "<footer class=\"site-footer\"><div><span>Top Skills for Development</span><p>22 skills. Star counts are a snapshot supplied for 29 Oct 2026.</p><a href=\"#page-title\">Back to top ↑</a></div></footer>",
   "visible": [
     59,
     49,
@@ -19,7 +19,6 @@
     56,
     62,
     56,
-    60,
     57,
     49,
     59,
@@ -44,7 +43,6 @@
     288,
     265,
     267,
-    259,
     265,
     284,
     262,
