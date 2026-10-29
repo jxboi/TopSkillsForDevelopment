@@ -75,6 +75,11 @@ h2,.skill-card h3{font:normal var(--type-entry)/var(--type-entry-leading) var(--
 .fit { margin: var(--space-3) 0; }
 .fit p { margin: 0; font-size: var(--type-small); line-height: var(--type-prose-leading); color: var(--body); }
 .fit strong { font-weight: 600; color: var(--ink); }
+.inside-list{margin:var(--space-1) 0 var(--space-3);padding:0;list-style:none}
+.inside-list li{margin:var(--space-1) 0;font-size:var(--type-small);line-height:var(--type-prose-leading);color:var(--body)}
+.inside-name{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);color:var(--ink)}
+.inside-note{margin:0 0 var(--space-3);font-size:var(--type-label);color:var(--muted)}
+.inside-kind{font-size:var(--type-label);color:var(--muted)}
 details{border-top:1px solid var(--line)}
 summary{display:flex;justify-content:space-between;align-items:center;list-style:none;padding:var(--space-2) 0;font-size:var(--type-mono);font-weight:500;cursor:pointer}
 summary::-webkit-details-marker{display:none}
@@ -124,7 +129,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 @media(min-width:641px){
   .skill-grid > .skill-card:nth-child(2)::before{border-top:0}
   .skill-grid:has(> article:only-child) > article{grid-column:1 / -1}
-  .skill-grid:has(> article:only-child) :is(.description,.fit p,.guide,.prompt-text){max-width:62ch}
+  .skill-grid:has(> article:only-child) :is(.description,.fit p,.inside-list li,.inside-note,.guide,.prompt-text){max-width:62ch}
 }
 
 

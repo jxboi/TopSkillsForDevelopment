@@ -3,7 +3,7 @@
 const searchInput = document.querySelector('#search');
 const clearSearch = document.querySelector('#clear-search');
 const toggleGuides = document.querySelector('#toggle-guides');
-const guides = [...document.querySelectorAll('.skill-card details')];
+const guides = [...document.querySelectorAll('.skill-card details.guide')];
 const filterButtons = [...document.querySelectorAll('[data-filter]')];
 const chapters = [...document.querySelectorAll('.chapter')];
 const cards = [...document.querySelectorAll('.skill-card')];
