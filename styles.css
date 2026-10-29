@@ -74,7 +74,6 @@ h2,.skill-card h3{font:normal var(--type-entry)/var(--type-entry-leading) var(--
 .description{font-family:var(--serif);color:var(--body);margin:0;font-size:var(--type-body);line-height:var(--type-prose-leading)}
 .fit { margin: var(--space-3) 0; }
 .fit p { margin: 0; font-size: var(--type-small); line-height: var(--type-prose-leading); color: var(--body); }
-.fit p + p { margin-top: var(--space-1); }
 .fit strong { font-weight: 600; color: var(--ink); }
 details{border-top:1px solid var(--line)}
 summary{display:flex;justify-content:space-between;align-items:center;list-style:none;padding:var(--space-2) 0;font-size:var(--type-mono);font-weight:500;cursor:pointer}

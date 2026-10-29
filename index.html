@@ -12,7 +12,6 @@
  <h3 id="skill-1">Superpowers</h3><p class="description">A comprehensive library of proven techniques for a stronger, more reliable coding agent workflow.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> At the start of a new task, before any code, when you want spec brainstorming, worktree isolation, bite-sized planning, and test-driven development.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> Dispatched as a single-purpose subagent on an isolated task, or when the user tells the agent to bypass skill workflows.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Read the repository’s setup guide for your coding agent and install the supported integration.</li><li>Start with brainstorming to clarify the problem and agree on a design.</li><li>Move through planning, implementation, testing, and review using the relevant skills.</li></ol>
@@ -24,7 +23,6 @@
  <h3 id="skill-2">ECC</h3><p class="description">An agent-harness optimisation system with skills, memory, security practices, and research-first workflows.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When running a full-lifecycle workflow in a supported harness that needs planning, test-driven implementation, fresh-context review, and build repair.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> Mid-implementation, where compaction erases transient state, or under tight token limits and simple tasks where hooks and agent teams add overhead.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Review the README and choose the setup that matches your agent harness.</li><li>Select the skills, memory configuration, and security practices relevant to your project.</li><li>Research the existing code before making a plan; validate changes with the project’s checks.</li></ol>
@@ -36,7 +34,6 @@
  <h3 id="skill-4">Matt Pocock Skills</h3><p class="description">Skills for real engineers, including alignment interviews and disciplined test-driven loops.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> At the start of feature or bug work, when human grilling should settle ambiguity and shared terminology before tickets and test-driven development.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> When you want a fully automated process with no human grilling, or in an initialized repository where grill-me replaces repository-aware grill-with-docs.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Follow the repository’s installation instructions for your agent.</li><li>Choose the skill that matches your task, such as grilling, diagnosing bugs, or TDD.</li><li>Invoke that skill with project context and work through its questions or development loop.</li></ol>
@@ -48,7 +45,6 @@
  <h3 id="skill-12">Spec Kit</h3><p class="description">A toolkit for spec-driven development that helps agents build from a specification.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When building a greenfield app or complex multi-step feature whose requirements and tasks must become executable specifications before code is generated.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> On large features run as one unscoped implementation without phase limits, or quick ad-hoc changes where formal specification artifacts add overhead.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Follow the repository’s setup guide to initialise Spec Kit for your project and agent.</li><li>Define the project principles and write a specification with acceptance criteria.</li><li>Develop a plan and tasks from the specification, then implement and validate them.</li></ol>
@@ -60,7 +56,6 @@
  <h3 id="skill-17">Vercel Skills</h3><p class="description">An open agent skills tool installed with npx skills.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When you need one CLI to search, install, update, sync, or test-run skills across several coding agent harnesses from git, URLs, or npm.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> On machines without Node 22 or newer, or beside auto-updating harness marketplaces, where file-level copies may register duplicate skills.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Read the repository’s CLI documentation and run npx skills to explore the tool.</li><li>Choose a skills repository and review the skills and supported agents.</li><li>Follow the documented installation flow, then invoke a selected skill on your project.</li></ol>
@@ -72,7 +67,6 @@
  <h3 id="skill-21">pstack</h3><p class="description">Poteto's official Cursor plugin that turns Cursor into a real engineering team, helping you write less but higher quality code with rigorous engineering principles and fearless parallelism via /poteto-mode and its 23 playbooks.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> At the start of a demanding task such as reproducing defects, tracing performance bottlenecks, or overnight autonomous work needing empirical verification.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> In workflows built on heavy upfront planning and spec-first stages, which the author eschews, or in non-Cursor harnesses lacking bugbot and automations.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>In Cursor run /add-plugin pstack (in Claude Code: /plugin marketplace add cursor/plugins, then /plugin install pstack@cursor-plugins).</li><li>Run /setup-pstack, pick a reasoning budget and choose your models.</li><li>Start any rigorous task with /poteto-mode and let it pick a playbook, then verify the result with concrete evidence.</li></ol>
@@ -87,7 +81,6 @@
  <h3 id="skill-3">Karpathy Skills</h3><p class="description">A single behaviour guide distilled from common LLM coding pitfalls.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> During a non-trivial coding task where models tend to assume silently, add speculative abstractions, edit unrelated code, or skip verifiable test loops.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> On trivial tasks such as a typo fix or obvious one-liner, where the added caution and verification loops cost speed for no gain.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Read the behaviour guide in the repository.</li><li>Follow its instructions for adding the guide to your agent’s project context.</li><li>Ask the agent to state assumptions, make minimal changes, and verify the result.</li></ol>
@@ -99,7 +92,6 @@
  <h3 id="skill-8">Agent Skills</h3><p class="description">Production-grade engineering skills for AI coding agents.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When guiding an agent through multi-stage feature delivery that needs requirements, specs, tests, security passes, and human checkpoints to prevent shortcuts.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> In hands-off long autonomous runs without human checkpoints, or quick edits where the multi-phase lifecycle is more ceremony than the change deserves.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Browse the repository and select a skill that fits the engineering task.</li><li>Install or load it according to the instructions for your agent.</li><li>Provide project constraints, apply the skill, and verify the output against production requirements.</li></ol>
@@ -114,7 +106,6 @@
  <h3 id="skill-5">UI/UX Pro Max</h3><p class="description">Design intelligence for professional, polished user interfaces.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When building, refactoring, or auditing an interface that needs concrete choices on palette, font pairing, responsive layout, and accessibility compliance.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> On backend logic, API or database design, infrastructure, or non-visual scripts, where its guidance adds nothing to how an interface looks or moves.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Install the skill using the repository’s instructions for your coding tool.</li><li>Describe the product, audience, platform, and visual constraints.</li><li>Ask for a coherent design system, then implement and review the interface across screen sizes.</li></ol>
@@ -129,7 +120,6 @@
  <h3 id="skill-6">Caveman</h3><p class="description">Concise, token-efficient agent communication.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> In interactive terminal coding sessions where replies pile up token waste, latency, and conversational filler.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> Under fixed-credit or per-request billing such as GitHub Copilot, in terse Q&amp;A where rule injection outweighs savings, or for commits, pull requests, and docs.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Read the repository’s setup and usage instructions.</li><li>Enable the communication guide in your agent’s context.</li><li>Request concise output while preserving essential reasoning, risks, and verification results.</li></ol>
@@ -144,7 +134,6 @@
  <h3 id="skill-7">Graphify</h3><p class="description">Turns a codebase into an explorable knowledge graph.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When exploring an unfamiliar codebase or a mixed folder of code, PDFs, notes, and images that needs a persistent, queryable graph of cross-file links.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> On small file sets that already fit in context, where token reduction is about 1x, or on unsegmented corpora beyond 2M words or 200 files.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Follow the repository’s installation and codebase indexing instructions.</li><li>Generate a graph for the project or the area you want to understand.</li><li>Explore connections and use the graph to trace dependencies before making changes.</li></ol>
@@ -156,7 +145,6 @@
  <h3 id="skill-9">Understand-Anything</h3><p class="description">Turns any codebase into an interactive knowledge graph to explore, search, and ask questions about.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When onboarding onto a large unfamiliar repository of 200,000+ lines and you need a visual dashboard of architecture layers, business flows, and diff impact.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> With a tight token budget and no subscription or local model for the first full multi-agent scan, or inside ephemeral git worktrees without output redirection.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Follow the repository’s setup instructions and connect the codebase.</li><li>Build the knowledge graph and explore the project’s structure.</li><li>Search or ask questions about a flow, then confirm findings against the source files.</li></ol>
@@ -168,7 +156,6 @@
  <h3 id="skill-11">Anthropic Skills</h3><p class="description">The official public repository for Agent Skills from Anthropic.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When Claude needs multi-step procedural guidance for domain tasks like DOCX, PDF, PPTX, and XLSX generation, web app testing, or MCP server scaffolding.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> For critical production tasks without testing in your target environment, since the repository states it serves demonstration and educational purposes.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Browse the repository and choose a skill that matches your task.</li><li>Read its SKILL.md and follow the setup instructions for your supported agent.</li><li>Provide your task and inputs, apply the skill, and review the output.</li></ol>
@@ -180,7 +167,6 @@
  <h3 id="skill-14">Scientific Agent Skills</h3><p class="description">A library that turns an AI agent into an AI scientist with specialised scientific skills.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When running workflows in genomics, cheminformatics, physics, clinical research, or lab automation that need vetted links to 100+ scientific databases.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> When bulk-installing the entire catalog in a sensitive environment without reviewing community-contributed skill files or running behavioral security scans.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Browse the library for skills relevant to your scientific discipline and research question.</li><li>Read the selected skill’s instructions and set up its required tools and data access.</li><li>Provide the research question and data, then review methods, evidence, and reproducibility.</li></ol>
@@ -192,7 +178,6 @@
  <h3 id="skill-15">Obsidian Skills</h3><p class="description">Agent skills for using Obsidian through its CLI and open Markdown formats.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When a task writes wikilinks, embeds, or callouts, edits canvas or base files, or manages vault state through the Obsidian CLI.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> When writing portable Markdown for non-Obsidian parsers, where wikilinks and embeds fail to render, or running CLI operations while the desktop app is closed.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Read the repository’s setup instructions and select the relevant Obsidian skills.</li><li>Configure the CLI if needed and give the agent access to the intended vault.</li><li>Describe the note task and review the resulting Markdown, links, and vault structure.</li></ol>
@@ -204,7 +189,6 @@
  <h3 id="skill-20">Google Skills</h3><p class="description">Agent skills for Google products and technologies.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When designing or configuring services on Google Cloud, Gemini APIs, Firebase, Android, or Google Ads, or weighing Google products for a stack component.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> When the stack is already committed to another cloud provider with no Google product named, or the task involves no platform choice.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Browse the repository for skills covering the Google technology you use.</li><li>Read the selected skill’s setup guide and configure any required tools or access.</li><li>Provide your project context, apply the skill, and verify the result against its guidance.</li></ol>
@@ -219,7 +203,6 @@
  <h3 id="skill-10">Agentic Awesome Skills</h3><p class="description">A large catalog of agentic skills for discovering, comparing, and planning which skills to use.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When an autonomous agent should inspect your codebase, search a skill catalog over read-only MCP, and produce a validated stack manifest with plan preview.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> When bulk-installing the catalog into agent directories, causing context overload and crashes, or expecting semantic ranking and guaranteed safe execution.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Browse the catalog by category and identify skills relevant to your goal.</li><li>Read each candidate’s instructions, requirements, and original source.</li><li>Choose a small set that fits your agent and project; follow its installation guide.</li></ol>
@@ -231,7 +214,6 @@
  <h3 id="skill-13">Awesome Claude Code</h3><p class="description">A curated collection of Claude Code skills, agents, and developer tooling.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When configuring Claude Code and you want a selective directory of vetted tools, status lines, hooks, subagents, and guides that meet maturity thresholds.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> When you want a package-manager installer for raw skill files, or workflows for assistants that lack Claude Code-specific features.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Browse the collection for skills, agents, or tools relevant to your work.</li><li>Open the original repositories and review their requirements and usage guides.</li><li>Choose a suitable option, follow its setup instructions, and try it on a focused task.</li></ol>
@@ -243,7 +225,6 @@
  <h3 id="skill-16">Claude Plugins Official</h3><p class="description">The official Anthropic-managed directory of high quality Claude Code plugins.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When you want to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> In high-security environments without manual auditing, since Anthropic cannot verify third-party plugin code, or in harnesses lacking plugin support.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Browse the official directory for a plugin that addresses your task.</li><li>Review the plugin’s documentation, requirements, and available capabilities.</li><li>Follow its installation instructions in Claude Code and test its documented workflow.</li></ol>
@@ -255,7 +236,6 @@
  <h3 id="skill-18">Awesome Agent Skills</h3><p class="description">A curated collection of 1000+ agent skills from official teams and the community.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When you need production-ready skills authored by engineering teams such as Supabase, Stripe, Sentry, and Vercel, usable across several coding assistants.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> In zero-trust environments needing pre-audited skills, since skills are curated, not audited, and may carry prompt injections or malicious payloads.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Browse the collection by topic to find skills relevant to your goal.</li><li>Visit the original sources and compare instructions, prerequisites, and agent support.</li><li>Select a suitable skill and follow its original installation and usage guide.</li></ol>
@@ -267,7 +247,6 @@
  <h3 id="skill-19">Claude Skills Collection</h3><p class="description">A collection of 380 Claude Code skills and plugins for engineering, product, research, and more.</p>
  <div class="fit">
   <p class="fit-use"><strong>Use when</strong> When you need cross-functional playbooks for executive advisory, marketing, compliance, or research, plus zero-dependency Python analysis and conversion tools.</p>
-  <p class="fit-avoid"><strong>Avoid when</strong> Without a local Python 3 interpreter for the scripts, or when you only want simple coding rules without executive and cross-functional persona overhead.</p>
  </div>
  <details><summary>How to use it<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
  <div class="guide"><ol><li>Browse the engineering, product, research, and other skill categories.</li><li>Read the chosen skill or plugin’s instructions and installation requirements.</li><li>Install it as documented, provide project context, and review the deliverable.</li></ol>
