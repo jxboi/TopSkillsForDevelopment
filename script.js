@@ -18,50 +18,72 @@ let selectedCategory = 'All skills';
 const searchableCards = cards.map(card => ({ card, text: card.textContent.toLocaleLowerCase() }));
 
 const insideSearch = cards.map(card => {
-  const inside = card.querySelector('details.inside');
-  const list = inside.querySelector('.inside-list');
-  return { card, inside, list, originalHTML: list.innerHTML, preSearchOpen: false };
-});
+  try {
+    const inside = card.querySelector('details.inside');
+    const list = inside?.querySelector('.inside-list');
+    if (!inside || !list) throw new Error('missing Inside block or list');
+    const prose = ['.description', '.fit-use'].map(selector => card.querySelector(selector))
+      .filter(Boolean).map(element => ({ element, originalHTML: element.innerHTML }));
+    return { card, inside, list, originalHTML: list.innerHTML, prose, preSearchOpen: false, autoOpened: false };
+  } catch (error) {
+    console.warn('Skills: Inside search unavailable for a card.', error);
+    return null;
+  }
+}).filter(Boolean);
 let searchingInside = false;
 
 function updateInsideSearch(terms) {
   if (terms.length && !searchingInside) {
     insideSearch.forEach(state => { state.preSearchOpen = state.inside.open; });
   }
-  insideSearch.forEach(({ card, inside, list, originalHTML, preSearchOpen }) => {
+  insideSearch.forEach(state => {
+    const { card, inside, list, originalHTML, preSearchOpen, prose } = state;
     list.innerHTML = originalHTML;
+    prose.forEach(({ element, originalHTML }) => { element.innerHTML = originalHTML; });
     if (!terms.length) {
       if (searchingInside) inside.open = preSearchOpen;
+      state.autoOpened = false;
       return;
     }
-    if (card.hidden || !terms.some(term => list.textContent.toLocaleLowerCase().includes(term))) return;
-    inside.open = true;
-    const walker = document.createTreeWalker(list, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(node => {
-      const text = node.textContent;
-      const lower = text.toLocaleLowerCase();
-      const fragment = document.createDocumentFragment();
-      let start = 0;
-      let cursor = 0;
-      while (cursor < text.length) {
-        const term = terms.filter(term => lower.startsWith(term, cursor)).sort((a, b) => b.length - a.length)[0];
-        if (!term) { cursor++; continue; }
-        fragment.append(document.createTextNode(text.slice(start, cursor)));
-        const mark = document.createElement('mark');
-        mark.textContent = text.slice(cursor, cursor + term.length);
-        fragment.append(mark);
-        cursor += term.length;
-        start = cursor;
-      }
-      if (start) {
-        fragment.append(document.createTextNode(text.slice(start)));
-        node.replaceWith(fragment);
-      }
+    if (card.hidden && state.autoOpened) {
+      inside.open = false;
+      state.autoOpened = false;
+    }
+    if (card.hidden) return;
+    if (terms.some(term => list.textContent.toLocaleLowerCase().includes(term))) {
+      if (!inside.open) state.autoOpened = true;
+      inside.open = true;
+    }
+    // Inside highlights stay within list items; prose is highlighted separately.
+    [list, ...prose.map(({ element }) => element)].forEach(target => {
+      const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(node => {
+        const text = node.textContent;
+        const lower = text.toLocaleLowerCase();
+        const fragment = document.createDocumentFragment();
+        let start = 0;
+        let cursor = 0;
+        while (cursor < text.length) {
+          const term = terms.filter(term => lower.startsWith(term, cursor)).sort((a, b) => b.length - a.length)[0];
+          if (!term) { cursor++; continue; }
+          fragment.append(document.createTextNode(text.slice(start, cursor)));
+          const mark = document.createElement('mark');
+          mark.textContent = text.slice(cursor, cursor + term.length);
+          fragment.append(mark);
+          cursor += term.length;
+          start = cursor;
+        }
+        if (start) {
+          fragment.append(document.createTextNode(text.slice(start)));
+          node.replaceWith(fragment);
+        }
+      });
     });
   });
   searchingInside = terms.length > 0;
+  updateInsideControl();
 }
 
 function updateResults() {
@@ -120,17 +142,30 @@ clearSearch?.addEventListener('click', () => {
 
 function updateInsideControl() {
   if (!toggleInside || !insides.length) return;
-  const allOpen = insides.every(inside => inside.open);
+  const scope = insideSearch.filter(({ card }) => !card.hidden);
+  const allOpen = scope.length > 0 && scope.every(({ inside }) => inside.open);
   toggleInside.textContent = allOpen ? 'Collapse all inside lists' : 'Expand all inside lists';
   toggleInside.setAttribute('aria-expanded', String(allOpen));
 }
 
 toggleInside?.addEventListener('click', () => {
-  const open = !insides.every(inside => inside.open);
-  insides.forEach(inside => { inside.open = open; });
+  const scope = insideSearch.filter(({ card }) => !card.hidden);
+  const open = !scope.every(({ inside }) => inside.open);
+  scope.forEach(state => {
+    state.inside.open = open;
+    state.autoOpened = false;
+    if (searchingInside) state.preSearchOpen = open;
+  });
   updateInsideControl();
 });
 insides.forEach(inside => inside.addEventListener('toggle', updateInsideControl));
+insideSearch.forEach(state => {
+  state.inside.addEventListener('click', event => {
+    if (!event.target.closest('summary')) return;
+    state.autoOpened = false;
+    if (searchingInside) state.preSearchOpen = !state.inside.open;
+  });
+});
 function revealControls() {
   if (searchInput) searchInput.disabled = false;
   filterButtons.forEach(button => { button.hidden = false; });
