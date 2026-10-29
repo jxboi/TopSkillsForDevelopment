@@ -72,8 +72,10 @@ h1 em,.closing em{font-weight:normal;color:var(--ink)}
 .dot{color:var(--muted)}
 h2,.skill-card h3{font:normal var(--type-entry)/var(--type-entry-leading) var(--serif);letter-spacing:0;margin:var(--space-3) 0 var(--space-2);overflow-wrap:anywhere}
 .description{font-family:var(--serif);color:var(--body);margin:0;font-size:var(--type-body);line-height:var(--type-prose-leading)}
-.best{color:var(--body);font-size:var(--type-small);line-height:var(--type-prose-leading);margin:var(--space-3) 0 var(--space-3)}
-.best strong{display:block;color:var(--ink);font-size:var(--type-label);font-weight:600;margin-bottom:var(--space-1)}
+.fit { margin: var(--space-3) 0; }
+.fit p { margin: 0; font-size: var(--type-small); line-height: var(--type-prose-leading); color: var(--body); }
+.fit p + p { margin-top: var(--space-1); }
+.fit strong { font-weight: 600; color: var(--ink); }
 details{border-top:1px solid var(--line)}
 summary{display:flex;justify-content:space-between;align-items:center;list-style:none;padding:var(--space-2) 0;font-size:var(--type-mono);font-weight:500;cursor:pointer}
 summary::-webkit-details-marker{display:none}
@@ -123,7 +125,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 @media(min-width:641px){
   .skill-grid > .skill-card:nth-child(2)::before{border-top:0}
   .skill-grid:has(> article:only-child) > article{grid-column:1 / -1}
-  .skill-grid:has(> article:only-child) :is(.description,.best,.guide,.prompt-text){max-width:62ch}
+  .skill-grid:has(> article:only-child) :is(.description,.fit p,.guide,.prompt-text){max-width:62ch}
 }
 
 
@@ -166,7 +168,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
   .skill-grid{grid-template-columns:1fr;gap:var(--space-2)}
   .skill-card{padding:var(--space-3) var(--space-3) 0}
   h2,.skill-card h3{font-size:var(--type-entry-mobile)}
-  .description,.best{min-height:0}
+  .description{min-height:0}
   .closing{display:block;padding:var(--space-5) 0}
   .closing p{font-size:var(--type-closing-mobile);margin-bottom:var(--space-2)}
   .site-footer>div{padding:var(--space-3) 0;gap:var(--space-2)}
