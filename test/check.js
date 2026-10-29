@@ -45,7 +45,6 @@ assert.doesNotMatch(styles, /--radius-[\w-]+:\s*(?:24|8)px/);
 assert.match(styles, /--radius-control:6px/);
 for (const [, radius] of styles.matchAll(/border-radius:([^;}]+)/g)) assert.ok(['0', 'var(--radius-control)'].includes(radius));
 assert.match(styles, /\.built-with ul\{[^}]*max-width:64ch/);
-assert.match(styles, /\.skill-grid:has\(> article:only-child\) :is\(\.description,\.best,\.guide,\.prompt-text\)\{max-width:62ch}/);
 
 // Muted text on the prompt background would be 4.30:1, below AA.
 const plainCSS = styles.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -71,6 +70,58 @@ const source = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 assert.match(source, /searchInput\.disabled = false/);
 const articles = [...html.matchAll(/<article class="skill-card" data-category="([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)];
 assert.equal(articles.length, 21);
+
+// Depth field T1: agreed fit markup, copy, order, and CSS seams.
+const fitParagraphs = kind => [...html.matchAll(new RegExp(`<p class="fit-${kind}">([\\s\\S]*?)</p>`, 'g'))];
+assert.equal(fitParagraphs('use').length, 21, 'Expected 21 fit-use paragraphs (one per card)');
+assert.equal(fitParagraphs('avoid').length, 21, 'Expected 21 fit-avoid paragraphs (one per card)');
+assert.doesNotMatch(html, /<[^>]+\bclass\s*=\s*["'][^"']*\bbest\b[^"']*["']/);
+// Decode the ampersand entities used in the copy before checking rendered text.
+const textOnly = markup => markup.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').trim();
+const fitSentences = articles.map(([, , markup], index) => {
+  const fitBlocks = [...markup.matchAll(/<div class="fit">([\s\S]*?)<\/div>/g)];
+  assert.equal(fitBlocks.length, 1, `Card ${index + 1} needs one fit block`);
+  const sentences = ['use', 'avoid'].map(kind => {
+    const paragraphs = [...markup.matchAll(new RegExp(`<p class="fit-${kind}">([\\s\\S]*?)</p>`, 'g'))];
+    assert.equal(paragraphs.length, 1, `Card ${index + 1} needs one fit-${kind}`);
+    assert.ok(fitBlocks[0][1].includes(paragraphs[0][0]), 'Fit paragraph belongs inside the fit block');
+    const label = kind === 'use' ? 'Use when' : 'Avoid when';
+    assert.ok(paragraphs[0][1].startsWith(`<strong>${label}</strong>`));
+    const sentence = textOnly(paragraphs[0][1].replace(`<strong>${label}</strong>`, ''));
+    assert.ok(sentence.length >= 20 && sentence.length <= 160, `Card ${index + 1} fit-${kind} must be 20–160 chars`);
+    assert.match(sentence, /^[^.!?]+[.!?]$/, `Card ${index + 1} fit-${kind} must be a single sentence`);
+    return sentence;
+  });
+  assert.ok(fitBlocks[0][1].indexOf('class="fit-use"') < fitBlocks[0][1].indexOf('class="fit-avoid"'), 'Use precedes Avoid in each fit block');
+  const [use, avoid] = sentences;
+  const description = textOnly(markup.match(/<p class="description">([\s\S]*?)<\/p>/)[1]);
+  assert.ok(!description.includes(use), 'Use sentence must not duplicate the description');
+  assert.ok(!description.includes(avoid), 'Avoid sentence must not duplicate the description');
+  assert.notEqual(avoid, use);
+  assert.ok(!avoid.includes(use), 'Avoid sentence must not contain the Use sentence');
+  const firstFour = sentence => sentence.toLowerCase().split(/\s+/).slice(0, 4).join(' ');
+  assert.notEqual(firstFour(avoid), firstFour(use), 'Use and Avoid must start with different four words');
+  const positions = ['<div class="card-meta">', '<h3', '<p class="description">', '<div class="fit">', '<details', '<div class="card-footer">']
+    .map(marker => markup.indexOf(marker));
+  assert.ok(positions.every((position, i) => position >= 0 && (i === 0 || position > positions[i - 1])), 'Card order: meta → h3 → description → fit → details → footer');
+  assert.ok(markup.indexOf('</div>', positions[3]) < positions[4], 'Fit block must end before details');
+  return sentences;
+});
+for (const [offset, kind] of ['use', 'avoid'].entries()) {
+  assert.deepEqual(fitParagraphs(kind).map(([, markup]) => textOnly(markup.replace(/<strong>[\s\S]*?<\/strong>/, ''))),
+    fitSentences.map(sentences => sentences[offset]), 'Fit pairs follow article document order');
+}
+assert.doesNotMatch(plainCSS, /\.best\b/);
+const fitRules = visualRules.filter(([, selector]) => /\.fit\b/.test(selector));
+assert.ok(fitRules.some(([, selector]) => selector.trim() === '.fit'), 'Expected a .fit rule');
+for (const [, , declarations] of fitRules) {
+  assert.doesNotMatch(declarations, /#|var\(\s*--accent\b|\bborder|\bbackground/i);
+  for (const [, token] of declarations.matchAll(/var\(\s*(--[\w-]+)/g)) {
+    assert.match(token, /^--(?:type-small|type-prose-leading|space-[\w-]+|body|ink)$/);
+  }
+}
+assert.match(plainCSS, /\.skill-grid:has\(> article:only-child\) :is\(\.description,\.fit p,\.guide,\.prompt-text\)\s*\{\s*max-width:\s*62ch\s*;?\s*}/);
+
 assert.match(html, /How this site was built/);
 const filterTags = [...html.matchAll(/<button[^>]*data-filter="([^"]+)"[^>]*>/g)];
 filterTags.forEach(([tag]) => assert.match(tag, /\bhidden\b/));
@@ -173,6 +224,17 @@ async function check() {
   assert.equal(app.visible().length, 21);
   assert.equal(app.ids['toggle-guides'].hidden, false);
   assert.ok(app.chapters.every(chapter => !chapter.hidden));
+  // Derive a unique search term from the shipped fit copy and all card text.
+  const cardText = app.cards.map(card => card.textContent.toLowerCase());
+  const fitWords = fitSentences.flatMap((sentences, index) =>
+    (sentences.join(' ').toLowerCase().match(/[a-z]+/g) || []).map(word => ({ word, index })));
+  const uniqueFitWord = fitWords.find(({ word, index }) =>
+    cardText.every((text, cardIndex) => text.includes(word) === (cardIndex === index)));
+  assert.ok(uniqueFitWord, 'Fit copy must supply a word searchable in exactly one card');
+  app.search(uniqueFitWord.word);
+  assert.deepEqual(app.visible(), [app.cards[uniqueFitWord.index]], 'Searching a derived fit word shows exactly its card');
+  app.search('');
+
   app.search('  SUPERPOWERS   settings  ');
   assert.equal(app.visible().length, 1);
   assert.deepEqual(app.chapters.map(chapter => chapter.hidden), [false, true, true, true, true, true], 'Search hides entire nonmatching chapters');
