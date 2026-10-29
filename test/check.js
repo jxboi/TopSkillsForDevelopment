@@ -21,6 +21,19 @@ assert.equal(articles.length, 21);
 assert.match(html, /How this site was built/);
 const filterTags = [...html.matchAll(/<button[^>]*data-filter="([^"]+)"[^>]*>/g)];
 filterTags.forEach(([tag]) => assert.match(tag, /\bhidden\b/));
+const categoryCounts = new Map();
+for (const [, category] of articles) {
+  categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+}
+const filterButtons = [...html.matchAll(/<button[^>]*data-filter="([^"]+)"[^>]*>([^<]*)<\/button>/g)];
+assert.deepEqual(filterButtons.map(([, category]) => category).sort(), ['All skills', ...categoryCounts.keys()].sort());
+let categoryLabelTotal = 0;
+for (const [, category, label] of filterButtons) {
+  const count = category === 'All skills' ? articles.length : categoryCounts.get(category);
+  assert.equal(label, `${category} (${count})`, `${category} filter label must match its card count`);
+  if (category !== 'All skills') categoryLabelTotal += Number(label.match(/\((\d+)\)$/)[1]);
+}
+assert.equal(categoryLabelTotal, 21, 'Category filter counts must sum to 21');
 assert.match(html, /id="toggle-guides" hidden/);
 
 function element(textContent = '') {
