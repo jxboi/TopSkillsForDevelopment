@@ -43,7 +43,6 @@ filterButtons.forEach(button => {
     });
     updateResults();
   });
-  button.hidden = false;
 });
 
 function resetFilters() {
@@ -59,7 +58,11 @@ function resetFilters() {
 }
 
 resetButton?.addEventListener('click', resetFilters);
-clearSearch?.addEventListener('click', resetFilters);
+clearSearch?.addEventListener('click', () => {
+  if (searchInput) searchInput.value = '';
+  updateResults();
+  searchInput?.focus();
+});
 
 function updateGuideControl() {
   if (!toggleGuides || !guides.length) return;
@@ -74,10 +77,13 @@ toggleGuides?.addEventListener('click', () => {
   updateGuideControl();
 });
 guides.forEach(guide => guide.addEventListener('toggle', updateGuideControl));
-if (toggleGuides && guides.length) {
-  updateGuideControl();
-  toggleGuides.hidden = false;
+function revealControls() {
+  filterButtons.forEach(button => { button.hidden = false; });
+  if (toggleGuides && guides.length) toggleGuides.hidden = false;
 }
+
+revealControls();
+updateGuideControl();
 updateResults();
 
 async function copyText(text) {
@@ -106,6 +112,7 @@ document.querySelectorAll('.copy-button').forEach(button => {
       if (!prompt) throw new Error('Prompt unavailable');
       await copyText(prompt.textContent);
       button.textContent = 'Copied!';
+      resetTimer = setTimeout(() => { button.textContent = 'Copy prompt'; }, 3000);
       if (copyStatus) copyStatus.textContent = `Example prompt copied for ${button.closest('.skill-card')?.querySelector('h2')?.textContent ?? 'this skill'}.`;
     } catch {
       button.textContent = 'Select prompt to copy';
@@ -120,6 +127,5 @@ document.querySelectorAll('.copy-button').forEach(button => {
         ? 'Clipboard unavailable. The prompt is selected; use your browser’s copy command.'
         : 'Clipboard unavailable. Select the prompt to copy with your browser’s copy command.';
     }
-    resetTimer = setTimeout(() => { button.textContent = 'Copy prompt'; }, 3000);
   });
 });
