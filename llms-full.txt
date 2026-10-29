@@ -59,7 +59,7 @@ How work moves from an idea to shipped code.
 - Description: Skills for real engineers, including alignment interviews and disciplined test-driven loops.
 - Use when: At the start of feature or bug work, when human grilling should settle ambiguity and shared terminology before tickets and test-driven development.
 - Top inside: Top inside: grill-with-docs, grill-me
-- Inside: Inside this repo — 5 of 31 skills
+- Inside: Inside this repo — 27 skills
 - grill-with-docs — Interrogates the user in depth about planned changes while writing Architecture Decision Records (ADRs) and maintaining a ubiquitous project domain glossary (`GLOSSARY.md`) before work starts.
   > /grill-with-docs Interview me about our proposed caching architecture while recording architectural decision records and updating our project glossary.
 - grill-me — Recursively interviews the user on an idea, plan, or general proposal until every branch of the design decision tree is explored and aligned.
@@ -70,6 +70,50 @@ How work moves from an idea to shipped code.
   > /implement Build the feature described in ticket #104, using test-driven development at identified seams and running code review before committing.
 - code-review — Performs a dual-axis evaluation of repository diffs comparing code against standards and against the originating spec using parallel, isolated subagents.
   > Review our current changes since main against repo coding standards and originating issue #45 using parallel subagents for evaluation.
+- ask-matt — Routes user to the right workflow or skill
+  > Use ask-matt to recommend the best skill sequence for turning our auth refactor idea into tested, production-ready code.
+- codebase-design — Designs deep modules behind simple seams
+  > Use codebase-design to restructure our payment gateway into a deep module hiding its internal webhook handlers behind one interface.
+- diagnosing-bugs — Disciplined loop for hard bugs and failures
+  > Use diagnosing-bugs to build a reproducible failing test for the intermittent session timeout before attempting any speculative code fix.
+- domain-modeling — Sharpens terms and updates glossary and ADRs
+  > Use domain-modeling to clarify our order fulfillment terminology, resolve naming ambiguities, and update the glossary with our new state transitions.
+- implement-spec — Executes full spec using concurrent workers
+  > Use implement-spec to execute our completed billing integration spec across parallel implementer subagents on a dedicated feature branch.
+- improve-codebase-architecture — Finds deep module opportunities in a codebase
+  > Use improve-codebase-architecture to scan our repository for shallow abstractions, generate an interactive HTML report, and suggest deeper seams.
+- pr — Formats PR body with summary and verification
+  > Use pr to construct a pull request description including a concise summary, before-and-after verification evidence, and merge risk analysis.
+- prototype — Builds throwaway logic or UI spike prototypes
+  > Use prototype to build a throwaway single-file HTML spike validating our multi-step checkout state machine before writing production code.
+- research — Investigates primary sources into repo docs
+  > Use research to investigate the latest Stripe webhook idempotency guidelines against official documentation and document findings in our repository.
+- retro — Reviews session to improve agent environment
+  > Use retro to evaluate our recent development session and recommend high-impact improvements to our linter rules, steering docs, and harness.
+- setup-matt-pocock-skills — Configures tracker, labels, and doc structure
+  > Use setup-matt-pocock-skills to configure our GitHub issue tracker integration, establish triage labels, and initialize our domain documentation layout.
+- tdd — Drives red-green-refactor vertical slices
+  > Use tdd to implement our token verification logic by writing a failing test first, followed by minimal implementation and refactoring.
+- to-tickets — Splits specs into tracer-bullet issue graphs
+  > Use to-tickets to decompose our authentication specification into tracer-bullet tickets declaring explicit dependency edges for our tracking system.
+- triage — Processes issues into actionable agent briefs
+  > Use triage to inspect incoming user bug reports, verify reproduction steps, apply triage labels, and draft structured agent-ready implementation briefs.
+- wayfinder — Maps multi-session work as decision tickets
+  > Use wayfinder to break our database migration into a decision map of sequential tickets resolving unknowns one step at a time.
+- wizard — Generates interactive bash setup walkthroughs
+  > Use wizard to generate an interactive bash script that guides our DevOps engineer step-by-step through manual AWS credential provisioning.
+- grilling — Relentless interview primitive for decisions
+  > Use grilling to relentlessly interview me about our proposed caching strategy until every trade-off and edge case is thoroughly resolved.
+- handoff — Compacts session context for another agent
+  > Use handoff to summarize our current debugging progress into a concise state document so another agent can continue the task seamlessly.
+- teach — Interactive workspace for learning concepts
+  > Use teach to guide me through understanding distributed consensus algorithms with interactive exercises and incremental knowledge checks in this workspace.
+- to-questionnaire — Turns blocked decisions into questionnaires
+  > Use to-questionnaire to create an asynchronous markdown questionnaire for our product manager regarding unresolved user permission requirements and trade-offs.
+- wait-what — Re-explains unclear messages using glossary
+  > Use wait-what to rephrase your previous technical explanation in plain English using terminology already established in our project glossary.
+- writing-for-agents — Guides authoring docs and steering for agents
+  > Use writing-for-agents to craft clear, concise instructions for our team steering guidelines following proven context-pointer and front-loading principles.
 
 ### Spec Kit
 

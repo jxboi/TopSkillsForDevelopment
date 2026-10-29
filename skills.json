@@ -134,7 +134,7 @@
           "grill-me"
         ]
       },
-      "inside_summary": "Inside this repo — 5 of 31 skills",
+      "inside_summary": "Inside this repo — 27 skills",
       "inside_note": null,
       "inside": [
         {
@@ -166,6 +166,138 @@
           "kind": null,
           "function": "Performs a dual-axis evaluation of repository diffs comparing code against standards and against the originating spec using parallel, isolated subagents.",
           "example_prompt": "Review our current changes since main against repo coding standards and originating issue #45 using parallel subagents for evaluation."
+        },
+        {
+          "name": "ask-matt",
+          "kind": null,
+          "function": "Routes user to the right workflow or skill",
+          "example_prompt": "Use ask-matt to recommend the best skill sequence for turning our auth refactor idea into tested, production-ready code."
+        },
+        {
+          "name": "codebase-design",
+          "kind": null,
+          "function": "Designs deep modules behind simple seams",
+          "example_prompt": "Use codebase-design to restructure our payment gateway into a deep module hiding its internal webhook handlers behind one interface."
+        },
+        {
+          "name": "diagnosing-bugs",
+          "kind": null,
+          "function": "Disciplined loop for hard bugs and failures",
+          "example_prompt": "Use diagnosing-bugs to build a reproducible failing test for the intermittent session timeout before attempting any speculative code fix."
+        },
+        {
+          "name": "domain-modeling",
+          "kind": null,
+          "function": "Sharpens terms and updates glossary and ADRs",
+          "example_prompt": "Use domain-modeling to clarify our order fulfillment terminology, resolve naming ambiguities, and update the glossary with our new state transitions."
+        },
+        {
+          "name": "implement-spec",
+          "kind": null,
+          "function": "Executes full spec using concurrent workers",
+          "example_prompt": "Use implement-spec to execute our completed billing integration spec across parallel implementer subagents on a dedicated feature branch."
+        },
+        {
+          "name": "improve-codebase-architecture",
+          "kind": null,
+          "function": "Finds deep module opportunities in a codebase",
+          "example_prompt": "Use improve-codebase-architecture to scan our repository for shallow abstractions, generate an interactive HTML report, and suggest deeper seams."
+        },
+        {
+          "name": "pr",
+          "kind": null,
+          "function": "Formats PR body with summary and verification",
+          "example_prompt": "Use pr to construct a pull request description including a concise summary, before-and-after verification evidence, and merge risk analysis."
+        },
+        {
+          "name": "prototype",
+          "kind": null,
+          "function": "Builds throwaway logic or UI spike prototypes",
+          "example_prompt": "Use prototype to build a throwaway single-file HTML spike validating our multi-step checkout state machine before writing production code."
+        },
+        {
+          "name": "research",
+          "kind": null,
+          "function": "Investigates primary sources into repo docs",
+          "example_prompt": "Use research to investigate the latest Stripe webhook idempotency guidelines against official documentation and document findings in our repository."
+        },
+        {
+          "name": "retro",
+          "kind": null,
+          "function": "Reviews session to improve agent environment",
+          "example_prompt": "Use retro to evaluate our recent development session and recommend high-impact improvements to our linter rules, steering docs, and harness."
+        },
+        {
+          "name": "setup-matt-pocock-skills",
+          "kind": null,
+          "function": "Configures tracker, labels, and doc structure",
+          "example_prompt": "Use setup-matt-pocock-skills to configure our GitHub issue tracker integration, establish triage labels, and initialize our domain documentation layout."
+        },
+        {
+          "name": "tdd",
+          "kind": null,
+          "function": "Drives red-green-refactor vertical slices",
+          "example_prompt": "Use tdd to implement our token verification logic by writing a failing test first, followed by minimal implementation and refactoring."
+        },
+        {
+          "name": "to-tickets",
+          "kind": null,
+          "function": "Splits specs into tracer-bullet issue graphs",
+          "example_prompt": "Use to-tickets to decompose our authentication specification into tracer-bullet tickets declaring explicit dependency edges for our tracking system."
+        },
+        {
+          "name": "triage",
+          "kind": null,
+          "function": "Processes issues into actionable agent briefs",
+          "example_prompt": "Use triage to inspect incoming user bug reports, verify reproduction steps, apply triage labels, and draft structured agent-ready implementation briefs."
+        },
+        {
+          "name": "wayfinder",
+          "kind": null,
+          "function": "Maps multi-session work as decision tickets",
+          "example_prompt": "Use wayfinder to break our database migration into a decision map of sequential tickets resolving unknowns one step at a time."
+        },
+        {
+          "name": "wizard",
+          "kind": null,
+          "function": "Generates interactive bash setup walkthroughs",
+          "example_prompt": "Use wizard to generate an interactive bash script that guides our DevOps engineer step-by-step through manual AWS credential provisioning."
+        },
+        {
+          "name": "grilling",
+          "kind": null,
+          "function": "Relentless interview primitive for decisions",
+          "example_prompt": "Use grilling to relentlessly interview me about our proposed caching strategy until every trade-off and edge case is thoroughly resolved."
+        },
+        {
+          "name": "handoff",
+          "kind": null,
+          "function": "Compacts session context for another agent",
+          "example_prompt": "Use handoff to summarize our current debugging progress into a concise state document so another agent can continue the task seamlessly."
+        },
+        {
+          "name": "teach",
+          "kind": null,
+          "function": "Interactive workspace for learning concepts",
+          "example_prompt": "Use teach to guide me through understanding distributed consensus algorithms with interactive exercises and incremental knowledge checks in this workspace."
+        },
+        {
+          "name": "to-questionnaire",
+          "kind": null,
+          "function": "Turns blocked decisions into questionnaires",
+          "example_prompt": "Use to-questionnaire to create an asynchronous markdown questionnaire for our product manager regarding unresolved user permission requirements and trade-offs."
+        },
+        {
+          "name": "wait-what",
+          "kind": null,
+          "function": "Re-explains unclear messages using glossary",
+          "example_prompt": "Use wait-what to rephrase your previous technical explanation in plain English using terminology already established in our project glossary."
+        },
+        {
+          "name": "writing-for-agents",
+          "kind": null,
+          "function": "Guides authoring docs and steering for agents",
+          "example_prompt": "Use writing-for-agents to craft clear, concise instructions for our team steering guidelines following proven context-pointer and front-loading principles."
         }
       ]
     },
