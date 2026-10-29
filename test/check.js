@@ -33,8 +33,13 @@ for(const item of mattRemaining) promptMap.get('Matt Pocock Skills').set(item.na
 const densityBaseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/agent-layer-baseline.json'),'utf8'));
 
 const root = path.join(__dirname, '..');
-const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const styles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+const categoryHTML = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+// Historical copy gates compare the original surface after removing only the authorized additions.
+const stripCategories = value => value.replace(/ <span class="item-category">[^<]*<\/span>/g, '');
+const html = stripCategories(categoryHTML);
+const categoryCSSRule = '.item-category{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);color:var(--muted)}';
+const categoryStyles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+const styles = categoryStyles.replace(categoryCSSRule+'\n','');
 const source = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 const before = fs.readFileSync(path.join(__dirname, 'fixtures/before/index.html'), 'utf8');
 const beforeCSS = fs.readFileSync(path.join(__dirname, 'fixtures/before/styles.css'), 'utf8');
@@ -43,7 +48,7 @@ const starSnapshot = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/b
 const copy = fs.readFileSync(path.join(__dirname, 'fixtures/copy.md'), 'utf8');
 const uses = fs.readFileSync(path.join(__dirname, 'fixtures/when-avoid-copy.md'), 'utf8');
 const getCards = text => [...text.matchAll(/<article class="skill-card" data-category="([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)];
-const articles = getCards(html), originals = getCards(before);
+const articles = getCards(html), categoryArticles = getCards(categoryHTML), originals = getCards(before);
 const failures = [];
 function gate(name, fn) { try { fn(); console.log('PASS ' + name); } catch (e) { failures.push(name + ': ' + e.message); console.error('FAIL ' + name + ': ' + e.message); } }
 const copyPath = path.join(__dirname, 'fixtures/lists.md');
@@ -66,9 +71,40 @@ const renderedText = markup => decodeHTML(markup.replace(/<[^>]*>/g, '')).trim()
 
 const field = (markup, cls, tag = 'p') => markup.match(new RegExp('<' + tag + ' class="' + cls + '"[^>]*>[\\s\\S]*?</' + tag + '>'))?.[0];
 const words = text => decodeHTML(text.replace(/<[^>]*>/g, ' ')).trim().split(/\s+/).filter(Boolean).length;
-const densities = articles.map(([, , c]) => ({title: renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]), visible: words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g, '$1')), expanded: words(c)}));
+const densities = categoryArticles.map(([, , c]) => ({title: renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]), visible: words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g, '$1')), expanded: words(c)}));
 console.table(densities);
 for (const kind of ['visible', 'expanded']) console.log(kind, {max:Math.max(...densities.map(c=>c[kind])), total:densities.reduce((n,c)=>n+c[kind],0), mean:densities.reduce((n,c)=>n+c[kind],0)/22});
+
+const categorySource = fs.readFileSync(path.join(os.homedir(),'workspace/workflow-run-categorise/categories.md'),'utf8');
+const categoryAssignments = [...categorySource.matchAll(/^\| ([^|]+) \| ([^|]+) \| ([^|]+) \| (?:Confident|Borderline) \|/gm)].map(([,card,item,category])=>[card.trim(),item.trim(),category.trim()]);
+const allowedCategories = new Set(['Planning','Building','Testing','Debugging','Review','Understanding','Research','Writing','Design','Communication','Setup','Discovery']);
+gate('Inside category inventory, source pairs, exact addition scope and CSS',()=>{
+ const expected=new Map(categoryAssignments.map(([card,item,category])=>[JSON.stringify([card,item]),category]));
+ assert.equal(categoryAssignments.length,124);assert.equal(expected.size,124);
+ const actual=new Map();let count=0;
+ for(const [,,card] of categoryArticles){
+  const title=renderedText(card.match(/<h3[^>]*>(.*?)<\/h3>/)[1]);
+  for(const [item] of card.matchAll(/<li>[\s\S]*?<\/li>/g)){
+   const tags=[...item.matchAll(/<span class="item-category">([^<]*)<\/span>/g)];assert.equal(tags.length,1);
+   assert.match(item,/<code class="inside-name">[^<]+<\/code> <span class="item-category">/);
+   const name=renderedText(item.match(/<code class="inside-name">([^<]+)<\/code>/)[1]);
+   const key=JSON.stringify([title,name]);assert.ok(!actual.has(key),'Duplicate pair '+key);
+   assert.ok(allowedCategories.has(tags[0][1]));actual.set(key,tags[0][1]);count++;
+  }
+ }
+ assert.equal(count,124);assert.equal((categoryHTML.match(/class="item-category"/g)||[]).length,count);
+ assert.deepEqual(actual,expected,'0 missing / extra source pairs and exact categories');
+ assert.equal(sha256(html),densityBaseline.categoryAdditionBaseline.html,'Only category spans may change HTML');
+ assert.equal((categoryStyles.match(/\.item-category\s*\{/g)||[]).length,1);
+ assert.equal(sha256(styles),densityBaseline['styles.css'],'Only the one exact category rule may change CSS');
+ assert.equal(sha256(fs.readFileSync(path.join(root,'llms.txt'))),densityBaseline.categoryAdditionBaseline.short);
+ for(const kind of ['visible','expanded']){
+  const prior=densityBaseline.categoryAdditionBaseline[kind];
+  const measured=densities.reduce((n,c)=>n+c[kind],0);
+  assert.equal(measured-prior,kind==='visible'?0:categoryAssignments.length);
+ }
+});
+
 gate('1 density budgets', () => { for (const [kind,max,total,mean] of Object.entries(densityBaseline.budgets).map(([kind,b])=>[kind,b.max,b.total,b.mean])) { assert.ok(densities.every(c=>c[kind]<=max)); const sum=densities.reduce((n,c)=>n+c[kind],0); assert.equal(sum,total); assert.equal(Math.max(...densities.map(c=>c[kind])),max); assert.ok(sum/22<=mean); } });
 gate('1b per-card expanded budgets', () => {
  const expected = densityBaseline.expanded;
@@ -296,10 +332,10 @@ const highlightDocument = {
 };
 function exerciseControls() {
  const ids=Object.fromEntries(['search','clear-search','toggle-inside','results-count','empty-state','reset-filters'].map(id=>[id,element()]));
- const lists=articles.map(([,,c])=>{const originalHTML=c.match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1];return markupElement(originalHTML);});
+ const lists=categoryArticles.map(([,,c])=>{const originalHTML=c.match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1];return markupElement(originalHTML);});
  const insides=lists.map(list=>Object.assign(element(),{querySelector:()=>list}));
  const prose=articles.map(([,,c])=>Object.fromEntries(['description','fit-use'].map(cls=>[cls,markupElement(field(c,cls).replace(/^<p[^>]*>|<\/p>$/g,''))])));
- const cards=articles.map(([,category,c],i)=>Object.assign(element(renderedText(c)),{dataset:{category},querySelector:sel=>sel==='details.inside'?insides[i]:prose[i][sel.slice(1)]}));
+ const cards=categoryArticles.map(([,category,c],i)=>Object.assign(element(renderedText(c)),{dataset:{category},querySelector:sel=>sel==='details.inside'?insides[i]:prose[i][sel.slice(1)]}));
  const chapterMarkup=[...html.matchAll(/<section class="chapter" aria-labelledby="([^"]+)">([\s\S]*?)<\/section>/g)];
  const chapters=chapterMarkup.map(([,id])=>Object.assign(element(),{querySelectorAll:()=>cards.filter(c=>c.dataset.category.toLowerCase()===id.replace('chapter-',''))}));
  const filters=[...html.matchAll(/data-filter="([^"]+)"/g)].map(([,category])=>Object.assign(element(),{dataset:{filter:category}}));
@@ -308,6 +344,20 @@ function exerciseControls() {
  vm.runInNewContext(source,{document,NodeFilter:{SHOW_TEXT:4},console});
  const search=q=>{ids.search.value=q;ids.search.fire('input');};const visible=()=>cards.filter(c=>!c.hidden);
 
+ // Search intentionally includes category text through card.textContent.
+ // Design previously matched 11 cards; json-canvas's Design tag adds Obsidian Skills (12).
+ // planning previously matched 5; Planning tags add Matt Pocock Skills, Karpathy Skills,
+ // Agent Skills, Impeccable, Google Skills and Claude Skills Collection (11).
+ const categorySearchCases = [
+  ['Design', ['Superpowers','Matt Pocock Skills','Spec Kit','Vercel Skills','UI/UX Pro Max','Taste Skill','Impeccable','Obsidian Skills','Google Skills','Agentic Awesome Skills','Claude Plugins Official','Claude Skills Collection'],11],
+  ['planning', ['Superpowers','ECC','Matt Pocock Skills','Spec Kit','Karpathy Skills','Agent Skills','Impeccable','Google Skills','Agentic Awesome Skills','Awesome Claude Code','Claude Skills Collection'],5],
+ ];
+ for(const [term,expected,oldCount] of categorySearchCases){
+  assert.equal(articles.filter(([,,c])=>renderedText(c).toLowerCase().includes(term.toLowerCase())).length,oldCount,'Historical category-free search');
+  search(term);
+  assert.deepEqual(cards.flatMap((card,i)=>card.hidden?[]:[densities[i].title]),expected,term+' includes item categories');
+  search('');
+ }
  const originalLists=lists.map(list=>list.innerHTML);
  const allFilter=()=>filters.find(f=>f.dataset.filter==='All skills').click();
  const assertPromptSearch=(term,title,itemName)=>{
@@ -342,7 +392,7 @@ function exerciseControls() {
  search(''); allFilter(); insides.forEach(inside=>inside.open=false);
  assert.equal(ids.search.disabled,false);assert.equal(visible().length,22);assert.equal(ids['toggle-inside'].hidden,false);
  ids['toggle-inside'].click();assert.ok(insides.every(i=>i.open));assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'true');ids['toggle-inside'].click();assert.ok(insides.every(i=>!i.open));
- insides[0].open=true; search('to-spec');assert.equal(visible().length,1);assert.ok(insides[2].open);assert.equal(ids['toggle-inside'].textContent,'Collapse all inside lists'); assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'true'); assert.match(lists[2].innerHTML, /<code class="inside-name"><mark>to-spec<\/mark><\/code>/); search('worktrees');assert.equal(insides[2].open,false);assert.ok(insides[0].open);search('');assert.ok(insides[0].open);assert.equal(insides[2].open,false);lists.forEach((l,i)=>assert.equal(l.innerHTML,articles[i][2].match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1]));
+ insides[0].open=true; search('to-spec');assert.equal(visible().length,1);assert.ok(insides[2].open);assert.equal(ids['toggle-inside'].textContent,'Collapse all inside lists'); assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'true'); assert.match(lists[2].innerHTML, /<code class="inside-name"><mark>to-spec<\/mark><\/code>/); search('worktrees');assert.equal(insides[2].open,false);assert.ok(insides[0].open);search('');assert.ok(insides[0].open);assert.equal(insides[2].open,false);lists.forEach((l,i)=>assert.equal(l.innerHTML,categoryArticles[i][2].match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1]));
  for(const f of filters){search('');f.click();assert.equal(visible().length,cards.filter(c=>f.dataset.filter==='All skills'||c.dataset.category===f.dataset.filter).length);assert.equal(f.attrs['aria-pressed'],'true');}
  filters.find(f=>f.dataset.filter==='Workflow').click();search('worktrees');assert.equal(visible().length,1);assert.deepEqual(chapters.map(c=>c.hidden),[false,true,true,true,true,true]);search('');
  filters.find(f=>f.dataset.filter==='Design').click();search('design-system');
@@ -457,17 +507,17 @@ Do not invent an install command: if the repository does not state one, say so a
 If no skill matches the task, use no skill from this catalog rather than forcing a match.`;
 const chapterMarkup = [...html.matchAll(/<section class="chapter"[^>]*>([\s\S]*?)<\/section>/g)].map(m=>m[1]);
 const agentChapters = chapterMarkup.map(c=>renderedText(c.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)[1].replace(/<span>[\s\S]*?<\/span>/,'')));
-const agentExpectedCards = articles.map(([,category,c])=>{
+const agentExpectedCards = categoryArticles.map(([,category,c])=>{
  const heading=c.match(/<h3 id="([^"]+)">([^<]+)<\/h3>/); assert.ok(heading,'Missing shipped anchor');
  const stars=renderedText(field(c,'meta-stars','span'));
  assert.match(stars,/^\d{1,3}(?:,\d{3})*$/);
  assert.ok(field(c,'meta-stars','span').includes('aria-label="'+stars+' GitHub stars"'));
  assert.equal(renderedText(field(c,'category','span')),category);
  const top=field(c,'top-inside');
- const items=[...c.match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1].matchAll(/<li><code class="inside-name">([^<]+)<\/code> — ([\s\S]*?)<\/li>/g)].map(([,name,body])=>{
+ const items=[...c.match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1].matchAll(/<li><code class="inside-name">([^<]+)<\/code> <span class="item-category">([^<]+)<\/span> — ([\s\S]*?)<\/li>/g)].map(([,name,category,body])=>{
   const prompts=[...body.matchAll(/<p class="example-prompt">([^<]*)<\/p>/g)]; assert.equal(prompts.length,1);
   const example_prompt=decodeHTML(prompts[0][1]); assert.doesNotMatch(example_prompt,/[\r\n]/);
-  return {name:decodeHTML(name),kind:body.match(/<span class="inside-kind">([^<]+)<\/span>/)?.[1]??null,
+  return {name:decodeHTML(name),category,kind:body.match(/<span class="inside-kind">([^<]+)<\/span>/)?.[1]??null,
    function:renderedText(body.replace(prompts[0][0],'').replace(/<span class="inside-kind">[^<]+<\/span>/,'')),example_prompt};
  });
  const description=renderedText(field(c,'description')); assert.doesNotMatch(description,/[\r\n]/);
@@ -496,7 +546,7 @@ gate('agent files: UTF-8, schema, field-by-field HTML match and hygiene',()=>{
  for(const card of catalog.cards){
   assert.deepEqual(Object.keys(card),Object.keys(agentExpectedCards[0]));
   assert.deepEqual(Object.keys(card.top_inside),['label','names']);
-  for(const item of card.inside){assert.deepEqual(Object.keys(item),['name','kind','function','example_prompt']);prompts.push(item.example_prompt);pairs.push(card.id+' / '+item.name);assert.doesNotMatch(item.function,/^—/);}
+  for(const item of card.inside){assert.deepEqual(Object.keys(item),['name','category','kind','function','example_prompt']);prompts.push(item.example_prompt);pairs.push(card.id+' / '+item.name);assert.doesNotMatch(item.function,/^—/);}
  }
  for(const values of [catalog.cards.map(c=>c.id),catalog.cards.map(c=>c.number),prompts,pairs])assert.equal(new Set(values).size,values.length);
  assert.equal(catalog.count,22);assert.equal(pairs.length,124);assert.equal(prompts.length,124);
@@ -521,7 +571,7 @@ gate('agent text catalogs: exact headers, chapters, card lines, functions, kinds
    const stars=c.stars.toLocaleString('en-US'),anchor='SITE_URL#'+c.id;
    expectedShort+=`\n- [${c.title}](${c.repo}) — ${c.category} · ${stars} stars — ${c.description} — Card: ${anchor}\n`;
    expectedFull+=`\n### ${c.title}\n\n- Category: ${c.category} · Level: ${c.level} · Stars: ${stars} · Repo: ${c.repo} · Card: ${anchor}\n- Description: ${c.description}\n- Use when: ${c.use_when}\n- Top inside: ${c.top_inside.label} ${c.top_inside.names.join(', ')}\n- Inside: ${c.inside_summary}\n`;
-   for(const item of c.inside)expectedFull+=`- ${item.name}${item.kind?' ('+item.kind+')':''} — ${item.function}\n  > ${item.example_prompt}\n`;
+   for(const item of c.inside)expectedFull+=`- ${item.name}${item.kind?' ('+item.kind+')':''} [${item.category}] — ${item.function}\n  > ${item.example_prompt}\n`;
    if(c.inside_note)expectedFull+='- Note: '+c.inside_note+'\n';
   }
  }
@@ -544,7 +594,7 @@ gate('agent text catalogs: exact headers, chapters, card lines, functions, kinds
 });
 gate('agent outputs regenerate byte-for-byte from HTML only',()=>{
  const {generate}=require('./generate-agent-layer');
- const outputs=generate(html,'https://topskillsfordevelopment.vercel.app');
+ const outputs=generate(categoryHTML,'https://topskillsfordevelopment.vercel.app');
  assert.deepEqual(Object.keys(outputs),['skills.json','llms.txt','llms-full.txt']);
  for(const [name,expected] of Object.entries(outputs))assert.equal(readAgentFile(name),expected,name+' generated bytes');
 });
@@ -555,7 +605,7 @@ gate('agent footer insertion only, protected bytes and unchanged per-card baseli
  assert.equal(footer,agentBaseline.footer.replace('</p>','</p>'+agentNav));
  assert.equal(sha256(html.replace(articles.find(a=>a[0].includes('aria-labelledby="skill-4"'))[0],agentBaseline.originalMattCard).replace(agentNav,'')),agentBaseline['index.html'],'Restoring the separately verified Matt card permits only the exact footer nav change from the removal baseline');
  assert.ok(!html.includes(agentSnippet));
- for(const name of ['styles.css','script.js'])assert.equal(sha256(fs.readFileSync(path.join(root,name))),agentBaseline[name],name+' pre-build bytes');
+ for(const name of ['styles.css','script.js'])assert.equal(sha256(name==='styles.css'?styles:fs.readFileSync(path.join(root,name))),agentBaseline[name],name+' pre-build bytes');
  for(const kind of ['visible','expanded'])assert.deepEqual(densities.map(c=>c[kind]),agentBaseline[kind],kind+' per-card baseline');
 });
 

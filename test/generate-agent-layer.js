@@ -54,9 +54,9 @@ function generate(html,siteURL) {
     const items=byTag(inside,'li').map(item=>{
       const nameNode=cls(item,'inside-name'),kindNodes=byClass(item,'inside-kind');
       const prompt=singleLine(clean(cls(item,'example-prompt')));
-      const fn=text(item,n=>n===nameNode||n.attrs.class==='inside-kind'||n.attrs.class==='example-prompt').trim();
+      const fn=text(item,n=>n===nameNode||n.attrs.class==='inside-kind'||n.attrs.class==='item-category'||n.attrs.class==='example-prompt').trim();
       assert.ok(fn.startsWith('— '),'Missing item separator');
-      return {name:clean(nameNode),kind:kindNodes.length?clean(one(kindNodes)):null,function:fn.slice(2).trim(),example_prompt:prompt};
+      return {name:clean(nameNode),category:clean(cls(item,'item-category')),kind:kindNodes.length?clean(one(kindNodes)):null,function:fn.slice(2).trim(),example_prompt:prompt};
     });
     const notes=byClass(node,'inside-note');
     return {id,number:Number(clean(cls(node,'number'))),title:clean(heading),category,level,stars:Number(starText.replaceAll(',','')),
@@ -87,7 +87,7 @@ If no skill matches the task, use no skill from this catalog rather than forcing
       const stars=card.stars.toLocaleString('en-US'),anchor=siteURL+'#'+card.id;
       short+=`\n- [${card.title}](${card.repo}) — ${card.category} · ${stars} stars — ${card.description} — Card: ${anchor}\n`;
       full+=`\n### ${card.title}\n\n- Category: ${card.category} · Level: ${card.level} · Stars: ${stars} · Repo: ${card.repo} · Card: ${anchor}\n- Description: ${card.description}\n- Use when: ${card.use_when}\n- Top inside: ${card.top_inside.label} ${card.top_inside.names.join(', ')}\n- Inside: ${card.inside_summary}\n`;
-      for(const item of card.inside)full+=`- ${item.name}${item.kind?' ('+item.kind+')':''} — ${item.function}\n  > ${item.example_prompt}\n`;
+      for(const item of card.inside)full+=`- ${item.name}${item.kind?' ('+item.kind+')':''} [${item.category}] — ${item.function}\n  > ${item.example_prompt}\n`;
       if(card.inside_note)full+='- Note: '+card.inside_note+'\n';
     }
   }
