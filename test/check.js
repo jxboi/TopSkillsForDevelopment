@@ -10,6 +10,19 @@ const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 const promptSource = fs.readFileSync(path.join(os.homedir(), 'workspace/workflow-run-prompts/prompts.md'), 'utf8');
 const promptSections = [...promptSource.matchAll(/^## (.+)\n([\s\S]*?)(?=^## |$(?![\s\S]))/gm)];
 const promptMap = new Map(promptSections.map(([, title, body]) => [title, new Map([...body.matchAll(/^- `([^`]+)` — ([^\n]+)$/gm)].map(([, name, prompt]) => [name, prompt]))]).filter(([, items]) => items.size));
+
+const designCopy = fs.readFileSync(path.join(os.homedir(), 'workspace/workflow-run-design2/cards.md'), 'utf8');
+const newCards = [...designCopy.matchAll(/^## Card (22|23) — (.+)\n([\s\S]*?)(?=^## |$(?![\s\S]))/gm)].map(([, number, title, body]) => {
+ const value = label => body.match(new RegExp('^- '+label+': ([^\\n]+)', 'm'))?.[1];
+ const items = [...body.matchAll(/^- `([^`]+)` — ([^\n]+)\n  - Prompt: ([^\n]+)/gm)].map(([,name,fn,prompt])=>({name,fn,prompt}));
+ return {number,title,items,summary:value('Summary'),note:number==='22'?value('Note \\(after the list, `<p class="inside-note">`\\)'):undefined,
+ description:value('Description'),use:value('Use'),stars:value('Stars').split(' —')[0],
+ topLabel:value('Top inside').match(/label `([^`]+)`/)[1],topNames:[...value('Top inside').split('names:')[1].matchAll(/`([^`]+)`/g)].map(m=>m[1]),
+ href:value('Footer link').split(',')[0],aria:body.match(/`([^`]+ original GitHub repository \(opens in new tab\))`/)[1]};
+});
+assert.equal(newCards.length,2);
+for(const card of newCards) promptMap.set(card.title,new Map(card.items.map(item=>[item.name,item.prompt])));
+
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
@@ -30,8 +43,9 @@ const expectedInside = [...approvedCopy.matchAll(/^### (.+?) — summary: "([^"]
   title, summary, note: annotations.match(/note: "([^"]+)"/)?.[1],
   items: [...body.matchAll(/^\d+\. `([^`]+)`[^\n]*? — (.+)$/gm)].map(([, name, fn]) => ({ name, fn })),
 }));
-assert.equal(expectedInside.length, 21, 'Approved copy must cover all 21 cards');
-assert.equal(expectedInside.reduce((n, card) => n + card.items.length, 0), 101);
+expectedInside.splice(9,0,...newCards);
+assert.equal(expectedInside.length, 23, 'Approved copy must cover all 23 cards');
+assert.equal(expectedInside.reduce((n, card) => n + card.items.length, 0), 107);
 const decodeHTML = value => value.replace(/&(#x[\da-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (entity, key) =>
   key[0] === '#' ? String.fromCodePoint(key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1))) :
     ({ amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0' })[key.toLowerCase()]);
@@ -41,28 +55,28 @@ const field = (markup, cls, tag = 'p') => markup.match(new RegExp('<' + tag + ' 
 const words = text => decodeHTML(text.replace(/<[^>]*>/g, ' ')).trim().split(/\s+/).filter(Boolean).length;
 const densities = articles.map(([, , c]) => ({title: renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]), visible: words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g, '$1')), expanded: words(c)}));
 console.table(densities);
-for (const kind of ['visible', 'expanded']) console.log(kind, {max:Math.max(...densities.map(c=>c[kind])), total:densities.reduce((n,c)=>n+c[kind],0), mean:densities.reduce((n,c)=>n+c[kind],0)/21});
-gate('1 density budgets', () => { for (const [kind,max,total,mean] of [['visible',77,1168,55.62],['expanded',319,5410,257.62]]) { assert.ok(densities.every(c=>c[kind]<=max)); const sum=densities.reduce((n,c)=>n+c[kind],0); assert.equal(sum,total); assert.equal(Math.max(...densities.map(c=>c[kind])),max); assert.ok(sum/21<=mean); } });
+for (const kind of ['visible', 'expanded']) console.log(kind, {max:Math.max(...densities.map(c=>c[kind])), total:densities.reduce((n,c)=>n+c[kind],0), mean:densities.reduce((n,c)=>n+c[kind],0)/23});
+gate('1 density budgets', () => { for (const [kind,max,total,mean] of [['visible',77,1286,55.92],['expanded',319,5787,251.61]]) { assert.ok(densities.every(c=>c[kind]<=max)); const sum=densities.reduce((n,c)=>n+c[kind],0); assert.equal(sum,total); assert.equal(Math.max(...densities.map(c=>c[kind])),max); assert.ok(sum/23<=mean); } });
 gate('1b per-card expanded budgets', () => {
- const expected = [272,275,280,250,258,319,99,237,250,256,288,265,267,259,265,284,262,254,245,226,299];
+ const expected = [272,275,280,250,258,319,99,237,250,107,270,256,288,265,267,259,265,284,262,254,245,226,299];
  assert.deepEqual(densities.map(c=>c.expanded), expected);
 });
 gate('2 inventory and order', () => {
- assert.equal(articles.length,21);
- assert.equal((html.match(/<p class="example-prompt">/g)||[]).length,101);
+ assert.equal(articles.length,23);
+ assert.equal((html.match(/<p class="example-prompt">/g)||[]).length,107);
  for(const [, , c] of articles) { const positions=['<div class="card-meta">','<h3','<p class="top-inside">','<p class="description">','<div class="fit">','<details class="inside"','<div class="card-footer">'].map(x=>c.indexOf(x)); assert.ok(positions.every((p,i)=>p>=0&&(!i||p>positions[i-1]))); assert.equal((c.match(/<details\b/g)||[]).length,1); }
- for(const cls of ['top-inside','inside','inside-list']) assert.equal((html.match(new RegExp('class="'+cls+'"','g'))||[]).length,21);
- assert.equal((html.match(/<li><code class="inside-name">/g)||[]).length,101);
+ for(const cls of ['top-inside','inside','inside-list']) assert.equal((html.match(new RegExp('class="'+cls+'"','g'))||[]).length,23);
+ assert.equal((html.match(/<li><code class="inside-name">/g)||[]).length,107);
  for(const file of [html,styles,source]) assert.doesNotMatch(file, /(?:class="(?:guide|prompt|copy-button)|\.(?:guide|prompt(?!-background)|copy-button)\b|toggle-guides|copy-prompt|copyStatus|updateGuideControl)/);
 });
 gate('3 protected copy and approved sources', () => {
  for(const [index,[,,markup]] of articles.entries()) {
- const expected=expectedInside[index]; const inside=markup.match(/<details class="inside"[^>]*>([\s\S]*?)<\/details>/)[1];
- assert.equal(decodeHTML(field(markup,'description')),decodeHTML(field(originals[index][2],'description')));
- assert.equal(decodeHTML(field(markup,'fit-use')),decodeHTML(field(originals[index][2],'fit-use')));
+ const expected=expectedInside[index]; if(expected.number) continue; const original=originals.find(a=>a[2].includes('>'+expected.title+'</h3>'))[2]; const inside=markup.match(/<details class="inside"[^>]*>([\s\S]*?)<\/details>/)[1];
+ assert.equal(decodeHTML(field(markup,'description')),decodeHTML(field(original,'description')));
+ assert.equal(decodeHTML(field(markup,'fit-use')),decodeHTML(field(original,'fit-use')));
  const use=uses.match(new RegExp('## '+expected.title.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\n\\nUse when: ([^\\n]+)'));
  assert.ok(use,expected.title); assert.equal(renderedText(field(markup,'fit-use')).replace(/^Use when /,''),use[1]);
- assert.equal(decodeHTML(inside.replace(/<p class="example-prompt">[^<]*<\/p>/g, '')),decodeHTML(originals[index][2].match(/<details class="inside"[^>]*>([\s\S]*?)<\/details>/)[1]));
+ assert.equal(decodeHTML(inside.replace(/<p class="example-prompt">[^<]*<\/p>/g, '')),decodeHTML(original.match(/<details class="inside"[^>]*>([\s\S]*?)<\/details>/)[1]));
  assert.equal(renderedText(inside.match(/<summary>([\s\S]*?)<\/summary>/)[1]),expected.summary);
   const summary = renderedText(inside.match(/<summary>([\s\S]*?)<\/summary>/)[1]);
   const items = [...inside.matchAll(/<li>([\s\S]*?)<\/li>/g)];
@@ -94,8 +108,8 @@ gate('3 protected copy and approved sources', () => {
 });
 
 gate('prompt inventory, mapping, hygiene and exact change scope', () => {
- assert.equal(promptMap.size,21);
- assert.equal([...promptMap.values()].reduce((n,items)=>n+items.size,0),101);
+ assert.equal(promptMap.size,23);
+ assert.equal([...promptMap.values()].reduce((n,items)=>n+items.size,0),107);
  const actualPrompts=[];
  for(const [i,[,,card]] of articles.entries()) {
   const title=densities[i].title;
@@ -116,11 +130,64 @@ gate('prompt inventory, mapping, hygiene and exact change scope', () => {
   assert.doesNotMatch(inside,/<(?:button|input|a|select|textarea)\b|\b(?:tabindex|onclick|contenteditable)=/i);
   assert.equal((card.match(/class="example-prompt"/g)||[]).length,items.length);
  }
- assert.equal(actualPrompts.length,101); assert.equal(new Set(actualPrompts).size,101);
- assert.equal((html.match(/class="example-prompt"/g)||[]).length,101);
+ assert.equal(actualPrompts.length,107); assert.equal(new Set(actualPrompts).size,107);
+ assert.equal((html.match(/class="example-prompt"/g)||[]).length,107);
  assert.doesNotMatch(html,/\b(?:UNCONFIRMED|illustrative|not repo-quoted|research.note|Grade:\s*(?:Verified|Crafted)|Source:\s*https?:|example\.(?:com|org|net))\b/i);
- assert.equal(sha256(html.replace(/<p class="example-prompt">[^<]*<\/p>/g,'')), '47cda9f2e3e268d40767739dc12023766dfade5c3adaf1bcd1aec429e918c6c2', 'Only prompt insertions are allowed');
+ let restored=html;
+ for(const card of articles.filter(a=>/aria-labelledby="skill-(?:22|23)"/.test(a[0]))) restored=restored.replace(card[0]+(restored[restored.indexOf(card[0])+card[0].length]==="\n"?"\n":""), "");
+ const section6Changes = [["Discover 21 popular", "Discover 23 popular"], ["note-number\">21<", "note-number\">23<"], ["collection of 21 popular", "collection of 23 popular"], ["All skills (21)", "All skills (23)"], ["Design (1)", "Design (3)"], ["Design <span>(1)</span>", "Design <span>(3)</span>"], ["21 skills in the collection", "23 skills in the collection"], ["All 21 skills are available", "All 23 skills are available"], ["21 skills. Star counts", "23 skills. Star counts"]];
+ for(const [oldText,newText] of section6Changes) { assert.ok(html.includes(newText),newText); restored=restored.replace(newText,oldText); }
+ // The original TDD hash has no recoverable published-HEAD baseline.
+ // Check restoration structurally; gate 3 protects the existing 21 cards' copy.
+ const restoredCards=getCards(restored);
+ assert.equal(restoredCards.length,21,'Restored inventory must contain 21 articles');
+ assert.doesNotMatch(restored,/skill-(?:22|23)\b|Taste Skill|Impeccable|design-taste-frontend|Ledgerly|PRODUCT\.md/,'New-card content must be removed');
+ const originalTitles=originals.map(([,,card])=>renderedText(card.match(/<h3[^>]*>(.*?)<\/h3>/)[1]));
+ assert.equal(originalTitles.length,21,'Pre-existing inventory must contain 21 titles');
+ assert.deepEqual(restoredCards.map(([,,card])=>renderedText(card.match(/<h3[^>]*>(.*?)<\/h3>/)[1])),originalTitles,'All 21 pre-existing titles must remain in order');
+ for(const [oldText,newText] of section6Changes) {
+  assert.ok(restored.includes(oldText),'Section 6 text must be restored: '+oldText);
+  assert.ok(!restored.includes(newText),'Updated section 6 text must be absent: '+newText);
+ }
+ assert.doesNotMatch(renderedText(restored),/\b23\s+(?:popular\b|skills\b)|\bAll skills\s*\(23\)/i,'No 23-count prose may remain');
 });
+
+gate('new Design copy, honesty, totals and placement',()=>{
+ const design=articles.filter(a=>a[1]==='Design');
+ assert.deepEqual(design.map(a=>renderedText(a[2].match(/<h3[^>]*>(.*?)<\/h3>/)[1])),['UI/UX Pro Max','Taste Skill','Impeccable']);
+ assert.deepEqual(design.map(a=>a[0].match(/aria-labelledby="([^"]+)"/)[1]),['skill-5','skill-22','skill-23']);
+ assert.deepEqual(design.map(a=>renderedText(field(a[2],'number','span'))),['05','22','23']);
+ for(const expected of newCards) {
+  const article=articles.find(a=>a[0].includes('aria-labelledby="skill-'+expected.number+'"'));
+  assert.ok(article,expected.title); const markup=article[2];
+  assert.match(markup,new RegExp('<h3 id="skill-'+expected.number+'">'+expected.title+'</h3>'));
+  assert.equal(renderedText(field(markup,'card-meta','div')),expected.number+'Design·Intermediate '+expected.stars);
+  assert.ok(markup.includes('aria-label="'+expected.stars+' GitHub stars"'));
+  assert.equal(renderedText(field(markup,'description')),expected.description);
+  assert.equal(renderedText(field(markup,'fit-use')),'Use when '+expected.use);
+  assert.equal(renderedText(markup.match(/<summary>([\s\S]*?)<\/summary>/)[1]),expected.summary);
+  assert.deepEqual([...markup.matchAll(/<p class="inside-note">([^<]+)<\/p>/g)].map(m=>decodeHTML(m[1])),expected.note?[expected.note]:[]);
+  const items=[...markup.matchAll(/<li><code class="inside-name">([^<]+)<\/code> — ([\s\S]*?)<p class="example-prompt">([^<]*)<\/p><\/li>/g)];
+  assert.deepEqual(items.map(m=>({name:decodeHTML(m[1]),fn:decodeHTML(m[2]),prompt:decodeHTML(m[3])})),expected.items);
+  assert.doesNotMatch(markup,/inside-kind/);
+  assert.equal(renderedText(field(markup,'top-inside')),expected.topLabel+' '+expected.topNames.join(' · '));
+  const footer=field(markup,'card-footer','div');
+  assert.ok(footer.includes('href="'+expected.href+'" target="_blank" rel="noopener noreferrer" aria-label="'+expected.aria+'"'));
+  assert.equal(renderedText(footer),'GitHub repository');
+  for(const item of expected.items) { assert.ok(words(item.prompt)>=15&&words(item.prompt)<=25); assert.equal((item.prompt.match(/[.!?](?=\s|$)/g)||[]).length,1); }
+ }
+ const taste=design[1][2], impeccable=design[2][2];
+ assert.equal((taste.match(/<li>/g)||[]).length,1);
+ assert.equal(renderedText(taste.match(/<summary>([\s\S]*?)<\/summary>/)[1]),'Inside this repo — the only skill');
+ assert.equal(renderedText(field(taste,'inside-note')),'Earlier classic variants moved to satellite repos.');
+ assert.deepEqual([...impeccable.matchAll(/<li><code class="inside-name">([^<]+)<\/code>/g)].map(m=>m[1]),['init','polish','bolder','critique','audit']);
+ assert.equal(renderedText(impeccable.match(/<summary>([\s\S]*?)<\/summary>/)[1]),'Inside this repo — 5 commands');
+ assert.doesNotMatch(impeccable,/of (?:23|24)|\d+ (?:skills|rules)|inside-name">craft</);
+ assert.doesNotMatch(html,/redesign-existing-projects|high-end-visual-design|minimalist-ui|industrial-brutalist-ui|61 rules|\bdeprecated\b/i);
+ assert.match(styles,/#chapter-design::before\{content:"III"/);
+ assert.equal(sha256(styles),'b1307b7e03b49d2712b75cf4be0ffe9bf7109a82a9f196dbf37e115733bfcb0c','styles.css must remain byte-identical');
+});
+
 const expectedPromptRule = '.example-prompt{margin:var(--space-1) 0 0;padding:var(--space-1) var(--space-2);border-left:1px solid var(--line);background:var(--prompt-background);color:var(--body);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);line-height:var(--type-list-leading);overflow-wrap:anywhere}';
 gate('one exact prompt CSS rule', () => {
  assert.equal(styles.split(expectedPromptRule).length-1,1);
@@ -132,8 +199,9 @@ gate('one exact prompt CSS rule', () => {
 });
 
 const topRows=[...copy.matchAll(/^\| ([^|]+) \| [^|]+ \| ([^|]+) \| ([^|]+) \|$/gm)].filter(m=>!['Card','---'].includes(m[1].trim()));
-gate('4 exact top lines',()=>{assert.equal(topRows.length,21); articles.forEach(([,,c],i)=>{ const row=topRows[i]; const names=row[3].trim().split(', '); assert.equal(renderedText(field(c,'top-inside')),row[2].trim()+' '+names.join(' · ')); assert.deepEqual([...field(c,'top-inside').matchAll(/<code class="inside-name">(.*?)<\/code>/g)].map(m=>decodeHTML(m[1])),expectedInside[i].items.slice(0,2).map(x=>x.name)); });});
-gate('5 stars and number',()=>{articles.forEach(([,,c],i)=>{const meta=field(c,'card-meta','div'); const stars=meta.match(/<span class="meta-stars"[\s\S]*?<\/span>/)?.[0]; assert.equal(stars,starSnapshot[i].stars.replace('class="stars"','class="meta-stars"')); const footer=field(c,'card-footer','div'); assert.doesNotMatch(footer,/stars|icon-star/); assert.match(footer,/<a href=/); }); for(const [,rule] of styles.matchAll(/\.number\{([^}]*)}/g)){assert.doesNotMatch(rule,/--accent|--type-entry-number|--type-note|--serif/);} assert.match(styles,/\.number\{[^}]*var\(--type-mono\)[^}]*var\(--muted\)/); assert.match(styles,/\.meta-stars\{[^}]*tabular-nums/);});
+topRows.splice(9,0,...newCards.map(c=>[null,c.title,c.topLabel,c.topNames.join(', ')]));
+gate('4 exact top lines',()=>{assert.equal(topRows.length,23); articles.forEach(([,,c],i)=>{ const row=topRows[i]; const names=row[3].trim().split(', '); assert.equal(renderedText(field(c,'top-inside')),row[2].trim()+' '+names.join(' · ')); assert.deepEqual([...field(c,'top-inside').matchAll(/<code class="inside-name">(.*?)<\/code>/g)].map(m=>decodeHTML(m[1])),expectedInside[i].items.slice(0,2).map(x=>x.name)); });});
+gate('5 stars and number',()=>{articles.forEach(([,,c],i)=>{if(newCards.some(n=>n.title===densities[i].title)) return; const snapshot=starSnapshot[originals.findIndex(a=>a[2].includes('>'+densities[i].title+'</h3>'))]; const meta=field(c,'card-meta','div'); const stars=meta.match(/<span class="meta-stars"[\s\S]*?<\/span>/)?.[0]; assert.equal(stars,snapshot.stars.replace('class="stars"','class="meta-stars"')); const footer=field(c,'card-footer','div'); assert.doesNotMatch(footer,/stars|icon-star/); assert.match(footer,/<a href=/); }); for(const [,rule] of styles.matchAll(/\.number\{([^}]*)}/g)){assert.doesNotMatch(rule,/--accent|--type-entry-number|--type-note|--serif/);} assert.match(styles,/\.number\{[^}]*var\(--type-mono\)[^}]*var\(--muted\)/); assert.match(styles,/\.meta-stars\{[^}]*tabular-nums/);});
 gate('6 collapsed Karpathy',()=>{for(const [,,c]of articles)assert.doesNotMatch(c,/<details class="inside"[^>]*\bopen\b/); const c=articles.find(a=>a[2].includes('>Karpathy Skills</h3>'))[2];assert.equal(renderedText(field(c,'top-inside')),'Inside: karpathy-guidelines');});
 gate('7 single scoped bulk toggle',()=>{assert.equal((html.match(/id="toggle-inside"/g)||[]).length,1); assert.equal((html.match(/id="toggle-[^"]+"/g)||[]).length,1); assert.match(source,/querySelectorAll\('\.skill-card details\.inside'\)/); for(const label of ['Expand all inside lists','Collapse all inside lists'])assert.ok(source.includes(label));assert.match(source,/setAttribute\('aria-expanded', String\(allOpen\)\)/);});
 function element(textContent = '') {
@@ -212,6 +280,8 @@ function exerciseControls() {
  assertPromptSearch('EGFR','Scientific Agent Skills','database-lookup');
  search(''); assert.deepEqual(insides.map(inside=>inside.open),prePromptOpen);
  lists.forEach((list,i)=>assert.equal(list.innerHTML,originalLists[i]));
+ assertPromptSearch('Ledgerly','Taste Skill','design-taste-frontend'); search('');
+ assertPromptSearch('PRODUCT.md','Impeccable','init'); search('');
  assertPromptSearch('auth-system.md','Superpowers','subagent-driven-development');
  const beforeToggle=insides.map(inside=>inside.open);
  ids['toggle-inside'].click(); assert.equal(insides[0].open,false);
@@ -224,7 +294,7 @@ function exerciseControls() {
  assertPromptSearch('EGFR','Scientific Agent Skills','database-lookup');
  search('auth-system.md'); assert.equal(visible().length,0); assert.equal(ids['empty-state'].hidden,false);
  search(''); allFilter(); insides.forEach(inside=>inside.open=false);
- assert.equal(ids.search.disabled,false);assert.equal(visible().length,21);assert.equal(ids['toggle-inside'].hidden,false);
+ assert.equal(ids.search.disabled,false);assert.equal(visible().length,23);assert.equal(ids['toggle-inside'].hidden,false);
  ids['toggle-inside'].click();assert.ok(insides.every(i=>i.open));assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'true');ids['toggle-inside'].click();assert.ok(insides.every(i=>!i.open));
  insides[0].open=true; search('to-spec');assert.equal(visible().length,1);assert.ok(insides[2].open);assert.equal(ids['toggle-inside'].textContent,'Collapse all inside lists'); assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'true'); assert.match(lists[2].innerHTML, /<code class="inside-name"><mark>to-spec<\/mark><\/code>/); search('worktrees');assert.equal(insides[2].open,false);assert.ok(insides[0].open);search('');assert.ok(insides[0].open);assert.equal(insides[2].open,false);lists.forEach((l,i)=>assert.equal(l.innerHTML,articles[i][2].match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1]));
  for(const f of filters){search('');f.click();assert.equal(visible().length,cards.filter(c=>f.dataset.filter==='All skills'||c.dataset.category===f.dataset.filter).length);assert.equal(f.attrs['aria-pressed'],'true');}
@@ -239,7 +309,7 @@ function exerciseControls() {
  search('intelligence');assert.ok(prose.some(p=>p.description.innerHTML.includes('<mark>')));search('');
  search('Use when');assert.ok(prose.some(p=>p['fit-use'].innerHTML.includes('<mark>')));search('');
  prose.forEach((p,i)=>Object.entries(p).forEach(([cls,node])=>assert.equal(node.innerHTML,field(articles[i][2],cls).replace(/^<p[^>]*>|<\/p>$/g,''))));
- filters.find(f=>f.dataset.filter==='Design').click();assert.equal(visible().length,1);assert.deepEqual(chapters.map(c=>c.hidden),[true,true,false,true,true,true]);search('Superpowers');assert.equal(visible().length,0);assert.equal(ids['toggle-inside'].textContent,'Expand all inside lists');assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'false');assert.equal(ids['empty-state'].hidden,false);assert.equal(ids['results-count'].textContent,'0 skills in the collection');ids['clear-search'].click();assert.equal(visible().length,1);ids['reset-filters'].click();assert.equal(visible().length,21);assert.equal(ids['empty-state'].hidden,true);assert.equal(ids['clear-search'].hidden,true);assert.ok(chapters.every(c=>!c.hidden));
+ filters.find(f=>f.dataset.filter==='Design').click();assert.equal(visible().length,3);assert.deepEqual(chapters.map(c=>c.hidden),[true,true,false,true,true,true]);search('Superpowers');assert.equal(visible().length,0);assert.equal(ids['toggle-inside'].textContent,'Expand all inside lists');assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'false');assert.equal(ids['empty-state'].hidden,false);assert.equal(ids['results-count'].textContent,'0 skills in the collection');ids['clear-search'].click();assert.equal(visible().length,3);ids['reset-filters'].click();assert.equal(visible().length,23);assert.equal(ids['empty-state'].hidden,true);assert.equal(ids['clear-search'].hidden,true);assert.ok(chapters.every(c=>!c.hidden));
 }
 gate('8 search paths' ,()=>{for(const pattern of [/originalHTML/,/preSearchOpen/,/inside\.open = true/,/createElement\('mark'\)/,/createTreeWalker/,/innerHTML = originalHTML/,/list\.textContent/,/card\.hidden/])assert.match(source,pattern);assert.match(source,/text: card\.textContent\.toLocaleLowerCase\(\)/); exerciseControls();});
 const rules = css => [...css.replace(/\/\*[\s\S]*?\*\//g,'').matchAll(/([^{}]+)\{([^{}]*)}/g)];
@@ -290,8 +360,8 @@ assert.match(styles, /\.built-with ul\{[^}]*max-width:64ch/);
  const accent=rules(styles).filter(r=>r[2].includes('var(--accent)'));assert.equal(accent.length,3);
 });
 gate('10 unchanged surface and chapter ledes',()=>{
- for(const [i,[,,c]]of articles.entries())assert.deepEqual(c.match(/<a href=[\s\S]*?<\/a>/g),originals[i][2].match(/<a href=[\s\S]*?<\/a>/g));
- for(const pattern of [/<h2 class="chapter-heading"[^>]*>[\s\S]*?<\/h2>/g,/<button[^>]*data-filter=[\s\S]*?<\/button>/g,/<section class="hero[\s\S]*?<\/section>/g])assert.deepEqual([...html.matchAll(pattern)].map(m=>m[0]),[...before.replace('<span class="note-line"></span>', '').matchAll(pattern)].map(m=>m[0]));
+ for(const [i,[,,c]]of articles.entries()) { if(newCards.some(n=>n.title===densities[i].title)) continue; const original=originals.find(a=>a[2].includes('>'+densities[i].title+'</h3>'))[2]; assert.deepEqual(c.match(/<a href=[\s\S]*?<\/a>/g),original.match(/<a href=[\s\S]*?<\/a>/g)); }
+ for(const pattern of [/<h2 class="chapter-heading"[^>]*>[\s\S]*?<\/h2>/g,/<button[^>]*data-filter=[\s\S]*?<\/button>/g,/<section class="hero[\s\S]*?<\/section>/g])assert.deepEqual([...html.replace('Design <span>(3)</span>','Design <span>(1)</span>').replace('All skills (23)','All skills (21)').replace('Design (3)','Design (1)').replace('note-number">23<','note-number">21<').replace('collection of 23 popular','collection of 21 popular').matchAll(pattern)].map(m=>m[0]),[...before.replace('<span class="note-line"></span>', '').matchAll(pattern)].map(m=>m[0]));
  for(const id of ['workflow','quality','design','efficiency','knowledge','discovery']) { const rule=styles.match(new RegExp('#chapter-'+id+'::before\\{[^}]*}'))?.[0]; assert.ok(rule);assert.ok(beforeCSS.includes(rule)); }
  const ledes=[...copy.matchAll(/^- (Workflow|Quality|Design|Efficiency|Knowledge|Discovery) — (.+)$/gm)].map(m=>m[2]); const shipped=[...html.matchAll(/<h2 class="chapter-heading"[^>]*>[\s\S]*?<\/h2>\s*<p class="chapter-lede">([^<]+)<\/p>/g)].map(m=>m[1]);assert.deepEqual(shipped,ledes); console.log('Chapter lede words:',ledes.reduce((n,l)=>n+words(l),0));
 });
@@ -328,5 +398,5 @@ gate('polish CSS, prose and portability',()=>{
  for(const prose of [html.match(/<meta name="description"[^>]*>/)[0],html.match(/<noscript>[\s\S]*?<\/noscript>/)[0]])assert.doesNotMatch(prose,/practical guides|example prompts|copy prompts/);
  assert.doesNotMatch(fs.readFileSync(__filename,'utf8').split("gate('polish CSS")[0],/['"]\/tmp\/fix-in-place-before|path.resolve\(root, ['"]\.\.\/workflow-run-/);
 });
-gate('12 highlight assertions and manual live checklist',()=>{ exerciseHighlight(); console.log('Manual live checklist (not performed; user prohibits live checking): prompt strips under items without overflow at desktop and narrowest allowed width; triple-click selects only one prompt, copy/paste exact; EGFR opens and highlights; clear restores prompts; leave All skills, empty query, all collapsed; true 320–360px rendering unverified; 21 collapsed cards with stars/top lines; expand/collapse 21; to-spec/worktrees opens and marks; Design III (1); filters, clear, reset; layout; true 320–360px phone width. Static checks do not constitute live verification.'); });
+gate('12 highlight assertions and manual live checklist',()=>{ exerciseHighlight(); console.log('Manual live checklist (not performed; user prohibits live checking): prompt strips under items without overflow at desktop and narrowest allowed width; triple-click selects only one prompt, copy/paste exact; EGFR opens and highlights; clear restores prompts; leave All skills, empty query, all collapsed; true 320–360px rendering unverified; 23 collapsed cards with stars/top lines; expand/collapse 23; to-spec/worktrees opens and marks; Design III (3); filters, clear, reset; layout; true 320–360px phone width. Static checks do not constitute live verification.'); });
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
