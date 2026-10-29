@@ -92,5 +92,12 @@
     "short": "e7dda79605966d58e982e833dc32271086cd460f4a211cc27c8e755b86195553",
     "visible": 1224,
     "expanded": 6125
+  },
+  "polish2Before": {
+    "index.html": "04624053d2cc71976b1eb37754e538e2c47392b335a2e6169e24258c67250e5b",
+    "styles.css": "bc1f21bade3e66e96297bebce95dd484ab785e30d230f2e2825288e4d63bfc3f",
+    "skills.json": "d754ffb8f3a40af07b5446a2007a00987074dfc68b18dee0b5147a812b8d3a27",
+    "llms.txt": "e7dda79605966d58e982e833dc32271086cd460f4a211cc27c8e755b86195553",
+    "llms-full.txt": "112e39cfc2cd10ed5345290bb82285300a4912781dec6a0c04b74857eda969e9"
   }
 }
