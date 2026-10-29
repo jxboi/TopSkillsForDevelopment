@@ -185,13 +185,13 @@ gate('new Design copy, honesty, totals and placement',()=>{
  assert.doesNotMatch(impeccable,/of (?:23|24)|\d+ (?:skills|rules)|inside-name">craft</);
  assert.doesNotMatch(html,/redesign-existing-projects|high-end-visual-design|minimalist-ui|industrial-brutalist-ui|61 rules|\bdeprecated\b/i);
  assert.match(styles,/#chapter-design::before\{content:"III"/);
- assert.equal(sha256(styles),'b1307b7e03b49d2712b75cf4be0ffe9bf7109a82a9f196dbf37e115733bfcb0c','styles.css must remain byte-identical');
+ assert.equal(sha256(styles),'8b2601b309c4e6947c3d36e0dbf0b2315c15b6c720d035792cde73ab931b21e1','styles.css must remain byte-identical');
 });
 
 const expectedPromptRule = '.example-prompt{margin:var(--space-1) 0 0;padding:var(--space-1) var(--space-2);border-left:1px solid var(--line);background:var(--prompt-background);color:var(--body);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);line-height:var(--type-list-leading);overflow-wrap:anywhere}';
 gate('one exact prompt CSS rule', () => {
  assert.equal(styles.split(expectedPromptRule).length-1,1);
- assert.equal(sha256(styles.replace(expectedPromptRule+'\n','')), 'eda680d77a783538fcaf9b1a554d3f71d7e916fc88e659c8ce3c2ef076d668e1', 'Only the specified CSS rule may be added');
+ assert.equal(sha256(styles.replace(expectedPromptRule+'\n','')), '601858b937d43c199ed606413e1ddca645e92dada109e15ffd96d2de66ee6dc8', 'Only the specified CSS rule may be added');
  const declaration=expectedPromptRule.slice(expectedPromptRule.indexOf('{'));
  assert.doesNotMatch(declaration, /#[\da-f]|\b(?:rgb|hsl)\(|border-radius|box-shadow|--accent/);
  const tokens=new Set([...styles.match(/:root\{([^}]*)}/)[1].matchAll(/(--[\w-]+):/g)].map(m=>m[1]));
@@ -348,10 +348,11 @@ assert.doesNotMatch(styles, /border-radius:\s*(?:24|8)px/);
 assert.doesNotMatch(styles, /--radius-[\w-]+:\s*(?:24|8)px/);
 assert.match(styles, /--radius-control:6px/);
 for (const [, radius] of styles.matchAll(/border-radius:([^;}]+)/g)) assert.ok(['0', 'var(--radius-control)'].includes(radius));
-assert.match(styles, /\.built-with ul\{[^}]*max-width:64ch/);
+assert.doesNotMatch(html, /built-with|How this site was built|class="closing"|A better workflow starts/);
+assert.doesNotMatch(styles, /built-with|\.closing\b|--type-(?:built|closing)(?:-mobile)?:/);
 
 
- const tokens=css=>Object.fromEntries([...css.match(/:root\{([^}]*)}/)[1].matchAll(/(--[\w-]+):([^;}]*)/g)].map(m=>[m[1],m[2]])); const old=tokens(beforeCSS),now=tokens(styles); for(const token of ['--copy-width','--hero-wide-padding','--type-entry-number']) delete old[token]; assert.deepEqual(now,{...old,'--type-list-leading':'1.5'});
+ const tokens=css=>Object.fromEntries([...css.match(/:root\{([^}]*)}/)[1].matchAll(/(--[\w-]+):([^;}]*)/g)].map(m=>[m[1],m[2]])); const old=tokens(beforeCSS),now=tokens(styles); for(const token of ['--copy-width','--hero-wide-padding','--type-entry-number','--type-built','--type-built-mobile','--type-closing','--type-closing-mobile']) delete old[token]; assert.deepEqual(now,{...old,'--type-list-leading':'1.5'});
  for(const [selector,props]of [['.hero',['padding:var(--space-6) 0 var(--space-4)']],['.top-inside',['margin:var(--space-2) 0 var(--space-1)','var(--type-small)','var(--type-list-leading)','color:var(--body)']],['.top-inside-label',['var(--type-label)','var(--muted)']],['.inside-list li',['line-height:var(--type-list-leading)']],['.category',['font-weight:600','color:var(--ink)']],['mark',['background:var(--prompt-background)','color:var(--ink)','font-weight:600','text-decoration:underline','text-decoration-color:var(--accent)','text-decoration-thickness:2px','text-underline-offset:5px']],['.chapter-lede',['var(--type-small)','var(--body)']]]) {const rule=rules(styles).find(m=>m[1].trim()===selector);assert.ok(rule,selector);for(const p of props)assert.ok(rule[2].includes(p),selector+': '+p);}
  assert.match(styles,/\.skill-card h3\{[^}]*margin:var\(--space-4\) 0 var\(--space-2\)/);
  assert.match(styles,/:is\(\.description,\.fit p,\.inside-list li,\.inside-note,\.top-inside\)\{max-width:62ch}/);
@@ -506,7 +507,7 @@ gate('agent footer insertion only, protected bytes and unchanged per-card baseli
  assert.ok(html.includes(agentNav));
  const footer=html.match(/<footer class="site-footer">[\s\S]*?<\/footer>/)[0];
  assert.equal(footer,agentBaseline.footer.replace('</p>','</p>'+agentNav));
- assert.equal(sha256(html.replace(agentNav,'')),agentBaseline['index.html'],'Only the exact footer nav may change in HTML');
+ assert.equal(sha256(html.replace(agentNav,'')),agentBaseline['index.html'],'Only the exact footer nav may change from the removal baseline in HTML');
  assert.ok(!html.includes(agentSnippet));
  for(const name of ['styles.css','script.js'])assert.equal(sha256(fs.readFileSync(path.join(root,name))),agentBaseline[name],name+' pre-build bytes');
  for(const kind of ['visible','expanded'])assert.deepEqual(densities.map(c=>c[kind]),agentBaseline[kind],kind+' per-card baseline');
