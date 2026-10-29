@@ -26,6 +26,12 @@ for (const card of newCards) card.number=String(Number(card.number)-1);
 promptMap.delete('Scientific Agent Skills');
 for(const card of newCards) promptMap.set(card.title,new Map(card.items.map(item=>[item.name,item.prompt])));
 
+const mattResearch = fs.readFileSync(path.join(os.homedir(),'workspace/workflow-run-matt-full/matt-remaining.md'),'utf8').split('## 3. Remaining promoted active skills (22)')[1].split('## Appendix')[0];
+const mattRemaining = [...mattResearch.matchAll(/#### \d+\. `([^`]+)`\n- Path: [^\n]+\n- Summary: ([^\n]+)\n- Prompt: ([^\n]+)/g)].map(([,name,fn,prompt])=>({name,fn,prompt}));
+assert.equal(mattRemaining.length,22);
+for(const item of mattRemaining) promptMap.get('Matt Pocock Skills').set(item.name,item.prompt);
+const densityBaseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/agent-layer-baseline.json'),'utf8'));
+
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
@@ -48,8 +54,11 @@ const expectedInside = [...approvedCopy.matchAll(/^### (.+?) — summary: "([^"]
 }));
 expectedInside.splice(9,0,...newCards);
 expectedInside.splice(expectedInside.findIndex(c=>c.title==='Scientific Agent Skills'),1);
+const mattExpected = expectedInside.find(c=>c.title==='Matt Pocock Skills');
+mattExpected.items.push(...mattRemaining);
+mattExpected.summary='Inside this repo — 27 skills';
 assert.equal(expectedInside.length, 22, 'Approved copy must cover all 22 cards');
-assert.equal(expectedInside.reduce((n, card) => n + card.items.length, 0), 102);
+assert.equal(expectedInside.reduce((n, card) => n + card.items.length, 0), 124);
 const decodeHTML = value => value.replace(/&(#x[\da-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (entity, key) =>
   key[0] === '#' ? String.fromCodePoint(key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1))) :
     ({ amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0' })[key.toLowerCase()]);
@@ -60,9 +69,9 @@ const words = text => decodeHTML(text.replace(/<[^>]*>/g, ' ')).trim().split(/\s
 const densities = articles.map(([, , c]) => ({title: renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]), visible: words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g, '$1')), expanded: words(c)}));
 console.table(densities);
 for (const kind of ['visible', 'expanded']) console.log(kind, {max:Math.max(...densities.map(c=>c[kind])), total:densities.reduce((n,c)=>n+c[kind],0), mean:densities.reduce((n,c)=>n+c[kind],0)/22});
-gate('1 density budgets', () => { for (const [kind,max,total,mean] of [['visible',77,1226,55.73],['expanded',319,5528,251.28]]) { assert.ok(densities.every(c=>c[kind]<=max)); const sum=densities.reduce((n,c)=>n+c[kind],0); assert.equal(sum,total); assert.equal(Math.max(...densities.map(c=>c[kind])),max); assert.ok(sum/22<=mean); } });
+gate('1 density budgets', () => { for (const [kind,max,total,mean] of Object.entries(densityBaseline.budgets).map(([kind,b])=>[kind,b.max,b.total,b.mean])) { assert.ok(densities.every(c=>c[kind]<=max)); const sum=densities.reduce((n,c)=>n+c[kind],0); assert.equal(sum,total); assert.equal(Math.max(...densities.map(c=>c[kind])),max); assert.ok(sum/22<=mean); } });
 gate('1b per-card expanded budgets', () => {
- const expected = [272,275,280,250,258,319,99,237,250,107,270,256,288,265,267,265,284,262,254,245,226,299];
+ const expected = densityBaseline.expanded;
  assert.deepEqual(densities.map(c=>c.expanded), expected);
 });
 gate('removal scope, numbering and counts', () => {
@@ -73,12 +82,29 @@ gate('removal scope, numbering and counts', () => {
  assert.ok(html.includes('Knowledge (5)')); assert.ok(html.includes('Knowledge <span>(5)</span>'));
  assert.match(html,/Star counts are a snapshot supplied for 29 Oct 2026\./);
 });
+gate('Matt full promoted list, exact original bytes and excluded skills',()=>{
+ const card=articles.find(a=>a[0].includes('aria-labelledby="skill-4"'))[0];
+ const original=densityBaseline.originalMattCard;
+ const list=c=>[...c.matchAll(/<li>[\s\S]*?<\/li>/g)].map(m=>m[0]);
+ const actual=list(card), prior=list(original);
+ assert.equal(actual.length,27);
+ assert.deepEqual(actual.slice(0,5),prior);
+ const names=actual.map(i=>i.match(/inside-name">([^<]+)/)[1]);
+ assert.equal(new Set(names).size,27);
+ assert.deepEqual(names.slice(5),mattRemaining.map(i=>i.name));
+ for(const [i,item] of mattRemaining.entries())assert.equal(actual[i+5],'<li><code class="inside-name">'+item.name+'</code> — '+item.fn+'<p class="example-prompt">'+item.prompt+'</p></li>');
+ const outside=c=>c.replace(/<details class="inside">[\s\S]*?<\/details>/,'');
+ assert.equal(outside(card),outside(original));
+ assert.deepEqual(articles.filter(a=>!a[0].includes('aria-labelledby="skill-4"')).map(a=>sha256(a[0])),densityBaseline.protectedCards);
+ const excluded=['chief-of-staff','claude-handoff','loop-me','setup-ts-deep-modules','writing-beats','writing-fragments','writing-shape','git-guardrails-claude-code','migrate-to-shoehorn','scaffold-exercises','setup-pre-commit'];
+ for(const name of ['index.html','skills.json','llms.txt','llms-full.txt'])for(const skill of excluded)assert.ok(!fs.readFileSync(path.join(root,name),'utf8').includes(skill),name+' excludes '+skill);
+});
 gate('2 inventory and order', () => {
  assert.equal(articles.length,22);
- assert.equal((html.match(/<p class="example-prompt">/g)||[]).length,102);
+ assert.equal((html.match(/<p class="example-prompt">/g)||[]).length,124);
  for(const [, , c] of articles) { const positions=['<div class="card-meta">','<h3','<p class="top-inside">','<p class="description">','<div class="fit">','<details class="inside"','<div class="card-footer">'].map(x=>c.indexOf(x)); assert.ok(positions.every((p,i)=>p>=0&&(!i||p>positions[i-1]))); assert.equal((c.match(/<details\b/g)||[]).length,1); }
  for(const cls of ['top-inside','inside','inside-list']) assert.equal((html.match(new RegExp('class="'+cls+'"','g'))||[]).length,22);
- assert.equal((html.match(/<li><code class="inside-name">/g)||[]).length,102);
+ assert.equal((html.match(/<li><code class="inside-name">/g)||[]).length,124);
  for(const file of [html,styles,source]) assert.doesNotMatch(file, /(?:class="(?:guide|prompt|copy-button)|\.(?:guide|prompt(?!-background)|copy-button)\b|toggle-guides|copy-prompt|copyStatus|updateGuideControl)/);
 });
 gate('3 protected copy and approved sources', () => {
@@ -88,11 +114,13 @@ gate('3 protected copy and approved sources', () => {
  assert.equal(decodeHTML(field(markup,'fit-use')),decodeHTML(field(original,'fit-use')));
  const use=uses.match(new RegExp('## '+expected.title.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\n\\nUse when: ([^\\n]+)'));
  assert.ok(use,expected.title); assert.equal(renderedText(field(markup,'fit-use')).replace(/^Use when /,''),use[1]);
- assert.equal(decodeHTML(inside.replace(/<p class="example-prompt">[^<]*<\/p>/g, '')),decodeHTML(original.match(/<details class="inside"[^>]*>([\s\S]*?)<\/details>/)[1]));
+ const originalInside = original.match(/<details class="inside"[^>]*>([\s\S]*?)<\/details>/)[1];
+ const restoredInside = expected.title==='Matt Pocock Skills' ? inside.replace(/ <li>[^\n]*<\/li>\n/g,(line)=>mattRemaining.some(i=>line.startsWith(' <li><code class="inside-name">'+i.name+'</code>'))?'':line).replace('Inside this repo — 27 skills','Inside this repo — 5 of 31 skills') : inside;
+ assert.equal(decodeHTML(restoredInside.replace(/<p class="example-prompt">[^<]*<\/p>/g, '')),decodeHTML(originalInside));
  assert.equal(renderedText(inside.match(/<summary>([\s\S]*?)<\/summary>/)[1]),expected.summary);
   const summary = renderedText(inside.match(/<summary>([\s\S]*?)<\/summary>/)[1]);
   const items = [...inside.matchAll(/<li>([\s\S]*?)<\/li>/g)];
-  assert.equal(items.length, expected.title === 'Karpathy Skills' ? 1 : 5);
+  assert.equal(items.length, expected.items.length);
   assert.doesNotMatch(inside, /<a\b|<h[1-6]\b/);
   items.forEach(([, item], itemIndex) => {
     const name = item.match(/^<code class="inside-name">([\s\S]*?)<\/code> — ([\s\S]*)$/);
@@ -105,7 +133,7 @@ gate('3 protected copy and approved sources', () => {
   });
   if (expected.title === 'Matt Pocock Skills') {
     assert.ok(expected.items.some(item => item.name === 'to-spec'));
-    assert.ok(!items.some(([, item]) => renderedText(item.match(/<code[^>]*>(.*?)<\/code>/)[1]) === 'tdd'));
+    assert.ok(items.some(([, item]) => renderedText(item.match(/<code[^>]*>(.*?)<\/code>/)[1]) === 'tdd'));
   }
   const notes = [...inside.matchAll(/<p class="inside-note">([\s\S]*?)<\/p>/g)];
   assert.deepEqual(notes.map(([, note]) => renderedText(note)), expected.note ? [expected.note] : []);
@@ -121,7 +149,7 @@ gate('3 protected copy and approved sources', () => {
 
 gate('prompt inventory, mapping, hygiene and exact change scope', () => {
  assert.equal(promptMap.size,22);
- assert.equal([...promptMap.values()].reduce((n,items)=>n+items.size,0),102);
+ assert.equal([...promptMap.values()].reduce((n,items)=>n+items.size,0),124);
  const actualPrompts=[];
  for(const [i,[,,card]] of articles.entries()) {
   const title=densities[i].title;
@@ -142,8 +170,8 @@ gate('prompt inventory, mapping, hygiene and exact change scope', () => {
   assert.doesNotMatch(inside,/<(?:button|input|a|select|textarea)\b|\b(?:tabindex|onclick|contenteditable)=/i);
   assert.equal((card.match(/class="example-prompt"/g)||[]).length,items.length);
  }
- assert.equal(actualPrompts.length,102); assert.equal(new Set(actualPrompts).size,102);
- assert.equal((html.match(/class="example-prompt"/g)||[]).length,102);
+ assert.equal(actualPrompts.length,124); assert.equal(new Set(actualPrompts).size,124);
+ assert.equal((html.match(/class="example-prompt"/g)||[]).length,124);
  assert.doesNotMatch(html,/\b(?:UNCONFIRMED|illustrative|not repo-quoted|research.note|Grade:\s*(?:Verified|Crafted)|Source:\s*https?:|example\.(?:com|org|net))\b/i);
  let restored=html;
  restored=restored.replace(/skill-(\d+)/g,(_,n)=>'skill-'+(Number(n)>=14?Number(n)+1:Number(n)))
@@ -471,7 +499,7 @@ gate('agent files: UTF-8, schema, field-by-field HTML match and hygiene',()=>{
   for(const item of card.inside){assert.deepEqual(Object.keys(item),['name','kind','function','example_prompt']);prompts.push(item.example_prompt);pairs.push(card.id+' / '+item.name);assert.doesNotMatch(item.function,/^—/);}
  }
  for(const values of [catalog.cards.map(c=>c.id),catalog.cards.map(c=>c.number),prompts,pairs])assert.equal(new Set(values).size,values.length);
- assert.equal(catalog.count,22);assert.equal(pairs.length,102);assert.equal(prompts.length,102);
+ assert.equal(catalog.count,22);assert.equal(pairs.length,124);assert.equal(prompts.length,124);
  assert.doesNotMatch(json,/"install"\s*:|Verified|Crafted|Uncertain|UNCONFIRMED|illustrative|not repo-quoted|example\.(?:com|org)/);
  // Equality above permits only verbatim page text, including the amended prompt URL/command exceptions.
  const withoutPrompts=catalog.cards.map(c=>({...c,inside:c.inside.map(({example_prompt,...item})=>item)}));
@@ -500,7 +528,7 @@ gate('agent text catalogs: exact headers, chapters, card lines, functions, kinds
  assert.equal(anchorDomain(short),expectedShort);assert.equal(anchorDomain(full),expectedFull);
  assert.equal((short.match(/^- \[/gm)||[]).length,articles.length);
  assert.equal((full.match(/^### /gm)||[]).length,articles.length);
- assert.equal((full.match(/^  > /gm)||[]).length,102);
+ assert.equal((full.match(/^  > /gm)||[]).length,124);
  for(const value of [short,full]){
   // The amendment bans added claims, not shipped phrases such as 'Production-grade'
   // or 'verified' in prompts. Remove exact HTML-derived copy before checking additions.
@@ -525,7 +553,7 @@ gate('agent footer insertion only, protected bytes and unchanged per-card baseli
  assert.ok(html.includes(agentNav));
  const footer=html.match(/<footer class="site-footer">[\s\S]*?<\/footer>/)[0];
  assert.equal(footer,agentBaseline.footer.replace('</p>','</p>'+agentNav));
- assert.equal(sha256(html.replace(agentNav,'')),agentBaseline['index.html'],'Only the exact footer nav may change from the removal baseline in HTML');
+ assert.equal(sha256(html.replace(articles.find(a=>a[0].includes('aria-labelledby="skill-4"'))[0],agentBaseline.originalMattCard).replace(agentNav,'')),agentBaseline['index.html'],'Restoring the separately verified Matt card permits only the exact footer nav change from the removal baseline');
  assert.ok(!html.includes(agentSnippet));
  for(const name of ['styles.css','script.js'])assert.equal(sha256(fs.readFileSync(path.join(root,name))),agentBaseline[name],name+' pre-build bytes');
  for(const kind of ['visible','expanded'])assert.deepEqual(densities.map(c=>c[kind]),agentBaseline[kind],kind+' per-card baseline');
