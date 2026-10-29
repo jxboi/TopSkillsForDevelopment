@@ -399,4 +399,117 @@ gate('polish CSS, prose and portability',()=>{
  assert.doesNotMatch(fs.readFileSync(__filename,'utf8').split("gate('polish CSS")[0],/['"]\/tmp\/fix-in-place-before|path.resolve\(root, ['"]\.\.\/workflow-run-/);
 });
 gate('12 highlight assertions and manual live checklist',()=>{ exerciseHighlight(); console.log('Manual live checklist (not performed; user prohibits live checking): prompt strips under items without overflow at desktop and narrowest allowed width; triple-click selects only one prompt, copy/paste exact; EGFR opens and highlights; clear restores prompts; leave All skills, empty query, all collapsed; true 320–360px rendering unverified; 23 collapsed cards with stars/top lines; expand/collapse 23; to-spec/worktrees opens and marks; Design III (3); filters, clear, reset; layout; true 320–360px phone width. Static checks do not constitute live verification.'); });
+// Agent-layer public seams: shipped files versus independently extracted HTML copy.
+const agentBaseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/agent-layer-baseline.json'),'utf8'));
+const agentNav = '<nav aria-label="For agents">For agents: <a href="skills.json">skills.json</a>, <a href="llms.txt">llms.txt</a>, <a href="llms-full.txt">llms-full.txt</a></nav>';
+const agentSnippet = `When starting a task, fetch https://topskillsfordevelopment.vercel.app/skills.json.
+Match the task to each skill's Use-when line and category, and pick at most 2 skills.
+Then follow the chosen skill's own repository install instructions, and start with its example prompt.
+Do not install every matching skill — pick the smallest set that covers the task.
+Do not invent an install command: if the repository does not state one, say so and stop.
+If no skill matches the task, use no skill from this catalog rather than forcing a match.`;
+const chapterMarkup = [...html.matchAll(/<section class="chapter"[^>]*>([\s\S]*?)<\/section>/g)].map(m=>m[1]);
+const agentChapters = chapterMarkup.map(c=>renderedText(c.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)[1].replace(/<span>[\s\S]*?<\/span>/,'')));
+const agentExpectedCards = articles.map(([,category,c])=>{
+ const heading=c.match(/<h3 id="([^"]+)">([^<]+)<\/h3>/); assert.ok(heading,'Missing shipped anchor');
+ const stars=renderedText(field(c,'meta-stars','span'));
+ assert.match(stars,/^\d{1,3}(?:,\d{3})*$/);
+ assert.ok(field(c,'meta-stars','span').includes('aria-label="'+stars+' GitHub stars"'));
+ assert.equal(renderedText(field(c,'category','span')),category);
+ const top=field(c,'top-inside');
+ const items=[...c.match(/<ul class="inside-list">([\s\S]*?)<\/ul>/)[1].matchAll(/<li><code class="inside-name">([^<]+)<\/code> — ([\s\S]*?)<\/li>/g)].map(([,name,body])=>{
+  const prompts=[...body.matchAll(/<p class="example-prompt">([^<]*)<\/p>/g)]; assert.equal(prompts.length,1);
+  const example_prompt=decodeHTML(prompts[0][1]); assert.doesNotMatch(example_prompt,/[\r\n]/);
+  return {name:decodeHTML(name),kind:body.match(/<span class="inside-kind">([^<]+)<\/span>/)?.[1]??null,
+   function:renderedText(body.replace(prompts[0][0],'').replace(/<span class="inside-kind">[^<]+<\/span>/,'')),example_prompt};
+ });
+ const description=renderedText(field(c,'description')); assert.doesNotMatch(description,/[\r\n]/);
+ return {id:heading[1],number:Number(renderedText(field(c,'number','span'))),title:decodeHTML(heading[2]),category,
+ level:renderedText(c.match(/<span class="dot">·<\/span><span>([^<]+)<\/span>/)[1]),stars:Number(stars.replaceAll(',','')),
+ repo:field(c,'card-footer','div').match(/<a href="([^"]+)"/)[1],description,
+ use_when:renderedText(field(c,'fit-use').replace('<strong>Use when</strong>','')),
+ top_inside:{label:renderedText(field(top,'top-inside-label','span')),names:[...top.matchAll(/<code class="inside-name">([^<]+)<\/code>/g)].map(m=>decodeHTML(m[1]))},
+ inside_summary:renderedText(c.match(/<summary>([\s\S]*?)<\/summary>/)[1].replace(/<svg[\s\S]*?<\/svg>/,'')),
+ inside_note:field(c,'inside-note')?renderedText(field(c,'inside-note')):null,inside:items};
+});
+const agentExpected = {site:decodeHTML(html.match(/<title>(.*?) — /)[1]),description:decodeHTML(html.match(/<meta name="description" content="([^"]+)"/)[1]),
+ star_snapshot:html.match(/Star counts are a snapshot supplied for ([^<]+)\.<\/p>/)[1],agent_guide:'llms.txt',chapters:agentChapters,count:articles.length,cards:agentExpectedCards};
+const readAgentFile = name => {
+ const bytes=fs.readFileSync(path.join(root,name));
+ const value=new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(bytes);
+ assert.ok(value.endsWith('\n'),name+' trailing newline');
+ return value;
+};
+gate('agent files: UTF-8, schema, field-by-field HTML match and hygiene',()=>{
+ const json=readAgentFile('skills.json'), catalog=JSON.parse(json);
+ assert.deepEqual(Object.keys(catalog),Object.keys(agentExpected));
+ assert.deepEqual(catalog,agentExpected);
+ assert.equal(json,JSON.stringify(agentExpected,null,2)+'\n');
+ const prompts=[], pairs=[];
+ for(const card of catalog.cards){
+  assert.deepEqual(Object.keys(card),Object.keys(agentExpectedCards[0]));
+  assert.deepEqual(Object.keys(card.top_inside),['label','names']);
+  for(const item of card.inside){assert.deepEqual(Object.keys(item),['name','kind','function','example_prompt']);prompts.push(item.example_prompt);pairs.push(card.id+' / '+item.name);assert.doesNotMatch(item.function,/^—/);}
+ }
+ for(const values of [catalog.cards.map(c=>c.id),catalog.cards.map(c=>c.number),prompts,pairs])assert.equal(new Set(values).size,values.length);
+ assert.equal(catalog.count,23);assert.equal(pairs.length,107);assert.equal(prompts.length,107);
+ assert.doesNotMatch(json,/"install"\s*:|Verified|Crafted|Uncertain|UNCONFIRMED|illustrative|not repo-quoted|example\.(?:com|org)/);
+ // Equality above permits only verbatim page text, including the amended prompt URL/command exceptions.
+ const withoutPrompts=catalog.cards.map(c=>({...c,inside:c.inside.map(({example_prompt,...item})=>item)}));
+ const urls=JSON.stringify(withoutPrompts).match(/https?:[^"\s]+/g)||[];
+ assert.deepEqual(urls,catalog.cards.map(c=>c.repo));
+ assert.ok(!json.includes(agentSnippet));
+});
+gate('agent text catalogs: exact headers, chapters, card lines, functions, kinds, notes and prompts',()=>{
+ const short=readAgentFile('llms.txt'), full=readAgentFile('llms-full.txt');
+ const common=`# ${agentExpected.site}\n\n> ${agentExpected.description}\n\n> For agents — how to use this catalog:\n${agentSnippet.split('\n').map(l=>'> '+l).join('\n')}\n\n`;
+ let expectedShort=common+`> Full catalog: llms-full.txt — Structured catalog: skills.json — Star counts are a snapshot supplied for ${agentExpected.star_snapshot}.\n`;
+ let expectedFull=common+`> Full catalog in structured form: skills.json — Short index: llms.txt — Star counts are a snapshot supplied for ${agentExpected.star_snapshot}.\n`;
+ // Domain is a build-time input: validate path/fragment independently of its hostname.
+ const anchorDomain = value => value.replace(/https?:\/\/[^\s/]+(?=#skill-)/g,'SITE_URL');
+ for(const [i,chapter] of agentChapters.entries()){
+  expectedShort+='\n## '+chapter+'\n';expectedFull+='\n## '+chapter+'\n';
+  const lede=field(chapterMarkup[i],'chapter-lede');if(lede)expectedFull+='\n'+renderedText(lede)+'\n';
+  for(const c of agentExpectedCards.filter(c=>c.category===chapter)){
+   const stars=c.stars.toLocaleString('en-US'),anchor='SITE_URL#'+c.id;
+   expectedShort+=`\n- [${c.title}](${c.repo}) — ${c.category} · ${stars} stars — ${c.description} — Card: ${anchor}\n`;
+   expectedFull+=`\n### ${c.title}\n\n- Category: ${c.category} · Level: ${c.level} · Stars: ${stars} · Repo: ${c.repo} · Card: ${anchor}\n- Description: ${c.description}\n- Use when: ${c.use_when}\n- Top inside: ${c.top_inside.label} ${c.top_inside.names.join(', ')}\n- Inside: ${c.inside_summary}\n`;
+   for(const item of c.inside)expectedFull+=`- ${item.name}${item.kind?' ('+item.kind+')':''} — ${item.function}\n  > ${item.example_prompt}\n`;
+   if(c.inside_note)expectedFull+='- Note: '+c.inside_note+'\n';
+  }
+ }
+ assert.equal(anchorDomain(short),expectedShort);assert.equal(anchorDomain(full),expectedFull);
+ assert.equal((short.match(/^- \[/gm)||[]).length,articles.length);
+ assert.equal((full.match(/^### /gm)||[]).length,articles.length);
+ assert.equal((full.match(/^  > /gm)||[]).length,107);
+ for(const value of [short,full]){
+  // The amendment bans added claims, not shipped phrases such as 'Production-grade'
+  // or 'verified' in prompts. Remove exact HTML-derived copy before checking additions.
+  const pageCopy = [agentExpected.description, ...agentChapters,
+   ...chapterMarkup.map(c=>field(c,'chapter-lede')).filter(Boolean).map(renderedText),
+   ...agentExpectedCards.flatMap(c=>[c.title,c.description,c.use_when,c.inside_summary,c.inside_note,
+    c.top_inside.label,...c.top_inside.names,...c.inside.flatMap(i=>[i.name,i.function,i.example_prompt])])].filter(Boolean).sort((a,b)=>b.length-a.length);
+  let added=value; for(const copy of pageCopy)added=added.split(copy).join('');
+  assert.doesNotMatch(added,/Verified|Crafted|Uncertain|UNCONFIRMED|illustrative|not repo-quoted|example\.(?:com|org)|\bgrade\b/i);
+  assert.deepEqual([...value.matchAll(/ — Card: | · Card: /g)].length,articles.length);
+  for(const [,id] of value.matchAll(/Card: https?:\/\/[^\s]+#([^\s]+)/g))assert.ok(agentExpectedCards.some(c=>c.id===id));
+ }
+});
+gate('agent outputs regenerate byte-for-byte from HTML only',()=>{
+ const {generate}=require('./generate-agent-layer');
+ const outputs=generate(html,'https://topskillsfordevelopment.vercel.app');
+ assert.deepEqual(Object.keys(outputs),['skills.json','llms.txt','llms-full.txt']);
+ for(const [name,expected] of Object.entries(outputs))assert.equal(readAgentFile(name),expected,name+' generated bytes');
+});
+gate('agent footer insertion only, protected bytes and unchanged per-card baseline',()=>{
+ assert.equal((html.match(/<nav aria-label="For agents">/g)||[]).length,1);
+ assert.ok(html.includes(agentNav));
+ const footer=html.match(/<footer class="site-footer">[\s\S]*?<\/footer>/)[0];
+ assert.equal(footer,agentBaseline.footer.replace('</p>','</p>'+agentNav));
+ assert.equal(sha256(html.replace(agentNav,'')),agentBaseline['index.html'],'Only the exact footer nav may change in HTML');
+ assert.ok(!html.includes(agentSnippet));
+ for(const name of ['styles.css','script.js'])assert.equal(sha256(fs.readFileSync(path.join(root,name))),agentBaseline[name],name+' pre-build bytes');
+ for(const kind of ['visible','expanded'])assert.deepEqual(densities.map(c=>c[kind]),agentBaseline[kind],kind+' per-card baseline');
+});
+
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
