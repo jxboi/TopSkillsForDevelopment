@@ -36,6 +36,21 @@ for (const [, category, label] of filterButtons) {
 assert.equal(categoryLabelTotal, 21, 'Category filter counts must sum to 21');
 assert.match(html, /id="toggle-guides" hidden/);
 
+const chapterMarkup = [...html.matchAll(/<section class="chapter" aria-labelledby="([^"]+)">([\s\S]*?)<\/section>/g)];
+assert.deepEqual(chapterMarkup.map(([, , markup]) => markup.match(/class="chapter-heading"[^>]*>([^<]+)/)[1].trim()),
+  ['Workflow', 'Quality', 'Design', 'Efficiency', 'Knowledge', 'Discovery']);
+const groupedArticles = [];
+for (const [, id, markup] of chapterMarkup) {
+  const heading = markup.match(/<h2 class="chapter-heading" id="([^"]+)">([^<]+) <span>\((\d+)\)<\/span><\/h2>/);
+  assert.ok(heading, 'Each chapter needs a linked heading and count');
+  assert.equal(heading[1], id);
+  const members = [...markup.matchAll(/<article class="skill-card" data-category="([^"]+)"[^>]*>[\s\S]*?<\/article>/g)];
+  assert.equal(members.length, Number(heading[3]));
+  assert.ok(members.every(([, category]) => category === heading[2]), 'Chapter contains only its own category');
+  groupedArticles.push(...members.map(([article]) => article));
+}
+assert.deepEqual(groupedArticles, articles.map(([article]) => article), 'Every card belongs to exactly one chapter');
+
 function element(textContent = '') {
   const listeners = {};
   return {
@@ -52,6 +67,11 @@ function setup(missing = '', options = {}) {
   const ids = Object.fromEntries(['search', 'clear-search', 'toggle-guides', 'results-count', 'empty-state', 'reset-filters', 'copy-status'].map(id => [id, element()]));
   delete ids[missing];
   const cards = articles.map(([, category, markup]) => Object.assign(element(markup.replace(/<[^>]*>/g, ' ')), { dataset: { category } }));
+  const chapters = chapterMarkup.map(([, , markup]) => {
+    const memberIds = [...markup.matchAll(/<article[^>]*aria-labelledby="([^"]+)"/g)].map(([, id]) => id);
+    const members = cards.filter((card, index) => memberIds.includes(articles[index][0].match(/aria-labelledby="([^"]+)"/)[1]));
+    return Object.assign(element(), { querySelectorAll: selector => selector === '.skill-card' ? members : [] });
+  });
   const guides = cards.map(() => element());
   const filters = missing === 'filters' ? [] : filterTags.map(([, category]) => Object.assign(element(), { dataset: { filter: category } }));
   const copies = articles.map(([, , markup]) => {
@@ -65,7 +85,7 @@ function setup(missing = '', options = {}) {
   const selected = [];
   const document = {
     querySelector: selector => ids[selector.slice(1)] ?? null,
-    querySelectorAll: selector => ({ '.skill-card': cards, '.skill-card details': guides, '[data-filter]': filters, '.copy-button': copies })[selector] ?? [],
+    querySelectorAll: selector => ({ '.chapter': chapters, '.skill-card': cards, '.skill-card details': guides, '[data-filter]': filters, '.copy-button': copies })[selector] ?? [],
     createElement: () => element(), body: { append() {} },
     execCommand: () => { copied.push('fallback'); return !options.failCopy; },
     createRange: () => ({ selectNodeContents: prompt => selected.push(prompt.textContent) }),
@@ -75,7 +95,7 @@ function setup(missing = '', options = {}) {
     window: { isSecureContext: !options.fallback, getSelection: () => ({ removeAllRanges() {}, addRange() {} }) },
     console: { warn() {} }, setTimeout: callback => { timers.push(callback); return timers.length; }, clearTimeout() {},
   });
-  return { ids, cards, guides, filters, copies, copied, selected, timers,
+  return { ids, cards, chapters, guides, filters, copies, copied, selected, timers,
     visible: () => cards.filter(card => !card.hidden),
     search(query) { ids.search.value = query; ids.search.fire('input'); },
   };
@@ -84,8 +104,10 @@ async function check() {
   const app = setup();
   assert.equal(app.visible().length, 21);
   assert.equal(app.ids['toggle-guides'].hidden, false);
+  assert.ok(app.chapters.every(chapter => !chapter.hidden));
   app.search('  SUPERPOWERS   settings  ');
   assert.equal(app.visible().length, 1);
+  assert.deepEqual(app.chapters.map(chapter => chapter.hidden), [false, true, true, true, true, true], 'Search hides entire nonmatching chapters');
   assert.equal(app.ids['results-count'].textContent, '1 skill in the collection');
   assert.equal(app.ids['clear-search'].hidden, false);
   for (const filter of app.filters) {
@@ -95,9 +117,11 @@ async function check() {
     assert.equal(app.visible().length, app.cards.filter(card => filter.dataset.filter === 'All skills' || card.dataset.category === filter.dataset.filter).length);
   }
   app.filters.find(button => button.dataset.filter === 'Design').click();
+  assert.deepEqual(app.chapters.map(chapter => chapter.hidden), [true, true, false, true, true, true], 'Design filter shows only its chapter');
   app.search('Superpowers');
   assert.equal(app.visible().length, 0);
   assert.equal(app.ids['empty-state'].hidden, false);
+  assert.ok(app.chapters.every(chapter => chapter.hidden), 'No matches hides every chapter heading');
   app.ids['clear-search'].click();
   assert.equal(app.ids.search.value, '');
   assert.equal(app.ids.search.focused, true);
@@ -106,6 +130,7 @@ async function check() {
   app.ids['reset-filters'].click();
   assert.equal(app.visible().length, 21);
   assert.equal(app.ids['empty-state'].hidden, true);
+  assert.ok(app.chapters.every(chapter => !chapter.hidden), 'Reset restores all chapters');
   assert.equal(app.ids.search.value, '');
   assert.equal(app.ids.search.focused, true);
   app.search('unknown-skill-xyz');
@@ -152,6 +177,6 @@ async function check() {
     assert.equal(partial.copies[0].textContent, 'Copied!');
     assert.equal(partial.visible().length, 21);
   }
-  console.log('PASS: 21 cards; search, filters, empty state, reset, clear-search, guides, copy, and missing-element resilience.');
+  console.log('PASS: 21 cards; chapter grouping and hiding, search, filters, empty state, reset, clear-search, guides, copy, and missing-element resilience.');
 }
 check().catch(error => { console.error(error); process.exitCode = 1; });
