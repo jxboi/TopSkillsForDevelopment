@@ -3,7 +3,7 @@
 
 .filter,.copy-button,#reset-filters,.collection-link,.site-footer a{min-height:var(--touch);display:inline-flex;align-items:center;justify-content:center}
 .skill-card h2{min-height:78px}
-.copy-button{min-width:128px;flex-shrink:0;text-align:center;white-space:nowrap}
+.copy-button{min-width:144px;flex-shrink:0;text-align:center;white-space:nowrap}
 .card-footer{flex-wrap:wrap}
 .stars{white-space:nowrap}
 .search-box input{min-width:0}
