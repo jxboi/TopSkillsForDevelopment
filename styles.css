@@ -190,3 +190,4 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 .chapter-lede{font-size:var(--type-small);color:var(--body);margin:0 0 var(--space-4)}
 .skill-grid :is(.inside-list li,.inside-note){max-width:62ch}
 mark{font-weight:600;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:5px;background:var(--prompt-background);color:var(--ink)}
+.example-prompt{margin:var(--space-1) 0 0;padding:var(--space-1) var(--space-2);border-left:1px solid var(--line);background:var(--prompt-background);color:var(--body);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);line-height:var(--type-list-leading);overflow-wrap:anywhere}
