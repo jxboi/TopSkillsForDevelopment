@@ -5,6 +5,7 @@ const clearSearch = document.querySelector('#clear-search');
 const toggleGuides = document.querySelector('#toggle-guides');
 const guides = [...document.querySelectorAll('.skill-card details')];
 const filterButtons = [...document.querySelectorAll('[data-filter]')];
+const chapters = [...document.querySelectorAll('.chapter')];
 const cards = [...document.querySelectorAll('.skill-card')];
 const resultsCount = document.querySelector('#results-count');
 const emptyState = document.querySelector('#empty-state');
@@ -27,6 +28,9 @@ function updateResults() {
     const visible = matchesCategory && terms.every(term => text.includes(term));
     card.hidden = !visible;
     if (visible) count++;
+  });
+  chapters.forEach(chapter => {
+    chapter.hidden = ![...chapter.querySelectorAll('.skill-card')].some(card => !card.hidden);
   });
   if (resultsCount) resultsCount.textContent = `${count} ${count === 1 ? 'skill' : 'skills'} in the collection`;
   if (emptyState) emptyState.hidden = count !== 0;
