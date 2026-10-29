@@ -28,28 +28,28 @@
     59
   ],
   "expanded": [
-    272,
+    277,
+    280,
+    904,
+    255,
+    263,
+    324,
+    100,
+    242,
+    255,
+    108,
     275,
-    877,
-    250,
-    258,
-    319,
-    99,
-    237,
-    250,
-    107,
+    261,
+    293,
     270,
-    256,
-    288,
-    265,
+    272,
+    270,
+    289,
     267,
-    265,
-    284,
-    262,
-    254,
-    245,
-    226,
-    299
+    259,
+    250,
+    231,
+    304
   ],
   "originalMattCard": "<article class=\"skill-card\" data-category=\"Workflow\" aria-labelledby=\"skill-4\">\n <div class=\"card-meta\"><span class=\"number\">04</span><span class=\"category\">Workflow</span><span class=\"dot\">\u00b7</span><span>Intermediate</span> <span class=\"meta-stars\" aria-label=\"305,511 GitHub stars\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><use href=\"#icon-star\"/></svg>305,511</span></div>\n <h3 id=\"skill-4\">Matt Pocock Skills</h3>\n <p class=\"top-inside\"><span class=\"top-inside-label\">Top inside:</span> <code class=\"inside-name\">grill-with-docs</code> \u00b7 <code class=\"inside-name\">grill-me</code></p>\n <p class=\"description\">Skills for real engineers, including alignment interviews and disciplined test-driven loops.</p>\n <div class=\"fit\">\n  <p class=\"fit-use\"><strong>Use when</strong> At the start of feature or bug work, when human grilling should settle ambiguity and shared terminology before tickets and test-driven development.</p>\n </div>\n <details class=\"inside\"><summary>Inside this repo \u2014 5 of 31 skills<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"/></svg></summary>\n <ul class=\"inside-list\">\n <li><code class=\"inside-name\">grill-with-docs</code> \u2014 Interrogates the user in depth about planned changes while writing Architecture Decision Records (ADRs) and maintaining a ubiquitous project domain glossary (`GLOSSARY.md`) before work starts.<p class=\"example-prompt\">/grill-with-docs Interview me about our proposed caching architecture while recording architectural decision records and updating our project glossary.</p></li>\n <li><code class=\"inside-name\">grill-me</code> \u2014 Recursively interviews the user on an idea, plan, or general proposal until every branch of the design decision tree is explored and aligned.<p class=\"example-prompt\">/grill-me Interview me relentlessly about my proposal for a team on-call rotation until every branch of the plan is resolved.</p></li>\n <li><code class=\"inside-name\">to-spec</code> \u2014 Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut. (Source: skills/engineering/to-spec/SKILL.md, description + Process steps 2\u20133; orchestrator-verified 2026-10-29.)<p class=\"example-prompt\">/to-spec Turn our conversation into a complete feature specification, proposing test seams and publishing it to our issue tracker.</p></li>\n <li><code class=\"inside-name\">implement</code> \u2014 Executes tasks defined by a specification or ticket list, triggering `/tdd` across identified seams and terminating with `/code-review` before committing changes.<p class=\"example-prompt\">/implement Build the feature described in ticket #104, using test-driven development at identified seams and running code review before committing.</p></li>\n <li><code class=\"inside-name\">code-review</code> \u2014 Performs a dual-axis evaluation of repository diffs comparing code against standards and against the originating spec using parallel, isolated subagents.<p class=\"example-prompt\">Review our current changes since main against repo coding standards and originating issue #45 using parallel subagents for evaluation.</p></li>\n </ul>\n </details>\n <div class=\"card-footer\"><a href=\"https://github.com/mattpocock/skills\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Matt Pocock Skills original GitHub repository (opens in new tab)\">GitHub repository <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><use href=\"#icon-external-link\"/></svg></a></div>\n </article>",
   "protectedCards": [
@@ -82,9 +82,15 @@
       "mean": 55.64
     },
     "expanded": {
-      "max": 877,
-      "total": 6125,
-      "mean": 278.41
+      "max": 904,
+      "total": 6249,
+      "mean": 284.05
     }
+  },
+  "categoryAdditionBaseline": {
+    "html": "f09cc367078efae268ac9a1a83a2897a6cbed198747015ea0bd8b5424ec256b2",
+    "short": "e7dda79605966d58e982e833dc32271086cd460f4a211cc27c8e755b86195553",
+    "visible": 1224,
+    "expanded": 6125
   }
 }
