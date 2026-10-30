@@ -157,7 +157,7 @@ How work moves from an idea to shipped code.
 - Description: Poteto's official Cursor plugin that turns Cursor into a real engineering team, helping you write less but higher quality code with rigorous engineering principles and fearless parallelism via /poteto-mode and its 23 playbooks.
 - Use when: At the start of a demanding task such as reproducing defects, tracing performance bottlenecks, or overnight autonomous work needing empirical verification.
 - Top inside: Top inside: bug-fix, feature
-- Inside: Inside this repo — 5 of 23 playbooks
+- Inside: Inside this repo — 23 playbooks
 - bug-fix [Debugging] — Mandates reproducing a reported defect directly on the matching target surface first, binary-searching root causes with runtime evidence, and staging a failing repro test commit before landing the fix.
   > /poteto-mode users get two notifications after a retry: repro first with a failing test, then fix and verify.
 - feature [Building] — Orchestrates implementing new or modified behavior by establishing domain data shapes, conducting parallel architectural exploration, writing a four-dimension throughput checkpoint, and delegating scoped implementation.
@@ -168,6 +168,42 @@ How work moves from an idea to shipped code.
   > /poteto-mode Refactor the legacy billing service into modular handlers, pinning existing behavior with characterization tests first to ensure zero functional regressions.
 - perf-issue [Debugging] — Traces measured slowness against an established baseline trace, systematically applies performance mantras in order of cost, and independently verifies post-fix metric improvements before shipping.
   > /poteto-mode Trace database query latency on the dashboard endpoint against our baseline profile and optimize the slow queries with verified post-fix benchmarks.
+- authoring-a-skill [Writing] — Owns a skill’s voice by validating frontmatter, referenced files, cross-skill links, and structural test cases, deleting prose that changes no decision, then running Opening a PR.
+  > /poteto-mode Author a release-notes skill with valid frontmatter, working cross-skill links, and structural cases, keeping only instructions that change decisions.
+- autonomous-run [Planning] — Defines a checkable exit condition, then drives toward it without stopping through evidence-based iterations, event watchers or timed heartbeats, verifying each change and discarding attempts that do not advance it.
+  > /poteto-mode Run until the invoice retry regression passes consistently, defining the exit predicate first and using heartbeats to verify each attempted fix.
+- autopilot-full [Review] — Owns verdicts while assigning one owner per PR, requiring independent verification by a swarm that never wrote the code and green CI at each current head before anything merges.
+  > /poteto-mode Coordinate the three billing PRs with one owner each, independent verification swarms, and green CI at each head before allowing merges.
+- autopilot-stack [Review] — Runs Autopilot-full verification without merging, stopping at verified PRs with green checks at their current heads and handing them to the operator, stacking only PRs that build on others.
+  > /poteto-mode Verify the schema and billing migration PRs as a dependent stack, then hand their current-head verdicts to me without merging.
+- babysit [Review] — Owns the merge frontier by declaring a mode, clearing one PR at a time, and stopping where a human decision begins, while leaving the actual landing operation to Shipping.
+  > /poteto-mode Babysit the completed invoice PR stack in drive mode, clearing one PR at a time and stopping when a product decision needs me.
+- eval [Testing] — Owns experiment design through planning, blinding, running, and synthesising results, keeping evaluation language out of candidate environments and prompts while a blinded judge assesses outputs against a private rubric.
+  > /poteto-mode Evaluate two release-note instruction variants with sanitized workspaces, one organic task, and a blinded judge using a private rubric for factual accuracy.
+- hillclimb [Testing] — Owns one metric and experiment integrity through a frozen measurement harness, testing one change at a time, keeping measured improvements or reverting failures, and never claiming wins from inspection alone.
+  > /poteto-mode Reduce dashboard startup latency with a frozen realistic workload, one change per measurement, and a decision log recording every kept or reverted attempt.
+- multi-phase-plan [Planning] — Owns the plan rather than implementation, producing an evidence-backed checklist an owner executes box by box and an operator audits, with dependencies, verification steps, and explicit review gates.
+  > /poteto-mode Plan the billing provider migration as ordered PR checklists with dependencies, evidence requirements, and review gates, without implementing any code.
+- opening-a-pr [Communication] — Runs at the end of every other playbook, preparing work in a worktree off main and organising small ordered commits so each can become a future independently landable PR.
+  > /poteto-mode Prepare the invoice retry fix for review from a worktree off main, arranging small ordered commits that each form a landable PR.
+- orchestrate [Planning] — Runs the program rather than writing code, deciding which agent owns each piece, checking the evidence each produces, and maintaining authoritative program state in the Project tracker throughout execution.
+  > /poteto-mode Coordinate the checkout migration across scoped agent owners, check their evidence, and maintain dependencies and progress in the Project tracker.
+- pause-safely [Planning] — Owns a clean stop by finishing or backing out of the atomic step, taking no irreversible action, and leaving a durable wip checkpoint with a resume note for a cold-start agent.
+  > /poteto-mode Pause the checkout migration at a safe boundary, checkpoint unfinished work, and record verified progress, current state, and the first action for resumption.
+- prototype [Design] — Owns a design decision through a throwaway instrument, exploring alternatives quickly in an isolated scratch directory, observing their behaviour, and handing the chosen direction to Feature for the real build.
+  > /poteto-mode Prototype compact and spacious invoice tables behind a switcher in a scratch directory, observe their interactions, and recommend a direction for Feature.
+- runtime-forensics [Debugging] — Owns diagnosis from a live process by capturing a profile, heap snapshot, or CDP trace, reducing it to the smoking gun, and proving the mechanism before delivering a cited diagnosis.
+  > /poteto-mode Capture a heap snapshot from the running invoice dashboard, trace retained subscriptions to their GC roots, and deliver a cited diagnosis before proposing fixes.
+- session-pickup [Understanding] — Owns the resume point by reading the prior transcript, cloud URL, or pushed branch first, reconstructing completed and pending work without redoing it, and retaining a reduced timeline in the main thread.
+  > /poteto-mode Resume the invoice migration from its pushed branch and prior transcript, identify completed work and pending decisions, and continue from the recorded resume point.
+- shipping [Review] — Owns what lands by verifying each PR independently, landing only the verified contiguous run from the root, confirming each merge, and keeping hands off the stack while it lands.
+  > /poteto-mode Ship the verified billing stack from its root through its approved ceiling, confirming each merge and preserving the remaining stack while it lands.
+- trace-forensics [Debugging] — Owns diagnosis from an existing artifact by identifying its format, parsing it with generic tooling, reducing it to a source-attributed finding, and distinguishing confirmed causes from hypotheses without a live rerun.
+  > /poteto-mode Analyze the saved checkout CPU profile with a generic parser, identify the hot call path and source symbols, and report the strongest supported diagnosis.
+- visual-parity [Testing] — Owns pixel-exact equivalence by establishing the baseline before migration, moving one component at a time, and verifying zero image diff without changing the harness or tampering with baseline images.
+  > /poteto-mode Migrate the invoice status component against its existing screenshot baseline, checking every state by image diff and preserving the harness and baseline images.
+- worktree-cleanup [Setup] — Snapshots and audits worktrees and simulator state using paths from worktree list, classifying size, age, merge state, uncommitted work, and PR state before checking active usage and pruning confirmed candidates.
+  > /poteto-mode Audit worktrees and simulator storage, classify candidates from worktree list, cross-check active chats, and hold any uncommitted work for my decision.
 
 ## Quality
 
