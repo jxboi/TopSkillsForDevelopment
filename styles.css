@@ -66,11 +66,11 @@ h1 em{font-weight:normal;color:var(--ink)}
 .skill-card::before{content:"";position:absolute;top:-2px;left:0;right:0;border-top:1px solid var(--ink)}
 .skill-grid > .skill-card:first-child::before{border-top:0}
 .skill-card:hover,.skill-card:focus-within{border-top-color:var(--ink)}
-.card-meta{display:flex;align-items:center;gap:var(--space-1);font-size:var(--type-label);color:var(--muted);white-space:nowrap}
+.card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1);font-size:var(--type-label);color:var(--muted);white-space:normal}
 .number{font:var(--type-mono) var(--mono);color:var(--muted);margin-right:var(--space-1)}
 .category{font-weight:600;color:var(--ink);font-size:var(--type-mono);font-variant-caps:small-caps;letter-spacing:.08em;flex-shrink:0}
 .dot{color:var(--muted)}
-h2,.skill-card h3{font:normal var(--type-entry)/var(--type-entry-leading) var(--serif);letter-spacing:0;margin:var(--space-3) 0 var(--space-2);overflow-wrap:anywhere}
+h2{font:normal var(--type-entry)/var(--type-entry-leading) var(--serif);letter-spacing:0;margin:var(--space-3) 0 var(--space-2);overflow-wrap:anywhere}
 .description{font-family:var(--serif);color:var(--body);margin:0;font-size:var(--type-body);line-height:var(--type-prose-leading)}
 .fit{margin:var(--space-3) 0}
 .fit p{margin:0;font-size:var(--type-small);line-height:var(--type-prose-leading);color:var(--body)}
@@ -100,7 +100,7 @@ details[open] summary svg{transform:rotate(180deg)}
 .site-footer a{text-decoration:none;white-space:nowrap;min-height:var(--touch);display:inline-flex;align-items:center;justify-content:center}
 
 /* States */
-button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:5px}
+button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:var(--underline-offset)}
 #empty-state{text-align:center;padding:var(--space-8) var(--space-2);border:1px solid var(--line);border-radius:var(--radius-control)}
 #empty-state p{color:var(--body)}
 #reset-filters{padding:var(--space-1) var(--space-2);border:0;border-radius:var(--radius-control);background:var(--ink);color:var(--paper);font-size:var(--type-mono);min-height:var(--touch);display:inline-flex;align-items:center;justify-content:center}
@@ -114,7 +114,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
   .skill-grid > .skill-card.first-visible::before{border-top:0}
   .skill-grid > .skill-card:nth-child(2)::before{border-top:0}
   .skill-grid:has(> article:only-child) > article{grid-column:1 / -1}
-  .skill-grid:has(> article:only-child) :is(.description,.fit p,.inside-list li,.inside-note,.top-inside){max-width:62ch}
+  .skill-grid:has(> article:only-child) :is(.description,.fit p,.top-inside){max-width:62ch}
+  .skill-grid:has(> article:not([hidden])):not(:has(> article:not([hidden]) ~ article:not([hidden]))) > article{grid-column:1 / -1}
+  .skill-grid:has(> article:not([hidden])):not(:has(> article:not([hidden]) ~ article:not([hidden]))) :is(.description,.fit p,.top-inside){max-width:62ch}
 }
 
 
@@ -132,7 +134,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 }
 @media(max-width:640px){
   .skill-card.first-visible::before{border-top:0}
-.card-meta{flex-wrap:wrap;white-space:normal}
   .container,.header-inner,.site-footer>div{width:calc(100% - calc(var(--space-4) + var(--space-1) / 2))}
   .header-inner{min-height:var(--header-mobile-height)}
   .brand-mark{font-size:var(--type-brand-mark-mobile)}
@@ -183,5 +184,7 @@ mark{font-weight:600;text-decoration:underline;text-decoration-color:var(--accen
 .item-category{font-family:var(--mono);font-size:var(--type-mono);color:var(--muted)}
 .favourite-button{padding:0;min-height:var(--touch);border:0;background:none;color:var(--muted)}
 .favourite-button[aria-pressed="true"]{color:var(--ink)}
-.item-favourite-button{padding:0 var(--space-1);border:0;background:none;font-family:var(--mono);font-size:var(--type-mono);color:var(--muted)}
+.item-favourite-button{display:inline-flex;align-items:center;justify-content:center;min-height:24px;min-width:24px;padding:0 var(--space-1);border:0;background:none;font-family:var(--mono);font-size:var(--type-mono);color:var(--muted)}
 .item-favourite-button[aria-pressed="true"]{color:var(--ink)}
+
+.favourite-button:hover,.item-favourite-button:hover{color:var(--ink)}

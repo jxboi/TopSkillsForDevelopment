@@ -107,7 +107,8 @@ function updateItemFavourites(terms) {
     const itemsOnly = favouritesOnly && !favourites.has(card.querySelector('h3')?.id);
     list.querySelectorAll?.('li').forEach(item => {
       const button = item.querySelector('.item-favourite-button');
-      item.hidden = itemsOnly && !itemFavourites.has(button.dataset.itemFavouriteFor);
+      item.hidden = itemsOnly && !itemFavourites.has(button.dataset.itemFavouriteFor) &&
+        !(terms || []).some(term => item.textContent.toLocaleLowerCase().includes(term));
     });
     if (itemsOnly && !card.hidden) inside.open = true;
     if (!favouritesOnly && state.filteringFavourites) {
@@ -257,6 +258,7 @@ clearSearch?.addEventListener('click', () => {
 function updateInsideControl() {
   if (!toggleInside || !insides.length) return;
   const scope = insideSearch.filter(({ card }) => !card.hidden);
+  toggleInside.disabled = scope.length === 0;
   const allOpen = scope.length > 0 && scope.every(({ inside }) => inside.open);
   toggleInside.textContent = allOpen ? 'Collapse all inside lists' : 'Expand all inside lists';
   toggleInside.setAttribute('aria-expanded', String(allOpen));
