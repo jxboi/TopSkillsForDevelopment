@@ -59,6 +59,7 @@ favouriteButtons.forEach(button => {
 toggleFavourites?.addEventListener('click', () => {
   favouritesOnly = !favouritesOnly;
   toggleFavourites.setAttribute('aria-pressed', String(favouritesOnly));
+  toggleFavourites.classList.toggle('active', favouritesOnly);
   updateResults();
 });
 if (toggleFavourites) toggleFavourites.hidden = false;
@@ -237,6 +238,7 @@ filterButtons.forEach(button => {
 function resetFilters() {
   favouritesOnly = false;
   toggleFavourites?.setAttribute('aria-pressed', 'false');
+  toggleFavourites?.classList.toggle('active', false);
   if (searchInput) searchInput.value = '';
   selectedCategory = 'All skills';
   filterButtons.forEach(button => {
