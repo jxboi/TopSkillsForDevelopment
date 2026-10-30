@@ -99,7 +99,14 @@ function undoImpeccable23(text) {
   return card.replace('Inside this repo — 23 commands','Inside this repo — 5 commands');
  });
 }
-const shippedHTML = fs.readFileSync(path.join(root,'index.html'),'utf8');
+const cycle1HTML = fs.readFileSync(path.join(root,'index.html'),'utf8');
+const undoCycle1HTML = text => text
+ .replace(/<section class="start-strip"[\s\S]*?<\/section>\n<section class="how-to"[\s\S]*?<\/section>\n(?=<section tabindex="-1" id="collection")/,'')
+ .replace(/<p class="card-use">[\s\S]*?<\/p>(?=<a href=)/g,'');
+const shippedHTML = undoCycle1HTML(cycle1HTML);
+const cycle1Styles = fs.readFileSync(path.join(root,'styles.css'),'utf8');
+const undoCycle1CSS = text => { const i=text.indexOf('\n.start-strip,.how-to{'); return i<0 ? text : text.slice(0,i); };
+
 const shippedCategoryHTML = shippedHTML.replace(/ <button type="button" class="item-favourite-button"[^>]*>☆<\/button>/g,'');
 const historicalAgentOutputs = require('./generate-agent-layer').generate(undoPstack23(undoImpeccable23(shippedHTML)),'https://topskillsfordevelopment.vercel.app');
 
@@ -255,11 +262,12 @@ const categoryHTML = undoItemFavourites('index.html', itemHTML);
 const stripCategories = value => value.replace(/ <span class="item-category">[^<]*<\/span>/g, '');
 const html = stripCategories(undoPolishHTML(undoFavouritesHTML(categoryHTML)));
 const categoryCSSRule = '.item-category{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);color:var(--muted)}';
-const itemStyles = undoPolish3('styles.css', undoUiux('styles.css', fs.readFileSync(path.join(root, 'styles.css'), 'utf8')));
+const itemStyles = undoPolish3('styles.css', undoUiux('styles.css', undoCycle1CSS(cycle1Styles)));
 const categoryStyles = undoItemFavourites('styles.css', itemStyles);
 const styles = undoPolishCSS(undoFavouritesCSS(categoryStyles)).replace(categoryCSSRule+'\n','');
 const source = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
-const historicalSource = undoFavouritesJS(undoItemFavourites('script.js', undoPolish3('script.js', undoUiux('script.js', source))));
+const sourcePreCycle1 = source.replace("  searchable.querySelectorAll('.card-use').forEach(line => line.remove());\n",'');
+const historicalSource = undoFavouritesJS(undoItemFavourites('script.js', undoPolish3('script.js', undoUiux('script.js', sourcePreCycle1))));
 const before = fs.readFileSync(path.join(__dirname, 'fixtures/before/index.html'), 'utf8');
 const beforeCSS = fs.readFileSync(path.join(__dirname, 'fixtures/before/styles.css'), 'utf8');
 const beforeJS = fs.readFileSync(path.join(__dirname, 'fixtures/before/script.js'), 'utf8');
@@ -934,7 +942,7 @@ function exerciseFavourites(storage) {
   dataset:{category},querySelector:selector=>selector==='h3'?headings[i]:null,
   cloneNode(){
    let markup=c;
-   return {querySelectorAll(selector){assert.equal(selector,'.favourite-button, .item-favourite-button');return [{remove(){markup=markup.replace(/<button type="button" class="favourite-button"[^>]*>[^<]*<\/button>/g,'');}}];},get textContent(){return renderedText(markup);}};
+   return {querySelectorAll(selector){if(selector==='.card-use')return [{remove(){markup=markup.replace(/<p class="card-use">[\s\S]*?<\/p>/g,'');}}];assert.equal(selector,'.favourite-button, .item-favourite-button');return [{remove(){markup=markup.replace(/<button type="button" class="favourite-button"[^>]*>[^<]*<\/button>/g,'');}}];},get textContent(){return renderedText(markup);}};
   }
  }));
  const filters=['All skills','Workflow','Design'].map(category=>Object.assign(element(),{dataset:{filter:category}}));
@@ -1042,7 +1050,7 @@ function exerciseItemFavourites(storage, surface = itemHTML) {
   dataset:{category},
   querySelector:selector=>selector==='h3'?headings[i]:selector==='details.inside'?insides[i]:null,
   querySelectorAll:selector=>lists[i].querySelectorAll(selector),
-  cloneNode(){let markup=c;return {querySelectorAll(selector){assert.equal(selector,'.favourite-button, .item-favourite-button');return [{remove(){markup=markup.replace(/<button\b[^>]*class="(?:item-)?favourite-button"[^>]*>[^<]*<\/button>/g,'');}}];},get textContent(){return renderedText(markup);}};}
+  cloneNode(){let markup=c;return {querySelectorAll(selector){if(selector==='.card-use')return [{remove(){markup=markup.replace(/<p class="card-use">[\s\S]*?<\/p>/g,'');}}];assert.equal(selector,'.favourite-button, .item-favourite-button');return [{remove(){markup=markup.replace(/<button\b[^>]*class="(?:item-)?favourite-button"[^>]*>[^<]*<\/button>/g,'');}}];},get textContent(){return renderedText(markup);}};}
  }));
  const filters=['All skills','Workflow','Design'].map(category=>Object.assign(element(),{dataset:{filter:category}}));
  const document={...highlightDocument,querySelector:selector=>ids[selector.slice(1)]||headings.find(h=>h.id===selector.slice(1)),querySelectorAll:selector=>({'.skill-card':cards,'.favourite-button':buttons,'.item-favourite-button':lists.flatMap(l=>l.querySelectorAll('.item-favourite-button')),'.skill-card details.inside':insides,'[data-filter]':filters})[selector]||[]};
@@ -1274,6 +1282,102 @@ gate('impeccable23 measured shipped budgets',()=>{
   assert.equal(measure(shippedHTML)-measure(prior),kind==='visible'?0:words(added));
   console.log('impeccable23 shipped '+kind,JSON.stringify({total,max,meanNumerator:total,meanDenominator:22,pageTotal:measure(shippedHTML)}));
  }
+});
+
+
+const cycle1Footers = {
+ "skill-1": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 12 more \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-2": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 12 more \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-4": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 7 more \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-12": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 38 more \u00b7 <span class=\"card-use-label\">Install:</span> <code class=\"card-use-code\">uv tool install specify-cli</code></p>",
+ "skill-16": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 75+ more \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-20": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Cursor \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-3": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Cursor \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-8": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 8 more \u00b7 <span class=\"card-use-label\">Install:</span> <code class=\"card-use-code\">npx skills add addyosmani/agent-skills</code></p>",
+ "skill-5": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 21 more \u00b7 <span class=\"card-use-label\">Install:</span> <code class=\"card-use-code\">npm install -g ui-ux-pro-max-cli</code></p>",
+ "skill-21": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex \u00b7 <span class=\"card-use-label\">Install:</span> <code class=\"card-use-code\">npx skills add https://github.com/Leonxlnx/taste-skill --skill \"design-taste-frontend\"</code></p>",
+ "skill-22": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 17 more \u00b7 <span class=\"card-use-label\">Install:</span> <code class=\"card-use-code\">npx impeccable install</code></p>",
+ "skill-6": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 38 more \u00b7 <span class=\"card-use-label\">Install:</span> <code class=\"card-use-code\">npx @caveman-ai/cli@latest</code></p>",
+ "skill-7": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 18 more \u00b7 <span class=\"card-use-label\">Install:</span> <code class=\"card-use-code\">uv tool install graphifyy</code></p>",
+ "skill-9": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 14 more \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-11": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Claude.ai, Claude API \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-14": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, OpenCode \u00b7 <span class=\"card-use-label\">Install:</span> <code class=\"card-use-code\">npx skills add https://github.com/kepano/obsidian-skills</code></p>",
+ "skill-19": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Antigravity CLI \u00b7 <span class=\"card-use-label\">Install:</span> <code class=\"card-use-code\">npx skills add google/skills</code></p>",
+ "skill-10": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 9 more \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-13": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-15": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-17": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 5 more \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>",
+ "skill-18": "<p class=\"card-use\"><span class=\"card-use-label\">Works with:</span> Claude Code, Codex, Cursor and 10 more \u00b7 <span class=\"card-use-label\">Install:</span> see GitHub repository</p>"
+};
+const cycle1ExpectedStrip = "<section class=\"start-strip\" aria-labelledby=\"start-title\"><h2 id=\"start-title\">Start with 3</h2><p class=\"start-criterion\">One pick per task phase, chosen from each card's own Use-when line. A starting point, not a ranking.</p><div class=\"start-list\" role=\"list\"><div class=\"start-item\" role=\"listitem\"><span class=\"start-phase\">Plan</span><a href=\"#skill-4\">Matt Pocock Skills</a><span class=\"start-when\">At the start of feature or bug work</span><span class=\"start-stars\">305,511 stars</span></div><div class=\"start-item\" role=\"listitem\"><span class=\"start-phase\">Build</span><a href=\"#skill-3\">Karpathy Skills</a><span class=\"start-when\">During a non-trivial coding task</span><span class=\"start-stars\">225,828 stars</span></div><div class=\"start-item\" role=\"listitem\"><span class=\"start-phase\">Review (frontend)</span><a href=\"#skill-22\">Impeccable</a><span class=\"start-when\">When designing, critiquing, polishing, or auditing frontend interfaces</span><span class=\"start-stars\">94,446 stars</span></div></div></section>";
+const cycle1ExpectedNote = "<section class=\"how-to\" aria-labelledby=\"how-to-title\"><h2 id=\"how-to-title\">How to use a skill</h2><p>A skill is a set of instructions that teaches your coding agent a repeatable way of working. Install one from its repository, then ask your agent for it by name or paste an example prompt from the card's Inside list.</p><p>Each card's Works with and Install lines come from the repository's own documentation. Some commands set up a tool first, and some repositories state no single command, so follow the README for the next step.</p></section>";
+const cycle1ExpectedCSS = ".start-strip,.how-to{margin:0 0 var(--space-5)}\n.start-strip{border-top:1px solid var(--ink);padding-top:var(--space-2)}\n.start-strip h2,.how-to h2{font:normal var(--type-note)/var(--type-entry-leading) var(--serif);letter-spacing:0;margin:0 0 var(--space-1)}\n.start-criterion{margin:0 0 var(--space-3);font-size:var(--type-small);line-height:var(--type-prose-leading);color:var(--body)}\n.start-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)}\n.start-item{display:flex;flex-direction:column;gap:var(--space-1);padding-top:var(--space-2);border-top:1px solid var(--line)}\n.start-phase{font-family:var(--mono);font-size:var(--type-mono);font-weight:600;font-variant-caps:small-caps;letter-spacing:.08em;color:var(--ink)}\n.start-item a{font:normal var(--type-note)/var(--type-entry-leading) var(--serif);color:var(--ink);text-underline-offset:var(--underline-offset);overflow-wrap:anywhere}\n.start-when{font-size:var(--type-small);line-height:var(--type-prose-leading);color:var(--body)}\n.start-stars{font:var(--type-mono) var(--mono);font-variant-numeric:tabular-nums;color:var(--muted)}\n.how-to{border-top:1px solid var(--line);padding-top:var(--space-2);max-width:62ch}\n.how-to p{margin:0 0 var(--space-1);font-size:var(--type-small);line-height:var(--type-prose-leading);color:var(--body)}\n.card-use{flex:0 0 100%;margin:0;padding:var(--space-1) 0 0;font:var(--type-mono)/var(--type-list-leading) var(--mono);color:var(--muted);overflow-wrap:anywhere}\n.card-use-label{color:var(--ink)}\n.card-use-code{font:inherit;color:var(--ink)}\n@media(max-width:1000px){.start-list{grid-template-columns:1fr}}\n";
+// Cycle 1 gates inspect raw files; historical gates above retain undone inputs.
+const cycle1Cards = getCards(cycle1HTML), cycle1BeforeCards=getCards(shippedHTML);
+const cycle1Id = card => card.match(/<h3 id="([^"]+)">/)[1];
+const cycle1Count = (text, pattern) => [...text.matchAll(pattern)].length;
+const cycle1Section = cls => cycle1HTML.match(new RegExp('<section class="'+cls+'"[\\s\\S]*?</section>'))?.[0] || '';
+const cycle1Strip=cycle1Section('start-strip'),cycle1Note=cycle1Section('how-to');
+gate('cycle1 G1 byte-scope',()=>{
+ assert.equal(sha256(shippedHTML),'dbc1050244fb035757f920707278b3466c71686de4ead656476145fa63338622');
+ assert.equal(sha256(undoCycle1CSS(cycle1Styles)),'3eedac1055ee0758e6a3d2c0297fff9ffc2e35a86496a983432edda760f0915a');
+ assert.equal(sha256(sourcePreCycle1),'4bbdad590105319abdaede884ee47caf3fdaf88c3a2d1c4cbe3141ece9078d12');
+ for(const [pattern,n] of [[/<li>/g,160],[/class="example-prompt"/g,160],[/class="inside-name"/g,202],[/<section class="start-strip"/g,1],[/<section class="how-to"/g,1],[/<p class="card-use">/g,22]])assert.equal(cycle1Count(cycle1HTML,pattern),n);
+ assert.equal(cycle1Cards.length,22);
+ cycle1Cards.forEach(([,,c],i)=>assert.equal(undoCycle1HTML(c),cycle1BeforeCards[i][2]));
+});
+gate('cycle1 G2 strip',()=>{
+ assert.equal(cycle1Strip,cycle1ExpectedStrip);
+ assert.match(cycle1HTML,/<main><div class="container"><section class="hero"[^\n]*<\/section>\n<section class="start-strip"/);
+ const items=[...cycle1Strip.matchAll(/<div class="start-item"[^>]*>([\s\S]*?)<\/div>/g)];assert.equal(items.length,3);
+ assert.deepEqual(items.map(([,c])=>c.match(/href="([^"]+)"/)[1]),['#skill-4','#skill-3','#skill-22']);
+ for(const [,c] of items){const [,id,title]=c.match(/<a href="#([^"]+)">([^<]+)<\/a>/);const matches=cycle1Cards.filter(([,,x])=>cycle1Id(x)===id);assert.equal(matches.length,1);const card=matches[0][2];assert.equal(renderedText(card.match(/<h3[^>]*>(.*?)<\/h3>/)[1]),title);assert.ok(renderedText(field(card,'fit-use')).replace(/^Use when\s*/,'').startsWith(renderedText(field(c,'start-when','span'))));assert.equal(renderedText(field(c,'start-stars','span')),renderedText(field(card,'meta-stars','span'))+' stars');}
+ assert.doesNotMatch(cycle1Strip,/<li>|class="chapter"|—/);
+});
+gate('cycle1 G3 note',()=>{assert.equal(cycle1Note,cycle1ExpectedNote);assert.ok(cycle1HTML.includes(cycle1Strip+'\n'+cycle1Note+'\n<section tabindex="-1" id="collection"'));assert.doesNotMatch(cycle1Note,/`|npx |npm |uv tool|curl /);});
+gate('cycle1 G4 order',()=>{const positions=['<section class="hero"','<section class="start-strip"','<section class="how-to"','<section tabindex="-1" id="collection"'].map(t=>cycle1HTML.indexOf(t));assert.ok(positions.every((n,i)=>n>=0&&(!i||n>positions[i-1])));});
+gate('cycle1 G5 footer lines',()=>{
+ assert.equal(cycle1Count(cycle1HTML,/<p class="card-use">/g),22);
+ const fallback=[];let commands=0;
+ const researchPath=path.join(os.homedir(),'workspace/workflow-run-critique-cycle1/agy-table.md');
+ const research=fs.existsSync(researchPath)?fs.readFileSync(researchPath,'utf8'):null;
+ for(const [,,c] of cycle1Cards){const id=cycle1Id(c),line=field(c,'card-use'),footer=field(c,'card-footer','div');assert.equal(line,cycle1Footers[id]);assert.ok(footer.startsWith('<div class="card-footer">'+line+'<a href='));assert.equal(cycle1Count(footer,/<a /g),1);assert.equal(cycle1Count(footer,/class="favourite-button"/g),1);assert.ok(footer.includes('</a><button type="button" class="favourite-button"'));assert.doesNotMatch(line,/<a|<button|<svg/);
+ const command=field(line,'card-use-code','code');if(command)commands++;else {assert.ok(renderedText(line).includes('Install: see GitHub repository'));fallback.push(id);}
+ if(research){const title=renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]);const row=research.split('\n').find(r=>r.startsWith('| '+title+' |'));assert.ok(row,title);const cells=row.split(/(?<!\\)\|/).map(t=>t.trim());const harnesses=cells[3].split(', ').map(t=>/^Codex\b|^OpenAI Codex$/.test(t)?'Codex':t);const shown=renderedText(line).split('Works with: ')[1].split(' · Install:')[0];const names=shown.replace(/ and \d+\+? more$/,'').split(', ');for(const name of names)assert.ok(harnesses.includes(name),title+': '+name);const more=shown.match(/ and (\d+\+?) more$/);if(more)assert.equal(more[1],id==='skill-16'?'75+':String(harnesses.length-3));if(command)assert.equal(renderedText(command),cells[4].slice(1,-1));}
+ }
+ assert.equal(commands,9);assert.deepEqual(fallback.sort(),['skill-1','skill-2','skill-4','skill-16','skill-20','skill-3','skill-9','skill-11','skill-10','skill-13','skill-15','skill-17','skill-18'].sort());
+});
+gate('cycle1 G6 no invention',()=>{
+ const commands=Object.values(cycle1Footers).map(c=>field(c,'card-use-code','code')).filter(Boolean).map(renderedText).sort();
+ assert.deepEqual(cycle1Cards.map(([,,c])=>field(c,'card-use-code','code')).filter(Boolean).map(renderedText).sort(),commands);assert.equal(commands.length,9);
+ for(const [,,c] of cycle1Cards){const line=field(c,'card-use');assert.doesNotMatch(line,/--agy|\/plugin|\/add-plugin|curl|claude plugin|specify init|uipro/);if(cycle1Id(c)!=='skill-6')assert.doesNotMatch(line,/@latest/);}
+});
+const cycle1Runtime = surface => exerciseItemFavourites({getItem:()=>null,setItem(){}},surface);
+const cycle1Visible = x => x.cards.flatMap((c,i)=>c.hidden?[]:[cycle1Id(getCards(cycle1HTML)[i][2])]);
+gate('cycle1 G7 search pollution',()=>{
+ assert.match(source,/querySelectorAll\('\.favourite-button, \.item-favourite-button'\)/);assert.match(source,/querySelectorAll\('\.card-use'\)/);
+ const raw=cycle1Runtime(cycle1HTML),undone=cycle1Runtime(shippedHTML),counts={};
+ for(const probe of ['works with','install:','see github repository','uv tool install','npx skills add','and 12 more','75+ more','codex','cursor','claude code','antigravity','opencode','claude.ai','npm install -g','npx']){raw.search(probe);undone.search(probe);assert.deepEqual(cycle1Visible(raw),cycle1Visible(undone),probe);counts[probe]=raw.visible().length;}
+ assert.equal(cycle1Cards.filter(([,,c])=>renderedText(c).toLowerCase().includes('see github repository')).length,13);raw.search('see github repository');assert.equal(raw.visible().length,0);assert.equal(raw.ids['empty-state'].hidden,false);console.log('Cycle1 search counts',JSON.stringify(counts));
+});
+gate('cycle1 G8 behaviour unchanged',()=>{
+ const x=cycle1Runtime(cycle1HTML),prior=cycle1Runtime(shippedHTML);
+ for(const [i,n] of [[1,6],[2,3],[0,22]]){x.filters[i].click();assert.equal(x.visible().length,n);}
+ x.search('Superpowers');prior.search('Superpowers');assert.deepEqual(cycle1Visible(x),cycle1Visible(prior));x.search('');x.buttons[0].click();x.ids['toggle-favourites'].click();assert.deepEqual(cycle1Visible(x),['skill-1']);x.ids['reset-filters'].click();x.search('favourite');assert.equal(x.visible().length,0);
+ for(const cls of ['number'])assert.deepEqual(cycle1Cards.map(([,,c])=>field(c,cls,'span')),cycle1BeforeCards.map(([,,c])=>field(c,cls,'span')));
+ assert.deepEqual([...cycle1HTML.matchAll(/<summary>(.*?)<\/summary>/g)].map(m=>m[1]),[...shippedHTML.matchAll(/<summary>(.*?)<\/summary>/g)].map(m=>m[1]));
+});
+gate('cycle1 G9 accent and CSS scope',()=>{
+ assert.equal(cycle1Count(cycle1Styles,/var\(--accent\)/g),3);const i=cycle1Styles.indexOf('\n.start-strip,.how-to{');assert.ok(i>0);const block=cycle1Styles.slice(i+1);assert.equal(block,cycle1ExpectedCSS);assert.doesNotMatch(block,/--accent|#[0-9a-f]|rgb\(|hsl\(|border-radius|box-shadow|3px/);
+});
+gate('cycle1 G10 agent files unchanged',()=>{
+ const hashes={'skills.json':'0f8700a5f2cecaa73eb639100fc4bdb7a773a67062834a919f4b880a3601b290','llms.txt':'e7dda79605966d58e982e833dc32271086cd460f4a211cc27c8e755b86195553','llms-full.txt':'8c76c03d19d1e256f8ba0f111ecb51f8676368edd2852e518b5db713ff3f3857'};
+ const generated=require('./generate-agent-layer').generate(cycle1HTML,'https://topskillsfordevelopment.vercel.app');
+ for(const [name,hash] of Object.entries(hashes)){const disk=fs.readFileSync(path.join(root,name),'utf8');assert.equal(sha256(disk),hash);assert.deepEqual(generated[name],disk);}
+});
+gate('cycle1 G11 budgets',()=>{
+ const totals={};for(const kind of ['visible','expanded']){const measure=t=>words(kind==='visible'?t.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1'):t);const counts=cycle1Cards.map(([,,c],i)=>{assert.equal(measure(c),measure(cycle1BeforeCards[i][2])+words(field(c,'card-use')));return measure(c);});totals[kind]={cards:counts.reduce((a,b)=>a+b,0),max:Math.max(...counts),page:measure(cycle1HTML)};assert.deepEqual(totals[kind],kind==='visible'?{cards:1552,max:87,page:1888}:{cards:8666,max:1354,page:9002});}
+ assert.equal(words(cycle1Strip),58);assert.equal(words(cycle1Note),80);assert.equal(cycle1Cards.reduce((n,[,,c])=>n+words(field(c,'card-use')),0),287);console.log('Cycle1 budgets',JSON.stringify(totals),'strip 58 note 80 footers 287');
 });
 
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
