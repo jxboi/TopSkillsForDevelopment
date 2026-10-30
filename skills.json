@@ -822,7 +822,7 @@
           "polish"
         ]
       },
-      "inside_summary": "Inside this repo — 5 commands",
+      "inside_summary": "Inside this repo — 23 commands",
       "inside_note": null,
       "inside": [
         {
@@ -859,6 +859,132 @@
           "kind": null,
           "function": "Checks accessibility, performance, theming, responsive behaviour, and implementation integrity, ranking findings P0 (blocking) to P3 (polish).",
           "example_prompt": "Run /impeccable audit on the checkout flow, checking accessibility, performance, theming, and responsive behaviour and ranking findings from P0 to P3."
+        },
+        {
+          "name": "adapt",
+          "category": "Design",
+          "kind": null,
+          "function": "Adapts designs across screen sizes, devices, contexts, and platforms by implementing breakpoints, fluid layouts, and touch targets that keep responsive interfaces usable across different viewing conditions.",
+          "example_prompt": "/impeccable adapt the appointment booking form for phones and tablets, adjusting breakpoints, fluid layouts, and touch targets throughout the flow."
+        },
+        {
+          "name": "animate",
+          "category": "Design",
+          "kind": null,
+          "function": "Enhances a feature with purposeful animations, micro-interactions, and motion effects that improve usability and add delight, making transitions and interactions feel more alive without adding decoration for its own sake.",
+          "example_prompt": "/impeccable animate the file upload panel with progress transitions and completion feedback that help users understand each stage of uploading."
+        },
+        {
+          "name": "clarify",
+          "category": "Writing",
+          "kind": null,
+          "function": "Improves unclear UX copy, error messages, microcopy, labels, and instructions so interfaces become easier to understand, addressing confusing text and hard-to-follow guidance wherever users need clearer wording.",
+          "example_prompt": "/impeccable clarify the password reset flow, rewriting its field labels, expired link message, and recovery instructions so users understand their next step."
+        },
+        {
+          "name": "colorize",
+          "category": "Design",
+          "kind": null,
+          "function": "Adds strategic color to monochromatic features or interfaces that lack visual interest, making dull designs more engaging and expressive with a palette that brings warmth and vibrancy.",
+          "example_prompt": "/impeccable colorize the gray meal planning dashboard, using strategic color to distinguish meal groups and make the weekly view more engaging."
+        },
+        {
+          "name": "delight",
+          "category": "Design",
+          "kind": null,
+          "function": "Adds moments of joy, personality, and unexpected touches that make interfaces memorable and enjoyable to use, elevating functional experiences with details that give everyday interactions a more delightful character.",
+          "example_prompt": "/impeccable delight the reading tracker with a memorable book completion moment and small touches of personality in its reading milestones."
+        },
+        {
+          "name": "distill",
+          "category": "Design",
+          "kind": null,
+          "function": "Strips designs to their essence by removing unnecessary complexity, noise, and elements, simplifying crowded interfaces into cleaner, more focused experiences that retain a simple and powerful design.",
+          "example_prompt": "/impeccable distill the subscription management screen, removing repeated explanations and unnecessary controls so the current plan and renewal action stand out."
+        },
+        {
+          "name": "document",
+          "category": "Writing",
+          "kind": null,
+          "function": "Generates DESIGN.md in Google Stitch format by extracting colors, typography, spacing, radii, and component patterns from existing code, then confirms descriptive language for atmosphere and color character with the user.",
+          "example_prompt": "/impeccable document the existing travel planner design system in DESIGN.md, extracting its visual patterns and confirming atmosphere and color descriptions with me."
+        },
+        {
+          "name": "extract",
+          "category": "Design",
+          "kind": null,
+          "function": "Pulls reusable patterns, components, and design tokens into the design system, identifying repeated implementations and consolidating them to reduce drift and restore consistency across the codebase.",
+          "example_prompt": "/impeccable extract the repeated account settings controls into shared components and design tokens, consolidating spacing and field patterns across the settings screens."
+        },
+        {
+          "name": "generate",
+          "category": "Design",
+          "kind": null,
+          "function": "Boots live mode, finds the named element on the open page, scrolls to it, and delivers the requested number of design variants for the user to cycle through and accept.",
+          "example_prompt": "/impeccable generate 3 restrained variants of the membership comparison cards, bringing the named element into view so I can cycle through and accept one."
+        },
+        {
+          "name": "harden",
+          "category": "Building",
+          "kind": null,
+          "function": "Makes interfaces production-ready through error handling, internationalization, text overflow fixes, and edge case management, improving resilience when real-world data and unusual input put existing screens under pressure.",
+          "example_prompt": "/impeccable harden the delivery address form for long international addresses, translated labels, failed submissions, and incomplete customer data before release."
+        },
+        {
+          "name": "layout",
+          "category": "Design",
+          "kind": null,
+          "function": "Improves layout, spacing, and visual rhythm by fixing monotonous grids, inconsistent spacing, and weak hierarchy, giving crowded or poorly aligned interfaces a clearer and more coherent composition.",
+          "example_prompt": "/impeccable layout the inventory overview, fixing its monotonous grid, crowded stock summaries, and inconsistent spacing so the most urgent information leads."
+        },
+        {
+          "name": "live",
+          "category": "Design",
+          "kind": null,
+          "function": "Starts interactive live variant mode on a running dev server, letting users select browser elements and design actions while AI-generated HTML and CSS alternatives hot-swap through HMR.",
+          "example_prompt": "/impeccable live on the running dev server so I can select the event header in the browser and compare alternative design actions."
+        },
+        {
+          "name": "onboard",
+          "category": "Design",
+          "kind": null,
+          "function": "Designs onboarding flows, first-run experiences, and empty states that guide new users to value through welcome screens, account setup, progressive disclosure, contextual guidance, and meaningful activation moments.",
+          "example_prompt": "/impeccable onboard new users of the shared grocery list, designing the first empty state and setup steps through adding their first household item."
+        },
+        {
+          "name": "optimize",
+          "category": "Debugging",
+          "kind": null,
+          "function": "Diagnoses and fixes UI performance across loading speed, rendering, animations, images, and bundle size, addressing slow or laggy interfaces to make the experience faster and smoother.",
+          "example_prompt": "/impeccable optimize the photo archive grid, diagnosing slow image loading, rendering delays, and scrolling jank before fixing the largest performance costs."
+        },
+        {
+          "name": "overdrive",
+          "category": "Design",
+          "kind": null,
+          "function": "Pushes interfaces past conventional limits with technically ambitious implementations such as shaders, spring physics, scroll-driven reveals, and 60fps animations, creating extraordinary experiences with strong visual impact.",
+          "example_prompt": "/impeccable overdrive the astronomy exhibition opening with a shader starfield, spring interactions, and scroll-driven reveals that sustain smooth 60fps motion."
+        },
+        {
+          "name": "quieter",
+          "category": "Design",
+          "kind": null,
+          "function": "Tones down visually aggressive or overstimulating designs by reducing intensity while preserving quality, giving overwhelming interfaces a calmer, more refined aesthetic when their current treatment feels too loud.",
+          "example_prompt": "/impeccable quieter the concert ticket dashboard, reducing competing visual intensity so ticket status and entry details feel calm and easy to scan."
+        },
+        {
+          "name": "shape",
+          "category": "Planning",
+          "kind": null,
+          "function": "Plans UX and UI before code through a discovery interview, using visual probes when available and producing a user-confirmed design brief that guides the subsequent implementation work.",
+          "example_prompt": "/impeccable shape a volunteer shift signup flow, interviewing me about coordinator needs and confirming a design brief before any implementation begins."
+        },
+        {
+          "name": "typeset",
+          "category": "Design",
+          "kind": null,
+          "function": "Improves typography by fixing font choices, hierarchy, sizing, weight, and readability, making interface text feel intentional and giving existing content a more polished and deliberate typographic treatment.",
+          "example_prompt": "/impeccable typeset the recipe detail page, improving ingredient readability, instruction hierarchy, font sizing, and weight so cooks can follow each step easily."
         }
       ]
     },
