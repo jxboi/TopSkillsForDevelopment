@@ -33,6 +33,43 @@ for(const item of mattRemaining) promptMap.get('Matt Pocock Skills').set(item.na
 const densityBaseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/agent-layer-baseline.json'),'utf8'));
 
 const root = path.join(__dirname, '..');
+// pstack23 undo layer: reverse ONLY the 18 appended rows and summary.
+const pstack23Categories = {
+  "authoring-a-skill": "Writing",
+  "autonomous-run": "Planning",
+  "autopilot-full": "Review",
+  "autopilot-stack": "Review",
+  "babysit": "Review",
+  "eval": "Testing",
+  "hillclimb": "Testing",
+  "multi-phase-plan": "Planning",
+  "opening-a-pr": "Communication",
+  "orchestrate": "Planning",
+  "pause-safely": "Planning",
+  "prototype": "Design",
+  "runtime-forensics": "Debugging",
+  "session-pickup": "Understanding",
+  "shipping": "Review",
+  "trace-forensics": "Debugging",
+  "visual-parity": "Testing",
+  "worktree-cleanup": "Setup"
+};
+const pstack23Names = Object.keys(pstack23Categories);
+function undoPstack23(text) {
+ return text.replace(/<article class="skill-card"[^>]*aria-labelledby="skill-20">[\s\S]*?<\/article>/, card => {
+  for (const name of pstack23Names) {
+   const rows = [...card.matchAll(/ <li>[^\n]*<\/li>\n/g)].filter(([row]) => row.startsWith(' <li><code class="inside-name">'+name+'</code>'));
+   assert.equal(rows.length,1,'pstack23 undo row '+name);
+   card = card.replace(rows[0][0],'');
+  }
+  assert.ok(card.includes('Inside this repo — 23 playbooks'));
+  return card.replace('Inside this repo — 23 playbooks','Inside this repo — 5 of 23 playbooks');
+ });
+}
+const shippedHTML = fs.readFileSync(path.join(root,'index.html'),'utf8');
+const shippedCategoryHTML = shippedHTML.replace(/ <button type="button" class="item-favourite-button"[^>]*>☆<\/button>/g,'');
+const historicalAgentOutputs = require('./generate-agent-layer').generate(undoPstack23(shippedHTML),'https://topskillsfordevelopment.vercel.app');
+
 // UIUX undo layer: reverse ONLY this pass before undoPolish3 in every pipeline.
 const uiuxEdits = {
   "styles.css": [
@@ -179,7 +216,7 @@ const undoPolishCSS = text => {
  .replace('.fit strong{font-weight:600;color:var(--ink)}','.fit strong { font-weight: 600; color: var(--ink); }');
 };
 
-const itemHTML = undoPolish3('index.html', undoUiux('index.html', fs.readFileSync(path.join(root, 'index.html'), 'utf8')));
+const itemHTML = undoPolish3('index.html', undoUiux('index.html', undoPstack23(shippedHTML)));
 const categoryHTML = undoItemFavourites('index.html', itemHTML);
 // Historical copy gates compare the original surface after removing only the authorized additions.
 const stripCategories = value => value.replace(/ <span class="item-category">[^<]*<\/span>/g, '');
@@ -212,6 +249,11 @@ const mattExpected = expectedInside.find(c=>c.title==='Matt Pocock Skills');
 mattExpected.items.push(...mattRemaining);
 mattExpected.summary='Inside this repo — 27 skills';
 assert.equal(expectedInside.length, 22, 'Approved copy must cover all 22 cards');
+const shippedExpectedInside = structuredClone(expectedInside);
+assert.equal(shippedExpectedInside.reduce((n, card) => n + card.items.length, 0), 142);
+const historicalPstack = expectedInside.find(c=>c.title==='pstack');
+historicalPstack.items = historicalPstack.items.filter(i=>!pstack23Names.includes(i.name));
+historicalPstack.summary='Inside this repo — 5 of 23 playbooks';
 assert.equal(expectedInside.reduce((n, card) => n + card.items.length, 0), 124);
 const decodeHTML = value => value.replace(/&(#x[\da-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (entity, key) =>
   key[0] === '#' ? String.fromCodePoint(key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1))) :
@@ -225,7 +267,12 @@ console.table(densities);
 for (const kind of ['visible', 'expanded']) console.log(kind, {max:Math.max(...densities.map(c=>c[kind])), total:densities.reduce((n,c)=>n+c[kind],0), mean:densities.reduce((n,c)=>n+c[kind],0)/22});
 
 const categorySource = fs.readFileSync(path.join(os.homedir(),'workspace/workflow-run-categorise/categories.md'),'utf8');
-const categoryAssignments = [...categorySource.matchAll(/^\| ([^|]+) \| ([^|]+) \| ([^|]+) \| (?:Confident|Borderline) \|/gm)].map(([,card,item,category])=>[card.trim(),item.trim(),category.trim()]);
+const shippedCategoryAssignments = [...categorySource.matchAll(/^\| ([^|]+) \| ([^|]+) \| ([^|]+) \| (?:Confident|Borderline) \|/gm)].map(([,card,item,category])=>[card.trim(),item.trim(),category.trim()]);
+assert.equal(shippedCategoryAssignments.length,142);
+const categoryAssignments = shippedCategoryAssignments.filter(([card,item])=>card!=='pstack'||!pstack23Names.includes(item));
+const shippedPromptMap = new Map([...promptMap].map(([title,items])=>[title,new Map(items)]));
+assert.equal([...shippedPromptMap.values()].reduce((n,items)=>n+items.size,0),142);
+for(const name of pstack23Names) promptMap.get('pstack').delete(name);
 const allowedCategories = new Set(['Planning','Building','Testing','Debugging','Review','Understanding','Research','Writing','Design','Communication','Setup','Discovery']);
 gate('Inside category inventory, source pairs, exact addition scope and CSS',()=>{
  const expected=new Map(categoryAssignments.map(([card,item,category])=>[JSON.stringify([card,item]),category]));
@@ -657,7 +704,7 @@ Do not invent an install command: if the repository does not state one, say so a
 If no skill matches the task, use no skill from this catalog rather than forcing a match.`;
 const chapterMarkup = [...html.matchAll(/<section class="chapter"[^>]*>([\s\S]*?)<\/section>/g)].map(m=>m[1]);
 const agentChapters = chapterMarkup.map(c=>renderedText(c.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)[1].replace(/<span>[\s\S]*?<\/span>/,'')));
-const agentExpectedCards = getCards(categoryHTML).map(([,category,c])=>{
+const agentExpectedCards = getCards(shippedCategoryHTML).map(([,category,c])=>{
  const heading=c.match(/<h3 id="([^"]+)">([^<]+)<\/h3>/); assert.ok(heading,'Missing shipped anchor');
  const stars=renderedText(field(c,'meta-stars','span'));
  assert.match(stars,/^\d{1,3}(?:,\d{3})*$/);
@@ -699,7 +746,7 @@ gate('agent files: UTF-8, schema, field-by-field HTML match and hygiene',()=>{
   for(const item of card.inside){assert.deepEqual(Object.keys(item),['name','category','kind','function','example_prompt']);prompts.push(item.example_prompt);pairs.push(card.id+' / '+item.name);assert.doesNotMatch(item.function,/^—/);}
  }
  for(const values of [catalog.cards.map(c=>c.id),catalog.cards.map(c=>c.number),prompts,pairs])assert.equal(new Set(values).size,values.length);
- assert.equal(catalog.count,22);assert.equal(pairs.length,124);assert.equal(prompts.length,124);
+ assert.equal(catalog.count,22);assert.equal(pairs.length,142);assert.equal(prompts.length,142);
  assert.doesNotMatch(json,/"install"\s*:|Verified|Crafted|Uncertain|UNCONFIRMED|illustrative|not repo-quoted|example\.(?:com|org)/);
  // Equality above permits only verbatim page text, including the amended prompt URL/command exceptions.
  const withoutPrompts=catalog.cards.map(c=>({...c,inside:c.inside.map(({example_prompt,...item})=>item)}));
@@ -728,7 +775,7 @@ gate('agent text catalogs: exact headers, chapters, card lines, functions, kinds
  assert.equal(anchorDomain(short),expectedShort);assert.equal(anchorDomain(full),expectedFull);
  assert.equal((short.match(/^- \[/gm)||[]).length,articles.length);
  assert.equal((full.match(/^### /gm)||[]).length,articles.length);
- assert.equal((full.match(/^  > /gm)||[]).length,124);
+ assert.equal((full.match(/^  > /gm)||[]).length,142);
  for(const value of [short,full]){
   // The amendment bans added claims, not shipped phrases such as 'Production-grade'
   // or 'verified' in prompts. Remove exact HTML-derived copy before checking additions.
@@ -744,7 +791,7 @@ gate('agent text catalogs: exact headers, chapters, card lines, functions, kinds
 });
 gate('agent outputs regenerate byte-for-byte from HTML only',()=>{
  const {generate}=require('./generate-agent-layer');
- const outputs=generate(itemHTML,'https://topskillsfordevelopment.vercel.app');
+ const outputs=generate(shippedHTML,'https://topskillsfordevelopment.vercel.app');
  assert.deepEqual(Object.keys(outputs),['skills.json','llms.txt','llms-full.txt']);
  for(const [name,expected] of Object.entries(outputs))assert.equal(readAgentFile(name),expected,name+' generated bytes');
 });
@@ -801,14 +848,15 @@ gate('polish2 M4/S1–S4 exact CSS scope and preserved rendered values',()=>{
  assert.match(categoryStyles,/@media\(min-width:1000px\)\{[^}]*\.skill-card\{padding:var\(--space-4\) var\(--space-4\) 0}/);
  for(const rule of ['.fit{margin:var(--space-3) 0}', '.fit p{margin:0;font-size:var(--type-small);line-height:var(--type-prose-leading);color:var(--body)}','.fit strong{font-weight:600;color:var(--ink)}'])assert.ok(categoryStyles.includes(rule));
 });
+const readHistoricalAgentFile = name => historicalAgentOutputs[name];
 gate('polish2 agent-file scope: only card 15 label, short index unchanged',()=>{
- const json=JSON.parse(readAgentFile('skills.json'));assert.equal(json.cards[19].id,'skill-15');assert.equal(json.cards[19].top_inside.label,'Featured:');
+ const json=JSON.parse(readHistoricalAgentFile('skills.json'));assert.equal(json.cards[19].id,'skill-15');assert.equal(json.cards[19].top_inside.label,'Featured:');
  json.cards[19].top_inside.label='Top inside:';
  assert.equal(sha256(JSON.stringify(json,null,2)+'\n'),densityBaseline.polish2Before['skills.json']);
- const full=readAgentFile('llms-full.txt');
+ const full=readHistoricalAgentFile('llms-full.txt');
  const restored=full.replace(/(### Claude Plugins Official\n[\s\S]*?\n- Top inside: )Featured:/,'$1Top inside:');
  assert.notEqual(restored,full);assert.equal(sha256(restored),densityBaseline.polish2Before['llms-full.txt']);
- assert.equal(sha256(readAgentFile('llms.txt')),densityBaseline.polish2Before['llms.txt']);
+ assert.equal(sha256(readHistoricalAgentFile('llms.txt')),densityBaseline.polish2Before['llms.txt']);
 });
 gate('polish2 recomputed shipped budgets and per-card scope',()=>{
  const measured=getCards(undoFavouritesHTML(categoryHTML)).map(([,,c])=>({title:renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]),visible:words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1')),expanded:words(c)}));
@@ -930,9 +978,9 @@ gate('item favourites shipped inventory and runtime contracts',()=>{
  assert.match(source,/closest\('button'\)/);
 });
 
-function exerciseItemFavourites(storage) {
+function exerciseItemFavourites(storage, surface = itemHTML) {
  const ids=Object.fromEntries(['search','clear-search','toggle-favourites','reset-filters','empty-state','results-count','toggle-inside'].map(id=>[id,element()]));
- const shipped=getCards(itemHTML);
+ const shipped=getCards(surface);
  const lists=shipped.map(([,,c])=>{
   let markup='',rows=[];
   const list={
@@ -1057,6 +1105,77 @@ gate('uiux M2 favourites active state follows toggle and reset',()=>{
  x.ids['reset-filters'].click();
  assert.equal(toggle.classList.contains('active'),false);
  assert.equal(toggle.attrs['aria-pressed'],'false');
+});
+
+// pstack23 shipped-surface gates: content, source inventories, runtime and budgets.
+gate('pstack23 shipped inventory, sources, categories, buttons and unique prompts',()=>{
+ const cards=getCards(shippedHTML), card=cards.find(a=>a[0].includes('aria-labelledby="skill-20"'))[2];
+ const rows=[...card.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(m=>m[1]);
+ assert.equal(rows.length,23);
+ assert.deepEqual(rows.map(row=>row.match(/class="inside-name">([^<]+)</)[1]),['bug-fix','feature','investigation','refactoring','perf-issue',...pstack23Names]);
+ assert.equal(renderedText(card.match(/<summary>([\s\S]*?)<\/summary>/)[1]),'Inside this repo — 23 playbooks');
+ assert.equal((shippedHTML.match(/<li>/g)||[]).length,142);
+ const allPrompts=[...shippedHTML.matchAll(/<p class="example-prompt">([^<]*)<\/p>/g)].map(m=>decodeHTML(m[1]));
+ assert.equal(allPrompts.length,142);assert.equal(new Set(allPrompts).size,142);
+ const shippedPairs=new Map();
+ for(const [,,markup] of getCards(shippedCategoryHTML)){
+  const title=renderedText(markup.match(/<h3[^>]*>(.*?)<\/h3>/)[1]);
+  const expectedCard=shippedExpectedInside.find(c=>c.title===title);
+  const items=[...markup.matchAll(/<li>([\s\S]*?)<\/li>/g)];
+  assert.equal(items.length,expectedCard.items.length);
+  for(const [i,[,row]] of items.entries()){
+   const name=row.match(/class="inside-name">([^<]+)</)[1];
+   const category=row.match(/class="item-category">([^<]+)</)[1];
+   const prompt=decodeHTML(row.match(/class="example-prompt">([^<]*)</)[1]);
+   assert.equal(name,expectedCard.items[i].name);
+   assert.equal(prompt,shippedPromptMap.get(title).get(name));
+   shippedPairs.set(JSON.stringify([title,name]),category);
+  }
+ }
+ assert.equal(shippedPairs.size,142);
+ assert.deepEqual(shippedPairs,new Map(shippedCategoryAssignments.map(([card,name,category])=>[JSON.stringify([card,name]),category])));
+ const expected=shippedExpectedInside.find(c=>c.title==='pstack');
+ for(const [i,row] of rows.entries()) {
+  const name=row.match(/class="inside-name">([^<]+)</)[1];
+  const categories=[...row.matchAll(/<span class="item-category">([^<]+)<\/span>/g)];
+  assert.equal(categories.length,1);
+  assert.equal(categories[0][1],shippedCategoryAssignments.find(([c,n])=>c==='pstack'&&n===name)[2]);
+  const prompts=[...row.matchAll(/<p class="example-prompt">([^<]*)<\/p>/g)];assert.equal(prompts.length,1);
+  const prompt=decodeHTML(prompts[0][1]);assert.equal(prompt,shippedPromptMap.get('pstack').get(name));
+  assert.match(prompt,/^\/poteto-mode /);assert.doesNotMatch(prompt,/[\r\n]|\bexample\.(?:com|org|net)\b|\b(?:localhost|your-domain|placeholder)\b/i);
+  const fn=renderedText(row.split(' — ')[1].replace(/<p class="example-prompt">[\s\S]*/,''));
+  assert.equal(fn,expected.items[i].fn);
+  if(i<5)continue;
+  assert.equal(categories[0][1],pstack23Categories[name]);
+  assert.equal((row.match(/class="item-favourite-button"/g)||[]).length,1);
+  assert.ok(row.includes(`<button type="button" class="item-favourite-button" hidden data-item-favourite-for="skill-20:${name}" aria-pressed="false" aria-label="Favourite ${name}">☆</button>`));
+  const source='https://github.com/cursor/plugins/blob/main/pstack/skills/poteto-mode/playbooks/'+name+'.md';
+  assert.ok(promptSource.includes('- `'+name+'` — '+prompt+'\n  - Grade: Crafted (illustrative, not repo-quoted). Source: '+source));
+ }
+ // Undo feeds all protected historical hashes; it also proves no other card changed.
+ assert.deepEqual(getCards(shippedHTML).filter(a=>!a[0].includes('aria-labelledby="skill-20"')).map(a=>a[0]),getCards(undoPstack23(shippedHTML)).filter(a=>!a[0].includes('aria-labelledby="skill-20"')).map(a=>a[0]));
+ assert.equal((fs.readFileSync(path.join(root,'styles.css'),'utf8').match(/var\(--accent\)/g)||[]).length,3);
+});
+gate('pstack23 shipped search and Favourites for every new item',()=>{
+ for(const name of pstack23Names){
+  const saved={};const storage={getItem:key=>saved[key]||'[]',setItem:(key,value)=>{saved[key]=value;}};
+  const x=exerciseItemFavourites(storage,shippedHTML), id='skill-20:'+name;
+  const cardIndex=getCards(shippedHTML).findIndex(a=>a[0].includes('aria-labelledby="skill-20"'));
+  x.search(shippedPromptMap.get('pstack').get(name));assert.equal(x.visible().length,1,name+' prompt search');assert.equal(x.cards[cardIndex].hidden,false);
+  x.search('');x.item(id).click();assert.equal(x.item(id).attrs['aria-pressed'],'true');
+  x.ids['toggle-favourites'].click();assert.equal(x.visible().length,1);assert.equal(x.cards[cardIndex].hidden,false);
+  const rows=x.lists[cardIndex].querySelectorAll('li').filter(row=>!row.hidden);assert.equal(rows.length,1);assert.equal(rows[0].button.dataset.itemFavouriteFor,id);
+  const reload=exerciseItemFavourites(storage,shippedHTML);assert.equal(reload.item(id).attrs['aria-pressed'],'true');
+ }
+});
+gate('pstack23 measured shipped budgets',()=>{
+ for(const kind of ['visible','expanded']){
+  const measure=markup=>words(kind==='visible'?markup.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1'):markup);
+  const counts=getCards(shippedHTML).map(([,,c])=>measure(c)), total=counts.reduce((a,b)=>a+b,0), max=Math.max(...counts);
+  console.log('pstack23 shipped '+kind,JSON.stringify({total,max,meanNumerator:total,meanDenominator:22,pageTotal:measure(shippedHTML)}));
+  assert.equal(total-getCards(undoPstack23(shippedHTML)).reduce((n,[,,c])=>n+measure(c),0),kind==='visible'?-2:words(rowsForBudget())-2);
+ }
+ function rowsForBudget(){return getCards(shippedHTML).find(a=>a[0].includes('aria-labelledby="skill-20"'))[2].match(/ <li>[^\n]*<\/li>\n/g).slice(5).join('');}
 });
 
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
