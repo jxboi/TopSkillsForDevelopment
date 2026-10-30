@@ -66,9 +66,42 @@ function undoPstack23(text) {
   return card.replace('Inside this repo — 23 playbooks','Inside this repo — 5 of 23 playbooks');
  });
 }
+// impeccable23 undo layer: reverse ONLY the 18 appended rows and summary.
+const impeccable23Categories = {
+  "adapt": "Design",
+  "animate": "Design",
+  "clarify": "Writing",
+  "colorize": "Design",
+  "delight": "Design",
+  "distill": "Design",
+  "document": "Writing",
+  "extract": "Design",
+  "generate": "Design",
+  "harden": "Building",
+  "layout": "Design",
+  "live": "Design",
+  "onboard": "Design",
+  "optimize": "Debugging",
+  "overdrive": "Design",
+  "quieter": "Design",
+  "shape": "Planning",
+  "typeset": "Design"
+};
+const impeccable23Names = Object.keys(impeccable23Categories);
+function undoImpeccable23(text) {
+ return text.replace(/<article class="skill-card"[^>]*aria-labelledby="skill-22">[\s\S]*?<\/article>/, card => {
+  for (const name of impeccable23Names) {
+   const rows = [...card.matchAll(/ <li>[^\n]*<\/li>\n/g)].filter(([row]) => row.startsWith(' <li><code class="inside-name">'+name+'</code>'));
+   assert.equal(rows.length,1,'impeccable23 undo row '+name);
+   card = card.replace(rows[0][0],'');
+  }
+  assert.ok(card.includes('Inside this repo — 23 commands'));
+  return card.replace('Inside this repo — 23 commands','Inside this repo — 5 commands');
+ });
+}
 const shippedHTML = fs.readFileSync(path.join(root,'index.html'),'utf8');
 const shippedCategoryHTML = shippedHTML.replace(/ <button type="button" class="item-favourite-button"[^>]*>☆<\/button>/g,'');
-const historicalAgentOutputs = require('./generate-agent-layer').generate(undoPstack23(shippedHTML),'https://topskillsfordevelopment.vercel.app');
+const historicalAgentOutputs = require('./generate-agent-layer').generate(undoPstack23(undoImpeccable23(shippedHTML)),'https://topskillsfordevelopment.vercel.app');
 
 // UIUX undo layer: reverse ONLY this pass before undoPolish3 in every pipeline.
 const uiuxEdits = {
@@ -216,7 +249,7 @@ const undoPolishCSS = text => {
  .replace('.fit strong{font-weight:600;color:var(--ink)}','.fit strong { font-weight: 600; color: var(--ink); }');
 };
 
-const itemHTML = undoPolish3('index.html', undoUiux('index.html', undoPstack23(shippedHTML)));
+const itemHTML = undoPolish3('index.html', undoUiux('index.html', undoPstack23(undoImpeccable23(shippedHTML))));
 const categoryHTML = undoItemFavourites('index.html', itemHTML);
 // Historical copy gates compare the original surface after removing only the authorized additions.
 const stripCategories = value => value.replace(/ <span class="item-category">[^<]*<\/span>/g, '');
@@ -250,7 +283,10 @@ mattExpected.items.push(...mattRemaining);
 mattExpected.summary='Inside this repo — 27 skills';
 assert.equal(expectedInside.length, 22, 'Approved copy must cover all 22 cards');
 const shippedExpectedInside = structuredClone(expectedInside);
-assert.equal(shippedExpectedInside.reduce((n, card) => n + card.items.length, 0), 142);
+assert.equal(shippedExpectedInside.reduce((n, card) => n + card.items.length, 0), 160);
+const historicalImpeccable = expectedInside.find(c=>c.title==='Impeccable');
+historicalImpeccable.items = historicalImpeccable.items.filter(i=>!impeccable23Names.includes(i.name));
+historicalImpeccable.summary='Inside this repo — 5 commands';
 const historicalPstack = expectedInside.find(c=>c.title==='pstack');
 historicalPstack.items = historicalPstack.items.filter(i=>!pstack23Names.includes(i.name));
 historicalPstack.summary='Inside this repo — 5 of 23 playbooks';
@@ -268,11 +304,12 @@ for (const kind of ['visible', 'expanded']) console.log(kind, {max:Math.max(...d
 
 const categorySource = fs.readFileSync(path.join(os.homedir(),'workspace/workflow-run-categorise/categories.md'),'utf8');
 const shippedCategoryAssignments = [...categorySource.matchAll(/^\| ([^|]+) \| ([^|]+) \| ([^|]+) \| (?:Confident|Borderline) \|/gm)].map(([,card,item,category])=>[card.trim(),item.trim(),category.trim()]);
-assert.equal(shippedCategoryAssignments.length,142);
-const categoryAssignments = shippedCategoryAssignments.filter(([card,item])=>card!=='pstack'||!pstack23Names.includes(item));
+assert.equal(shippedCategoryAssignments.length,160);
+const categoryAssignments = shippedCategoryAssignments.filter(([card,item])=>(card!=='pstack'||!pstack23Names.includes(item))&&(card!=='Impeccable'||!impeccable23Names.includes(item)));
 const shippedPromptMap = new Map([...promptMap].map(([title,items])=>[title,new Map(items)]));
-assert.equal([...shippedPromptMap.values()].reduce((n,items)=>n+items.size,0),142);
+assert.equal([...shippedPromptMap.values()].reduce((n,items)=>n+items.size,0),160);
 for(const name of pstack23Names) promptMap.get('pstack').delete(name);
+for(const name of impeccable23Names) promptMap.get('Impeccable').delete(name);
 const allowedCategories = new Set(['Planning','Building','Testing','Debugging','Review','Understanding','Research','Writing','Design','Communication','Setup','Discovery']);
 gate('Inside category inventory, source pairs, exact addition scope and CSS',()=>{
  const expected=new Map(categoryAssignments.map(([card,item,category])=>[JSON.stringify([card,item]),category]));
@@ -746,7 +783,7 @@ gate('agent files: UTF-8, schema, field-by-field HTML match and hygiene',()=>{
   for(const item of card.inside){assert.deepEqual(Object.keys(item),['name','category','kind','function','example_prompt']);prompts.push(item.example_prompt);pairs.push(card.id+' / '+item.name);assert.doesNotMatch(item.function,/^—/);}
  }
  for(const values of [catalog.cards.map(c=>c.id),catalog.cards.map(c=>c.number),prompts,pairs])assert.equal(new Set(values).size,values.length);
- assert.equal(catalog.count,22);assert.equal(pairs.length,142);assert.equal(prompts.length,142);
+ assert.equal(catalog.count,22);assert.equal(pairs.length,160);assert.equal(prompts.length,160);
  assert.doesNotMatch(json,/"install"\s*:|Verified|Crafted|Uncertain|UNCONFIRMED|illustrative|not repo-quoted|example\.(?:com|org)/);
  // Equality above permits only verbatim page text, including the amended prompt URL/command exceptions.
  const withoutPrompts=catalog.cards.map(c=>({...c,inside:c.inside.map(({example_prompt,...item})=>item)}));
@@ -775,7 +812,7 @@ gate('agent text catalogs: exact headers, chapters, card lines, functions, kinds
  assert.equal(anchorDomain(short),expectedShort);assert.equal(anchorDomain(full),expectedFull);
  assert.equal((short.match(/^- \[/gm)||[]).length,articles.length);
  assert.equal((full.match(/^### /gm)||[]).length,articles.length);
- assert.equal((full.match(/^  > /gm)||[]).length,142);
+ assert.equal((full.match(/^  > /gm)||[]).length,160);
  for(const value of [short,full]){
   // The amendment bans added claims, not shipped phrases such as 'Production-grade'
   // or 'verified' in prompts. Remove exact HTML-derived copy before checking additions.
@@ -1114,9 +1151,9 @@ gate('pstack23 shipped inventory, sources, categories, buttons and unique prompt
  assert.equal(rows.length,23);
  assert.deepEqual(rows.map(row=>row.match(/class="inside-name">([^<]+)</)[1]),['bug-fix','feature','investigation','refactoring','perf-issue',...pstack23Names]);
  assert.equal(renderedText(card.match(/<summary>([\s\S]*?)<\/summary>/)[1]),'Inside this repo — 23 playbooks');
- assert.equal((shippedHTML.match(/<li>/g)||[]).length,142);
+ assert.equal((shippedHTML.match(/<li>/g)||[]).length,160);
  const allPrompts=[...shippedHTML.matchAll(/<p class="example-prompt">([^<]*)<\/p>/g)].map(m=>decodeHTML(m[1]));
- assert.equal(allPrompts.length,142);assert.equal(new Set(allPrompts).size,142);
+ assert.equal(allPrompts.length,160);assert.equal(new Set(allPrompts).size,160);
  const shippedPairs=new Map();
  for(const [,,markup] of getCards(shippedCategoryHTML)){
   const title=renderedText(markup.match(/<h3[^>]*>(.*?)<\/h3>/)[1]);
@@ -1132,7 +1169,7 @@ gate('pstack23 shipped inventory, sources, categories, buttons and unique prompt
    shippedPairs.set(JSON.stringify([title,name]),category);
   }
  }
- assert.equal(shippedPairs.size,142);
+ assert.equal(shippedPairs.size,160);
  assert.deepEqual(shippedPairs,new Map(shippedCategoryAssignments.map(([card,name,category])=>[JSON.stringify([card,name]),category])));
  const expected=shippedExpectedInside.find(c=>c.title==='pstack');
  for(const [i,row] of rows.entries()) {
@@ -1176,6 +1213,67 @@ gate('pstack23 measured shipped budgets',()=>{
   assert.equal(total-getCards(undoPstack23(shippedHTML)).reduce((n,[,,c])=>n+measure(c),0),kind==='visible'?-2:words(rowsForBudget())-2);
  }
  function rowsForBudget(){return getCards(shippedHTML).find(a=>a[0].includes('aria-labelledby="skill-20"'))[2].match(/ <li>[^\n]*<\/li>\n/g).slice(5).join('');}
+});
+
+// impeccable23 shipped-surface gates: content, source inventories, runtime and budgets.
+gate('impeccable23 shipped inventory, exact scope, sources, categories, buttons and prompts',()=>{
+ const cards=getCards(shippedHTML),card=cards.find(a=>a[0].includes('aria-labelledby="skill-22"'))[2];
+ const rows=[...card.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(m=>m[1]);
+ assert.equal(rows.length,23);
+ assert.deepEqual(rows.map(row=>row.match(/class="inside-name">([^<]+)</)[1]),['init','polish','bolder','critique','audit',...impeccable23Names]);
+ assert.equal(renderedText(card.match(/<summary>([\s\S]*?)<\/summary>/)[1]),'Inside this repo — 23 commands');
+ assert.equal((shippedHTML.match(/<li>/g)||[]).length,160);
+ const prompts=[...shippedHTML.matchAll(/<p class="example-prompt">([^<]*)<\/p>/g)].map(m=>decodeHTML(m[1]));
+ assert.equal(prompts.length,160);assert.equal(new Set(prompts).size,160);
+ // Command-name checks deliberately permit the protected English word in the Use line.
+ for(const [,,markup] of cards)for(const [,name] of markup.matchAll(/<li><code class="inside-name">([^<]+)</g))assert.notEqual(name,'craft');
+ const catalog=JSON.parse(readAgentFile('skills.json'));
+ for(const c of catalog.cards)for(const item of c.inside)assert.notEqual(item.name,'craft');
+ const full=readAgentFile('llms-full.txt');assert.doesNotMatch(full,/^- craft(?: \[| \()/m);
+ const expected=shippedExpectedInside.find(c=>c.title==='Impeccable');
+ assert.equal(catalog.cards.find(c=>c.id==='skill-22').inside_summary,expected.summary);
+ const sourceBody=designCopy.split('## Card 23 — Impeccable\n')[1].split('## Items deliberately NOT shipped')[0];
+ for(const [i,row] of rows.entries()){
+  const name=row.match(/class="inside-name">([^<]+)</)[1];
+  const categories=[...row.matchAll(/<span class="item-category">([^<]+)<\/span>/g)];assert.equal(categories.length,1);
+  const examples=[...row.matchAll(/<p class="example-prompt">([^<]*)<\/p>/g)];assert.equal(examples.length,1);
+  const prompt=decodeHTML(examples[0][1]);assert.equal(prompt,shippedPromptMap.get('Impeccable').get(name));
+  const fn=renderedText(row.split(' — ')[1].replace(/<p class="example-prompt">[\s\S]*/,''));assert.equal(fn,expected.items[i].fn);
+  assert.doesNotMatch(row,/inside-kind/);
+  if(i<5)continue;
+  assert.equal(categories[0][1],impeccable23Categories[name]);
+  assert.equal((row.match(/class="item-favourite-button"/g)||[]).length,1);
+  assert.ok(row.includes(`<button type="button" class="item-favourite-button" hidden data-item-favourite-for="skill-22:${name}" aria-pressed="false" aria-label="Favourite ${name}">☆</button>`));
+  assert.match(prompt,new RegExp('^(?:Run )?/impeccable '+name+' '));
+  assert.doesNotMatch(prompt,/[\r\n]|\bexample\.(?:com|org|net)\b|\b(?:localhost|your-domain|placeholder)\b/i);
+  assert.ok(sourceBody.includes('- `'+name+'` — '+fn+'\n  - Prompt: '+prompt+'\n  - Prompt grade: Crafted (illustrative, not repo-quoted). Function source: ../workflow-run-impeccable23/command-metadata.md#'+name));
+  assert.ok(categorySource.includes('| Impeccable | '+name+' | '+impeccable23Categories[name]+' | Confident |  |'));
+ }
+ // Combined historical hashes protect original rows and all surrounding bytes.
+ assert.deepEqual(cards.filter(a=>!a[0].includes('aria-labelledby="skill-22"')).map(a=>a[0]),getCards(undoImpeccable23(shippedHTML)).filter(a=>!a[0].includes('aria-labelledby="skill-22"')).map(a=>a[0]));
+ assert.equal((fs.readFileSync(path.join(root,'styles.css'),'utf8').match(/var\(--accent\)/g)||[]).length,3);
+});
+gate('impeccable23 shipped search and Favourites for every new item',()=>{
+ for(const name of impeccable23Names){
+  const saved={};const storage={getItem:key=>saved[key]||'[]',setItem:(key,value)=>{saved[key]=value;}};
+  const x=exerciseItemFavourites(storage,shippedHTML),id='skill-22:'+name;
+  const cardIndex=getCards(shippedHTML).findIndex(a=>a[0].includes('aria-labelledby="skill-22"'));
+  x.search(shippedPromptMap.get('Impeccable').get(name));assert.equal(x.visible().length,1,name+' prompt search');assert.equal(x.cards[cardIndex].hidden,false);
+  x.search('');x.item(id).click();assert.equal(x.item(id).attrs['aria-pressed'],'true');
+  x.ids['toggle-favourites'].click();assert.equal(x.visible().length,1);assert.equal(x.cards[cardIndex].hidden,false);
+  const rows=x.lists[cardIndex].querySelectorAll('li').filter(row=>!row.hidden);assert.equal(rows.length,1);assert.equal(rows[0].button.dataset.itemFavouriteFor,id);
+  const reload=exerciseItemFavourites(storage,shippedHTML);assert.equal(reload.item(id).attrs['aria-pressed'],'true');
+ }
+});
+gate('impeccable23 measured shipped budgets',()=>{
+ for(const kind of ['visible','expanded']){
+  const measure=markup=>words(kind==='visible'?markup.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1'):markup);
+  const counts=getCards(shippedHTML).map(([,,c])=>measure(c)),total=counts.reduce((a,b)=>a+b,0),max=Math.max(...counts);
+  const prior=undoImpeccable23(shippedHTML),added=getCards(shippedHTML).find(a=>a[0].includes('aria-labelledby="skill-22"'))[2].match(/ <li>[^\n]*<\/li>\n/g).slice(5).join('');
+  assert.equal(total-getCards(prior).reduce((n,[,,c])=>n+measure(c),0),kind==='visible'?0:words(added));
+  assert.equal(measure(shippedHTML)-measure(prior),kind==='visible'?0:words(added));
+  console.log('impeccable23 shipped '+kind,JSON.stringify({total,max,meanNumerator:total,meanDenominator:22,pageTotal:measure(shippedHTML)}));
+ }
 });
 
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
