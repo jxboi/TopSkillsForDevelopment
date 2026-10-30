@@ -71,7 +71,7 @@ Item 1 is the skill; items 2–5 each carry the `command` kind tag.
 4. `skills use` (command) — Generates prompt text or temporarily initializes a coding agent with a specified skill without permanently adding it to project dependencies.
 5. `skills update` (command) — Checks for and updates installed project and global skills to their latest upstream releases.
 
-### pstack — summary: "Inside this repo — 5 of 23 playbooks"
+### pstack — summary: "Inside this repo — 23 playbooks"
 
 Items are playbooks under `/poteto-mode`, not skills. Names normalised
 to file forms: report's "bug fix" → `bug-fix`; report's "perf (or Perf
@@ -82,6 +82,24 @@ issue)" → `perf-issue`.
 3. `investigation` — Executes read-only inquiry into how a subsystem functions or why an architectural decision was made, producing cited explanations and tradeoff matrices without introducing code modifications.
 4. `refactoring` — Performs behavior-preserving structural alterations by first pinning existing contracts with characterization tests, eliminating dead code, and migrating callers and legacy APIs simultaneously in a single wave.
 5. `perf-issue` — Traces measured slowness against an established baseline trace, systematically applies performance mantras in order of cost, and independently verifies post-fix metric improvements before shipping.
+6. `authoring-a-skill` — Owns a skill’s voice by validating frontmatter, referenced files, cross-skill links, and structural test cases, deleting prose that changes no decision, then running Opening a PR.
+7. `autonomous-run` — Defines a checkable exit condition, then drives toward it without stopping through evidence-based iterations, event watchers or timed heartbeats, verifying each change and discarding attempts that do not advance it.
+8. `autopilot-full` — Owns verdicts while assigning one owner per PR, requiring independent verification by a swarm that never wrote the code and green CI at each current head before anything merges.
+9. `autopilot-stack` — Runs Autopilot-full verification without merging, stopping at verified PRs with green checks at their current heads and handing them to the operator, stacking only PRs that build on others.
+10. `babysit` — Owns the merge frontier by declaring a mode, clearing one PR at a time, and stopping where a human decision begins, while leaving the actual landing operation to Shipping.
+11. `eval` — Owns experiment design through planning, blinding, running, and synthesising results, keeping evaluation language out of candidate environments and prompts while a blinded judge assesses outputs against a private rubric.
+12. `hillclimb` — Owns one metric and experiment integrity through a frozen measurement harness, testing one change at a time, keeping measured improvements or reverting failures, and never claiming wins from inspection alone.
+13. `multi-phase-plan` — Owns the plan rather than implementation, producing an evidence-backed checklist an owner executes box by box and an operator audits, with dependencies, verification steps, and explicit review gates.
+14. `opening-a-pr` — Runs at the end of every other playbook, preparing work in a worktree off main and organising small ordered commits so each can become a future independently landable PR.
+15. `orchestrate` — Runs the program rather than writing code, deciding which agent owns each piece, checking the evidence each produces, and maintaining authoritative program state in the Project tracker throughout execution.
+16. `pause-safely` — Owns a clean stop by finishing or backing out of the atomic step, taking no irreversible action, and leaving a durable wip checkpoint with a resume note for a cold-start agent.
+17. `prototype` — Owns a design decision through a throwaway instrument, exploring alternatives quickly in an isolated scratch directory, observing their behaviour, and handing the chosen direction to Feature for the real build.
+18. `runtime-forensics` — Owns diagnosis from a live process by capturing a profile, heap snapshot, or CDP trace, reducing it to the smoking gun, and proving the mechanism before delivering a cited diagnosis.
+19. `session-pickup` — Owns the resume point by reading the prior transcript, cloud URL, or pushed branch first, reconstructing completed and pending work without redoing it, and retaining a reduced timeline in the main thread.
+20. `shipping` — Owns what lands by verifying each PR independently, landing only the verified contiguous run from the root, confirming each merge, and keeping hands off the stack while it lands.
+21. `trace-forensics` — Owns diagnosis from an existing artifact by identifying its format, parsing it with generic tooling, reducing it to a source-attributed finding, and distinguishing confirmed causes from hypotheses without a live rerun.
+22. `visual-parity` — Owns pixel-exact equivalence by establishing the baseline before migration, moving one component at a time, and verifying zero image diff without changing the harness or tampering with baseline images.
+23. `worktree-cleanup` — Snapshots and audits worktrees and simulator state using paths from worktree list, classifying size, age, merge state, uncommitted work, and PR state before checking active usage and pruning confirmed candidates.
 
 ## Quality
 
