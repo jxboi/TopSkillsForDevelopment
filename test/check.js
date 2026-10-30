@@ -33,6 +33,63 @@ for(const item of mattRemaining) promptMap.get('Matt Pocock Skills').set(item.na
 const densityBaseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/agent-layer-baseline.json'),'utf8'));
 
 const root = path.join(__dirname, '..');
+// Polish3: reverse only this pass before every historical comparison.
+const polish3Edits = {
+  "index.html": [
+    {
+      "before": 'aria-label="Filter skills by category"',
+      "after": 'aria-label="Filter skills by chapter"'
+    }
+  ],
+  "styles.css": [
+    {
+      "before": ".card-meta{display:flex;align-items:center;gap:var(--space-1);font-size:var(--type-label);color:var(--muted);white-space:nowrap}\n",
+      "after": ".card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1);font-size:var(--type-label);color:var(--muted);white-space:normal}\n"
+    },
+    {
+      "before": "h2,.skill-card h3{font:normal var(--type-entry)/var(--type-entry-leading) var(--serif);letter-spacing:0;margin:var(--space-3) 0 var(--space-2);overflow-wrap:anywhere}\n",
+      "after": "h2{font:normal var(--type-entry)/var(--type-entry-leading) var(--serif);letter-spacing:0;margin:var(--space-3) 0 var(--space-2);overflow-wrap:anywhere}\n"
+    },
+    {
+      "before": "button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:5px}\n",
+      "after": "button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:var(--underline-offset)}\n"
+    },
+    {
+      "before": "  .skill-grid:has(> article:only-child) :is(.description,.fit p,.inside-list li,.inside-note,.top-inside){max-width:62ch}\n",
+      "after": "  .skill-grid:has(> article:only-child) :is(.description,.fit p,.top-inside){max-width:62ch}\n  .skill-grid:has(> article:not([hidden])):not(:has(> article:not([hidden]) ~ article:not([hidden]))) > article{grid-column:1 / -1}\n  .skill-grid:has(> article:not([hidden])):not(:has(> article:not([hidden]) ~ article:not([hidden]))) :is(.description,.fit p,.top-inside){max-width:62ch}\n"
+    },
+    {
+      "before": ".card-meta{flex-wrap:wrap;white-space:normal}\n  .container,.header-inner,.site-footer>div{width:calc(100% - calc(var(--space-4) + var(--space-1) / 2))}\n",
+      "after": "  .container,.header-inner,.site-footer>div{width:calc(100% - calc(var(--space-4) + var(--space-1) / 2))}\n"
+    },
+    {
+      "before": ".item-favourite-button{padding:0 var(--space-1);border:0;background:none;font-family:var(--mono);font-size:var(--type-mono);color:var(--muted)}\n",
+      "after": ".item-favourite-button{display:inline-flex;align-items:center;justify-content:center;min-height:24px;min-width:24px;padding:0 var(--space-1);border:0;background:none;font-family:var(--mono);font-size:var(--type-mono);color:var(--muted)}\n"
+    },
+    {
+      "before": "",
+      "after": "\n.favourite-button:hover,.item-favourite-button:hover{color:var(--ink)}\n"
+    }
+  ],
+  "script.js": [
+    {
+      "before": "      item.hidden = itemsOnly && !itemFavourites.has(button.dataset.itemFavouriteFor);\n",
+      "after": "      item.hidden = itemsOnly && !itemFavourites.has(button.dataset.itemFavouriteFor) &&\n        !(terms || []).some(term => item.textContent.toLocaleLowerCase().includes(term));\n"
+    },
+    {
+      "before": "",
+      "after": "  toggleInside.disabled = scope.length === 0;\n"
+    }
+  ]
+};
+function undoPolish3(name, text) {
+ for (const {before, after} of [...polish3Edits[name]].reverse()) {
+  assert.ok(text.includes(after), 'Missing polish3 edit in ' + name);
+  text = text.replace(after, before);
+ }
+ return text;
+}
+
 // Exact edit reversals preserve every historical comparison against its original surface.
 function undoItemFavourites(name, text) {
  for(const edit of [...densityBaseline.itemFavouritesBefore[name].edits].reverse()) {
@@ -73,17 +130,17 @@ const undoPolishCSS = text => {
  .replace('.fit strong{font-weight:600;color:var(--ink)}','.fit strong { font-weight: 600; color: var(--ink); }');
 };
 
-const itemHTML = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const itemHTML = undoPolish3('index.html', fs.readFileSync(path.join(root, 'index.html'), 'utf8'));
 const categoryHTML = undoItemFavourites('index.html', itemHTML);
 // Historical copy gates compare the original surface after removing only the authorized additions.
 const stripCategories = value => value.replace(/ <span class="item-category">[^<]*<\/span>/g, '');
 const html = stripCategories(undoPolishHTML(undoFavouritesHTML(categoryHTML)));
 const categoryCSSRule = '.item-category{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);color:var(--muted)}';
-const itemStyles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+const itemStyles = undoPolish3('styles.css', fs.readFileSync(path.join(root, 'styles.css'), 'utf8'));
 const categoryStyles = undoItemFavourites('styles.css', itemStyles);
 const styles = undoPolishCSS(undoFavouritesCSS(categoryStyles)).replace(categoryCSSRule+'\n','');
 const source = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
-const historicalSource = undoFavouritesJS(undoItemFavourites('script.js', source));
+const historicalSource = undoFavouritesJS(undoItemFavourites('script.js', undoPolish3('script.js', source)));
 const before = fs.readFileSync(path.join(__dirname, 'fixtures/before/index.html'), 'utf8');
 const beforeCSS = fs.readFileSync(path.join(__dirname, 'fixtures/before/styles.css'), 'utf8');
 const beforeJS = fs.readFileSync(path.join(__dirname, 'fixtures/before/script.js'), 'utf8');
@@ -836,7 +893,7 @@ function exerciseItemFavourites(storage) {
     rows=[...value.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(([,li])=>{
      const id=decodeHTML(li.match(/data-item-favourite-for="([^"]+)"/)[1]);
      const button=Object.assign(element('☆'),{hidden:true,dataset:{itemFavouriteFor:id}});
-     return Object.assign(element(),{button,querySelector:selector=>selector==='.item-favourite-button'?button:null});
+     return Object.assign(element(renderedText(li)),{button,querySelector:selector=>selector==='.item-favourite-button'?button:null});
     });
    },
    get textContent(){return renderedText(markup);},
@@ -911,6 +968,29 @@ gate('item favourites measured shipped budgets and exact CSS additions',()=>{
   assert.deepEqual({total,max,mean,pageTotal:measure(itemHTML)},densityBaseline.itemFavouritesBudgets[kind]);
   console.log('Item favourites measured '+kind,JSON.stringify({total,max,mean,pageTotal:measure(itemHTML)}));
  }
+});
+
+// Polish3 behaviour gates: exercise the shipped script, not source-string presence.
+gate('polish3 M2 search exposes matching non-favourite rows',()=>{
+ const x=exerciseItemFavourites({getItem:key=>key==='topskills-item-favourites'?'["skill-4:to-questionnaire"]':'[]',setItem(){}});
+ x.ids['toggle-favourites'].click();
+ x.search('domain-modeling');
+ assert.equal(x.visible().length,1);
+ assert.equal(x.cards[2].hidden,false);
+ const matching=x.lists[2].querySelectorAll('li').find(row=>row.button.dataset.itemFavouriteFor==='skill-4:domain-modeling');
+ assert.ok(matching);
+ assert.equal(matching.hidden,false);
+ assert.equal(x.ids['results-count'].textContent,'1 skill in the collection');
+});
+gate('polish3 S5 inside control disables at zero results and recovers',()=>{
+ const x=exerciseItemFavourites({getItem:()=> '[]',setItem(){}});
+ assert.equal(x.ids['toggle-inside'].disabled,false);
+ x.search('polish3-no-matching-skill');
+ assert.equal(x.visible().length,0);
+ assert.equal(x.ids['toggle-inside'].disabled,true);
+ x.ids['clear-search'].click();
+ assert.equal(x.visible().length,22);
+ assert.equal(x.ids['toggle-inside'].disabled,false);
 });
 
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
