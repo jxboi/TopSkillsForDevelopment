@@ -7,6 +7,7 @@ const insides = [...document.querySelectorAll('.skill-card details.inside')];
 const filterButtons = [...document.querySelectorAll('[data-filter]')];
 const chapters = [...document.querySelectorAll('.chapter')];
 const cards = [...document.querySelectorAll('.skill-card')];
+const revealNote = document.querySelector('#reveal-note');
 const resultsCount = document.querySelector('#results-count');
 const emptyState = document.querySelector('#empty-state');
 const resetButton = document.querySelector('#reset-filters');
@@ -200,6 +201,7 @@ function updateInsideSearch(terms) {
 }
 
 function updateResults() {
+  if (revealNote) revealNote.textContent = '';
   const query = searchInput?.value ?? '';
   if (clearSearch) clearSearch.hidden = !searchInput || query.length === 0;
   const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
@@ -291,7 +293,47 @@ function revealControls() {
   if (toggleInside && insides.length) toggleInside.hidden = false;
 }
 
+// Cycle 2 reveal: begin
+function resetForReveal() {
+  favouritesOnly = false;
+  toggleFavourites?.setAttribute('aria-pressed', 'false');
+  toggleFavourites?.classList.toggle('active', false);
+  if (searchInput) searchInput.value = '';
+  selectedCategory = 'All skills';
+  filterButtons.forEach(button => {
+    const active = button.dataset.filter === selectedCategory;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  updateResults();
+}
+
+function revealSkill(id) {
+  if (!/^skill-\d+$/.test(id)) return;
+  const target = document.querySelector('#' + id);
+  const card = target?.closest?.('.skill-card');
+  if (!target || !card) return;
+  if (!card.hidden) return;
+  resetForReveal();
+  if (revealNote) revealNote.textContent = 'Filters cleared. Showing all skills.';
+  if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+  target.focus({ preventScroll: true });
+  target.scrollIntoView?.({ block: 'start' });
+}
+
+function onSkillLink(event) {
+  const link = event.target?.closest?.('a[href^="#skill-"]');
+  if (!link) return;
+  if (event.defaultPrevented || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  revealSkill(link.getAttribute('href').slice(1));
+}
+
+document.addEventListener?.('click', onSkillLink);
+globalThis.addEventListener?.('hashchange', () => revealSkill(globalThis.location?.hash.slice(1) ?? ''));
+// Cycle 2 reveal: end
+
 revealControls();
 updateInsideControl();
 updateResults();
+revealSkill(globalThis.location?.hash.slice(1) ?? '');
 

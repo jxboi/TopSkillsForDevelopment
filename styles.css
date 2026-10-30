@@ -208,3 +208,6 @@ mark{font-weight:600;text-decoration:underline;text-decoration-color:var(--accen
 .card-use-label{color:var(--ink)}
 .card-use-code{font:inherit;color:var(--ink)}
 @media(max-width:1000px){.start-list{grid-template-columns:1fr}}
+.reveal-note{margin:0;font-size:var(--type-small);color:var(--muted)}
+.reveal-note:not(:empty){margin:var(--space-2) 0 0}
+.skill-card h3:focus-visible{outline:2px solid var(--ink);outline-offset:var(--underline-offset)}
