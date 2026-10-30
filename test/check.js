@@ -33,6 +33,55 @@ for(const item of mattRemaining) promptMap.get('Matt Pocock Skills').set(item.na
 const densityBaseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/agent-layer-baseline.json'),'utf8'));
 
 const root = path.join(__dirname, '..');
+// UIUX undo layer: reverse ONLY this pass before undoPolish3 in every pipeline.
+const uiuxEdits = {
+  "styles.css": [
+    {
+      "before": "h2{font:normal var(--type-entry)/var(--type-entry-leading) var(--serif);",
+      "after": "h2,.skill-card h3{font:normal var(--type-entry)/var(--type-entry-leading) var(--serif);"
+    },
+    {
+      "before": ".filter.active{",
+      "after": ".filter:disabled{cursor:default;color:var(--muted)}\n.filter:disabled:hover{text-decoration:none}\n.filter.active{"
+    },
+    {
+      "before": ".header-inner{min-height:var(--header-height);display:flex;justify-content:space-between;align-items:center}",
+      "after": ".header-inner{min-height:var(--header-height);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-2)}"
+    },
+    {
+      "before": ".inside-name{font-family:var(--mono);font-size:var(--type-mono);color:var(--ink)}",
+      "after": ".inside-name{font-family:var(--mono);font-size:var(--type-mono);color:var(--ink);overflow-wrap:anywhere}"
+    },
+    {
+      "before": "summary::-webkit-details-marker{display:none}",
+      "after": "summary:hover{text-decoration:underline}\nsummary::-webkit-details-marker{display:none}"
+    }
+  ],
+  "script.js": [
+    {
+      "before": "  toggleFavourites.setAttribute('aria-pressed', String(favouritesOnly));",
+      "after": "  toggleFavourites.setAttribute('aria-pressed', String(favouritesOnly));\n  toggleFavourites.classList.toggle('active', favouritesOnly);"
+    },
+    {
+      "before": "  toggleFavourites?.setAttribute('aria-pressed', 'false');",
+      "after": "  toggleFavourites?.setAttribute('aria-pressed', 'false');\n  toggleFavourites?.classList.toggle('active', false);"
+    }
+  ],
+  "index.html": [
+    {
+      "before": "Try another search or explore a different category.",
+      "after": "Try another search or explore a different chapter."
+    }
+  ]
+};
+function undoUiux(name, text) {
+ for (const {before, after} of [...uiuxEdits[name]].reverse()) {
+  assert.ok(text.includes(after), 'Missing uiux edit in ' + name);
+  text = text.replace(after, before);
+ }
+ return text;
+}
+
 // Polish3: reverse only this pass before every historical comparison.
 const polish3Edits = {
   "index.html": [
@@ -130,17 +179,17 @@ const undoPolishCSS = text => {
  .replace('.fit strong{font-weight:600;color:var(--ink)}','.fit strong { font-weight: 600; color: var(--ink); }');
 };
 
-const itemHTML = undoPolish3('index.html', fs.readFileSync(path.join(root, 'index.html'), 'utf8'));
+const itemHTML = undoPolish3('index.html', undoUiux('index.html', fs.readFileSync(path.join(root, 'index.html'), 'utf8')));
 const categoryHTML = undoItemFavourites('index.html', itemHTML);
 // Historical copy gates compare the original surface after removing only the authorized additions.
 const stripCategories = value => value.replace(/ <span class="item-category">[^<]*<\/span>/g, '');
 const html = stripCategories(undoPolishHTML(undoFavouritesHTML(categoryHTML)));
 const categoryCSSRule = '.item-category{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);color:var(--muted)}';
-const itemStyles = undoPolish3('styles.css', fs.readFileSync(path.join(root, 'styles.css'), 'utf8'));
+const itemStyles = undoPolish3('styles.css', undoUiux('styles.css', fs.readFileSync(path.join(root, 'styles.css'), 'utf8')));
 const categoryStyles = undoItemFavourites('styles.css', itemStyles);
 const styles = undoPolishCSS(undoFavouritesCSS(categoryStyles)).replace(categoryCSSRule+'\n','');
 const source = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
-const historicalSource = undoFavouritesJS(undoItemFavourites('script.js', undoPolish3('script.js', source)));
+const historicalSource = undoFavouritesJS(undoItemFavourites('script.js', undoPolish3('script.js', undoUiux('script.js', source))));
 const before = fs.readFileSync(path.join(__dirname, 'fixtures/before/index.html'), 'utf8');
 const beforeCSS = fs.readFileSync(path.join(__dirname, 'fixtures/before/styles.css'), 'utf8');
 const beforeJS = fs.readFileSync(path.join(__dirname, 'fixtures/before/script.js'), 'utf8');
@@ -991,6 +1040,23 @@ gate('polish3 S5 inside control disables at zero results and recovers',()=>{
  x.ids['clear-search'].click();
  assert.equal(x.visible().length,22);
  assert.equal(x.ids['toggle-inside'].disabled,false);
+});
+
+// UIUX behaviour gates: M2 only; execute the shipped script against the DOM double.
+gate('uiux M2 favourites active state follows toggle and reset',()=>{
+ const x=exerciseItemFavourites({getItem:()=> '[]',setItem(){}});
+ const toggle=x.ids['toggle-favourites'];
+ assert.equal(toggle.classList.contains('active'),false);
+ toggle.click();
+ assert.equal(toggle.classList.contains('active'),true);
+ assert.equal(toggle.attrs['aria-pressed'],'true');
+ toggle.click();
+ assert.equal(toggle.classList.contains('active'),false);
+ assert.equal(toggle.attrs['aria-pressed'],'false');
+ toggle.click();
+ x.ids['reset-filters'].click();
+ assert.equal(toggle.classList.contains('active'),false);
+ assert.equal(toggle.attrs['aria-pressed'],'false');
 });
 
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
