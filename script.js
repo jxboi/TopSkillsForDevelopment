@@ -18,6 +18,7 @@ let selectedCategory = 'All skills';
 const searchableCards = cards.map(card => {
   const searchable = card.cloneNode(true);
   searchable.querySelectorAll('.favourite-button, .item-favourite-button').forEach(button => button.remove());
+  searchable.querySelectorAll('.card-use').forEach(line => line.remove());
   return { card, text: searchable.textContent.toLocaleLowerCase() };
 });
 
