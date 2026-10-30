@@ -15,7 +15,54 @@ for (const [name, element] of Object.entries({ searchInput, clearSearch, toggleI
   if (!element) console.warn(`Skills: missing ${name}; its feature will degrade gracefully.`);
 }
 let selectedCategory = 'All skills';
-const searchableCards = cards.map(card => ({ card, text: card.textContent.toLocaleLowerCase() }));
+const searchableCards = cards.map(card => {
+  const searchable = card.cloneNode(true);
+  searchable.querySelectorAll('.favourite-button').forEach(button => button.remove());
+  return { card, text: searchable.textContent.toLocaleLowerCase() };
+});
+
+// Favourites: begin
+const toggleFavourites = document.querySelector('#toggle-favourites');
+const favouriteButtons = [...document.querySelectorAll('.favourite-button')];
+const validFavouriteIds = new Set(favouriteButtons.map(button => button.dataset.favouriteFor));
+let favourites = new Set();
+let favouritesOnly = false;
+try {
+  const stored = JSON.parse(localStorage.getItem('topskills-favourites'));
+  if (Array.isArray(stored)) favourites = new Set(stored.filter(id => validFavouriteIds.has(id)));
+} catch (error) {
+  favourites = new Set();
+}
+function applyFavourite(button) {
+  const id = button.dataset.favouriteFor;
+  const title = document.querySelector('#' + id).textContent;
+  const pressed = favourites.has(id);
+  button.setAttribute('aria-pressed', String(pressed));
+  button.setAttribute('aria-label', pressed ? `Remove ${title} from favourites` : `Favourite ${title}`);
+  button.textContent = pressed ? '★ Favourited' : '☆ Favourite';
+}
+favouriteButtons.forEach(button => {
+  applyFavourite(button);
+  button.hidden = false;
+  button.addEventListener('click', () => {
+    const id = button.dataset.favouriteFor;
+    if (favourites.has(id)) favourites.delete(id); else favourites.add(id);
+    try {
+      localStorage.setItem('topskills-favourites', JSON.stringify([...favourites]));
+    } catch (error) {
+      favourites = new Set();
+    }
+    favouriteButtons.forEach(applyFavourite);
+    updateResults();
+  });
+});
+toggleFavourites?.addEventListener('click', () => {
+  favouritesOnly = !favouritesOnly;
+  toggleFavourites.setAttribute('aria-pressed', String(favouritesOnly));
+  updateResults();
+});
+if (toggleFavourites) toggleFavourites.hidden = false;
+// Favourites: end
 
 const insideSearch = cards.map(card => {
   try {
@@ -93,7 +140,8 @@ function updateResults() {
   let count = 0;
   searchableCards.forEach(({ card, text }) => {
     const matchesCategory = selectedCategory === 'All skills' || card.dataset.category === selectedCategory;
-    const visible = matchesCategory && terms.every(term => text.includes(term));
+    const matchesFavourite = !favouritesOnly || favourites.has(card.querySelector('h3').id);
+    const visible = matchesCategory && matchesFavourite && terms.every(term => text.includes(term));
     card.hidden = !visible;
     if (visible) count++;
   });
@@ -122,6 +170,8 @@ filterButtons.forEach(button => {
 });
 
 function resetFilters() {
+  favouritesOnly = false;
+  toggleFavourites?.setAttribute('aria-pressed', 'false');
   if (searchInput) searchInput.value = '';
   selectedCategory = 'All skills';
   filterButtons.forEach(button => {
