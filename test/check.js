@@ -34,6 +34,20 @@ const densityBaseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures
 
 const root = path.join(__dirname, '..');
 
+// Reverse only the spec-authorised favourites additions for historical comparisons.
+const undoFavouritesHTML = text => text
+ .replace(/<button type="button" class="favourite-button" hidden data-favourite-for="skill-\d+" aria-pressed="false" aria-label="Favourite [^"]+">☆ Favourite<\/button>/g,'')
+ .replace('<button type="button" class="filter" id="toggle-favourites" hidden aria-pressed="false">Favourites</button>','')
+ .replace('search and filter and favourite.','search and filter.');
+const favouriteCSS = '.favourite-button{padding:0;min-height:var(--touch);border:0;background:none;color:var(--muted)}\n.favourite-button[aria-pressed="true"]{color:var(--ink)}\n';
+const undoFavouritesCSS = text => text.replace(favouriteCSS,'');
+const undoFavouritesJS = text => text
+ .replace(/\/\/ Favourites: begin[\s\S]*?\/\/ Favourites: end\n\n/,'')
+ .replace(/const searchableCards = cards.map\(card => \{[\s\S]*?\n}\);/,"const searchableCards = cards.map(card => ({ card, text: card.textContent.toLocaleLowerCase() }));")
+ .replace("    const matchesFavourite = !favouritesOnly || favourites.has(card.querySelector('h3').id);\n",'')
+ .replace('matchesCategory && matchesFavourite &&','matchesCategory &&')
+ .replace("  favouritesOnly = false;\n  toggleFavourites?.setAttribute('aria-pressed', 'false');\n",'');
+
 // Historical gates retain their original byte comparisons after undoing only M1–M4/S1–S4.
 const monoStack='ui-monospace,SFMono-Regular,Consolas,monospace';
 const polishTokens={'--mono':monoStack,'--underline-offset':'5px','--underline-thickness':'2px','--leading-relaxed':'1.8','--tracking-tight':'-.01em'};
@@ -52,11 +66,12 @@ const undoPolishCSS = text => {
 const categoryHTML = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 // Historical copy gates compare the original surface after removing only the authorized additions.
 const stripCategories = value => value.replace(/ <span class="item-category">[^<]*<\/span>/g, '');
-const html = stripCategories(undoPolishHTML(categoryHTML));
+const html = stripCategories(undoPolishHTML(undoFavouritesHTML(categoryHTML)));
 const categoryCSSRule = '.item-category{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:var(--type-mono);color:var(--muted)}';
 const categoryStyles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
-const styles = undoPolishCSS(categoryStyles).replace(categoryCSSRule+'\n','');
+const styles = undoPolishCSS(undoFavouritesCSS(categoryStyles)).replace(categoryCSSRule+'\n','');
 const source = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
+const historicalSource = undoFavouritesJS(source);
 const before = fs.readFileSync(path.join(__dirname, 'fixtures/before/index.html'), 'utf8');
 const beforeCSS = fs.readFileSync(path.join(__dirname, 'fixtures/before/styles.css'), 'utf8');
 const beforeJS = fs.readFileSync(path.join(__dirname, 'fixtures/before/script.js'), 'utf8');
@@ -64,7 +79,7 @@ const starSnapshot = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/b
 const copy = fs.readFileSync(path.join(__dirname, 'fixtures/copy.md'), 'utf8');
 const uses = fs.readFileSync(path.join(__dirname, 'fixtures/when-avoid-copy.md'), 'utf8');
 const getCards = text => [...text.matchAll(/<article class="skill-card" data-category="([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)];
-const articles = getCards(html), categoryArticles = getCards(undoPolishHTML(categoryHTML)), originals = getCards(before);
+const articles = getCards(html), categoryArticles = getCards(undoPolishHTML(undoFavouritesHTML(categoryHTML))), originals = getCards(before);
 const failures = [];
 function gate(name, fn) { try { fn(); console.log('PASS ' + name); } catch (e) { failures.push(name + ': ' + e.message); console.error('FAIL ' + name + ': ' + e.message); } }
 const copyPath = path.join(__dirname, 'fixtures/lists.md');
@@ -306,6 +321,7 @@ function element(textContent = '') {
   const listeners = {};
   const classes = new Set();
   return {
+    cloneNode() { return {textContent:this.textContent,querySelectorAll:()=>[]}; },
     textContent, disabled: true, hidden: false, value: '', open: false, dataset: {}, attrs: {}, style: {},
     classList: {
       add(...names) { names.forEach(name => classes.add(name)); },
@@ -423,7 +439,7 @@ function exerciseControls() {
  prose.forEach((p,i)=>Object.entries(p).forEach(([cls,node])=>assert.equal(node.innerHTML,field(articles[i][2],cls).replace(/^<p[^>]*>|<\/p>$/g,''))));
  filters.find(f=>f.dataset.filter==='Design').click();assert.equal(visible().length,3);assert.deepEqual(chapters.map(c=>c.hidden),[true,true,false,true,true,true]);search('Superpowers');assert.equal(visible().length,0);assert.equal(ids['toggle-inside'].textContent,'Expand all inside lists');assert.equal(ids['toggle-inside'].attrs['aria-expanded'],'false');assert.equal(ids['empty-state'].hidden,false);assert.equal(ids['results-count'].textContent,'0 skills in the collection');ids['clear-search'].click();assert.equal(visible().length,3);ids['reset-filters'].click();assert.equal(visible().length,22);assert.equal(ids['empty-state'].hidden,true);assert.equal(ids['clear-search'].hidden,true);assert.ok(chapters.every(c=>!c.hidden));
 }
-gate('8 search paths' ,()=>{for(const pattern of [/originalHTML/,/preSearchOpen/,/inside\.open = true/,/createElement\('mark'\)/,/createTreeWalker/,/innerHTML = originalHTML/,/list\.textContent/,/card\.hidden/])assert.match(source,pattern);assert.match(source,/text: card\.textContent\.toLocaleLowerCase\(\)/); exerciseControls();});
+gate('8 search paths' ,()=>{for(const pattern of [/originalHTML/,/preSearchOpen/,/inside\.open = true/,/createElement\('mark'\)/,/createTreeWalker/,/innerHTML = originalHTML/,/list\.textContent/,/card\.hidden/])assert.match(source,pattern);assert.match(historicalSource,/text: card\.textContent\.toLocaleLowerCase\(\)/); exerciseControls();});
 const rules = css => [...css.replace(/\/\*[\s\S]*?\*\//g,'').matchAll(/([^{}]+)\{([^{}]*)}/g)];
 gate('9 CSS tokens and dispositions',()=>{
 assert.doesNotMatch(styles, /border[^;{}]*dashed/);
@@ -479,11 +495,11 @@ gate('10 unchanged surface and chapter ledes',()=>{
  const ledes=[...copy.matchAll(/^- (Workflow|Quality|Design|Efficiency|Knowledge|Discovery) — (.+)$/gm)].map(m=>m[2]); const shipped=[...html.matchAll(/<h2 class="chapter-heading"[^>]*>[\s\S]*?<\/h2>\s*<p class="chapter-lede">([^<]+)<\/p>/g)].map(m=>m[1]);assert.deepEqual(shipped,ledes); console.log('Chapter lede words:',ledes.reduce((n,l)=>n+words(l),0));
 });
 gate('11 script diff discipline',()=>{
- assert.equal(sha256(fs.readFileSync(path.join(root,'script.js'))), '54c74dd5029521a0f8d1e749ad0e846563d87a393eb02c12af3d7805e97c2b50', 'script.js must be byte-identical');
+ assert.equal(sha256(historicalSource), '54c74dd5029521a0f8d1e749ad0e846563d87a393eb02c12af3d7805e97c2b50', 'script.js must be byte-identical');
  const functionBlock=(s,name,next)=>s.slice(s.indexOf(name),s.indexOf(next,s.indexOf(name)));
- for(const [start,end]of [['  chapters.forEach','searchInput?.addEventListener'],["searchInput?.addEventListener",'function update']]) {assert.equal(functionBlock(source,start,end),functionBlock(beforeJS,start,end));}
+ for(const [start,end]of [['  chapters.forEach','searchInput?.addEventListener'],["searchInput?.addEventListener",'function update']]) {assert.equal(functionBlock(historicalSource,start,end),functionBlock(beforeJS,start,end));}
  const oldFiltering=beforeJS.slice(beforeJS.indexOf('function updateResults'),beforeJS.indexOf('searchInput?.addEventListener'));
- const newFiltering=source.slice(source.indexOf('function updateResults'),source.indexOf('searchInput?.addEventListener')).replace('  updateInsideSearch(terms);\n','');assert.equal(newFiltering,oldFiltering);
+ const newFiltering=historicalSource.slice(historicalSource.indexOf('function updateResults'),historicalSource.indexOf('searchInput?.addEventListener')).replace('  updateInsideSearch(terms);\n','');assert.equal(newFiltering,oldFiltering);
  // Toggle/search paths are intentionally changed; filtering and chapter paths remain protected above.
 
 });
@@ -621,14 +637,14 @@ gate('agent footer insertion only, protected bytes and unchanged per-card baseli
  assert.equal(footer,agentBaseline.footer.replace('</p>','</p>'+agentNav));
  assert.equal(sha256(html.replace(articles.find(a=>a[0].includes('aria-labelledby="skill-4"'))[0],agentBaseline.originalMattCard).replace(agentNav,'')),agentBaseline['index.html'],'Restoring the separately verified Matt card permits only the exact footer nav change from the removal baseline');
  assert.ok(!html.includes(agentSnippet));
- for(const name of ['styles.css','script.js'])assert.equal(sha256(name==='styles.css'?styles:fs.readFileSync(path.join(root,name))),agentBaseline[name],name+' pre-build bytes');
+ for(const name of ['styles.css','script.js'])assert.equal(sha256(name==='styles.css'?styles:historicalSource),agentBaseline[name],name+' pre-build bytes');
  for(const kind of ['visible','expanded'])assert.deepEqual(densities.map(c=>c[kind]),agentBaseline[kind],kind+' per-card baseline');
 });
 
 
 // Actual shipped surface gates supplement, rather than replace, the historical checks.
 gate('polish2 M1–M3 exact HTML scope and labels',()=>{
- assert.equal(sha256(undoPolishHTML(categoryHTML)),densityBaseline.polish2Before['index.html']);
+ assert.equal(sha256(undoPolishHTML(undoFavouritesHTML(categoryHTML))),densityBaseline.polish2Before['index.html']);
  const noscript=categoryHTML.match(/<noscript>[\s\S]*?<\/noscript>/)[0];
  assert.match(noscript,/available above/);assert.doesNotMatch(noscript,/available below/);
  const cards=getCards(categoryHTML),catalog=JSON.parse(readAgentFile('skills.json'));
@@ -649,7 +665,7 @@ gate('polish2 M1–M3 exact HTML scope and labels',()=>{
  assert.doesNotMatch(readAgentFile('llms-full.txt'),/\(\((?:sub)?command\)\)/);
 });
 gate('polish2 M4/S1–S4 exact CSS scope and preserved rendered values',()=>{
- assert.equal(sha256(undoPolishCSS(categoryStyles)),densityBaseline.polish2Before['styles.css']);
+ assert.equal(sha256(undoPolishCSS(undoFavouritesCSS(categoryStyles))),densityBaseline.polish2Before['styles.css']);
  const rootRule=categoryStyles.match(/:root\{([^}]*)}/)[1];
  for(const [name,value] of Object.entries(polishTokens))assert.ok(rootRule.includes(name+':'+value));
  const outsideRoot=categoryStyles.replace(/:root\{[^}]*}/,'');assert.ok(!outsideRoot.includes(monoStack));
@@ -677,7 +693,7 @@ gate('polish2 agent-file scope: only card 15 label, short index unchanged',()=>{
  assert.equal(sha256(readAgentFile('llms.txt')),densityBaseline.polish2Before['llms.txt']);
 });
 gate('polish2 recomputed shipped budgets and per-card scope',()=>{
- const measured=getCards(categoryHTML).map(([,,c])=>({title:renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]),visible:words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1')),expanded:words(c)}));
+ const measured=getCards(undoFavouritesHTML(categoryHTML)).map(([,,c])=>({title:renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]),visible:words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1')),expanded:words(c)}));
  for(const kind of ['visible','expanded']){
   assert.deepEqual(measured.map(c=>c[kind]),densities.map((c,i)=>c[kind]-(i===19?1:0)));
   const total=measured.reduce((n,c)=>n+c[kind],0),max=Math.max(...measured.map(c=>c[kind]));
@@ -685,6 +701,91 @@ gate('polish2 recomputed shipped budgets and per-card scope',()=>{
   console.log('Shipped '+kind,JSON.stringify({total,max,mean:total/22,maxCards:measured.filter(c=>c[kind]===max).map(c=>c.title)}));
  }
  console.table(measured);
+});
+
+gate('favourites shipped markup and script contracts',()=>{
+ const cards=getCards(categoryHTML);
+ assert.equal((categoryHTML.match(/class="favourite-button"/g)||[]).length,22);
+ for(const [,,card] of cards){
+  const id=card.match(/<h3 id="([^"]+)">/)[1];
+  const title=card.match(/<h3[^>]*>([^<]+)<\/h3>/)[1];
+  const button=`<button type="button" class="favourite-button" hidden data-favourite-for="${id}" aria-pressed="false" aria-label="Favourite ${title}">☆ Favourite</button>`;
+  assert.ok(card.includes(button));assert.equal((card.match(/class="favourite-button"/g)||[]).length,1);
+  assert.ok(field(card,'card-footer','div').includes('</a>'+button));
+ }
+ assert.equal((categoryHTML.match(/id="toggle-favourites"/g)||[]).length,1);
+ assert.ok(categoryHTML.includes('<button type="button" class="filter" id="toggle-favourites" hidden aria-pressed="false">Favourites</button>'));
+ assert.match(source,/topskills-favourites/);
+ assert.match(source,/try \{[\s\S]*?localStorage.getItem[\s\S]*?catch/);
+ assert.match(source,/try \{[\s\S]*?localStorage.setItem[\s\S]*?catch/);
+ assert.match(source,/matchesCategory && matchesFavourite &&/);
+ assert.match(source,/querySelectorAll\('\.favourite-button'\)/);
+});
+
+function exerciseFavourites(storage) {
+ const ids=Object.fromEntries(['search','clear-search','toggle-favourites','reset-filters','empty-state','results-count'].map(id=>[id,element()]));
+ const shipped=getCards(categoryHTML);
+ const buttons=shipped.map(([,,c])=>Object.assign(element('☆ Favourite'),{hidden:true,dataset:{favouriteFor:c.match(/<h3 id="([^"]+)">/)[1]}}));
+ const headings=shipped.map(([,,c])=>Object.assign(element(renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1])),{id:c.match(/<h3 id="([^"]+)">/)[1]}));
+ const cards=shipped.map(([,category,c],i)=>Object.assign(element(renderedText(c)),{
+  dataset:{category},querySelector:selector=>selector==='h3'?headings[i]:null,
+  cloneNode(){
+   let markup=c;
+   return {querySelectorAll(selector){assert.equal(selector,'.favourite-button');return [{remove(){markup=markup.replace(/<button type="button" class="favourite-button"[^>]*>[^<]*<\/button>/g,'');}}];},get textContent(){return renderedText(markup);}};
+  }
+ }));
+ const filters=['All skills','Workflow','Design'].map(category=>Object.assign(element(),{dataset:{filter:category}}));
+ const document={querySelector:selector=>ids[selector.slice(1)]||headings.find(h=>h.id===selector.slice(1)),querySelectorAll:selector=>({'.skill-card':cards,'.favourite-button':buttons,'[data-filter]':filters})[selector]||[]};
+ vm.runInNewContext(source,{document,localStorage:storage,console:{warn(){}}});
+ return {ids,buttons,headings,cards,filters,visible:()=>cards.filter(c=>!c.hidden),search(value){ids.search.value=value;ids.search.fire('input');}};
+}
+gate('favourites behaviour: persistence, intersection, reset, search exclusion and labels',()=>{
+ let saved;const storage={getItem(key){assert.equal(key,'topskills-favourites');return '["skill-1","skill-2","skill-5","skill-999",null]';},setItem(key,value){assert.equal(key,'topskills-favourites');saved=JSON.parse(value);}};
+ const x=exerciseFavourites(storage);const {ids,buttons,headings,filters}=x;
+ assert.equal(x.visible().length,22);assert.ok(buttons.every(b=>!b.hidden));assert.equal(ids['toggle-favourites'].hidden,false);
+ for(const [i,b] of buttons.entries()){
+  const pressed=['skill-1','skill-2','skill-5'].includes(headings[i].id);
+  assert.equal(b.attrs['aria-pressed'],String(pressed));assert.equal(b.textContent,pressed?'★ Favourited':'☆ Favourite');
+  assert.equal(b.attrs['aria-label'],pressed?`Remove ${headings[i].textContent} from favourites`:`Favourite ${headings[i].textContent}`);
+ }
+ ids['toggle-favourites'].click();assert.equal(x.visible().length,3);
+ filters[1].click();assert.equal(x.visible().length,2);
+ x.search('Superpowers');assert.equal(x.visible().length,1);
+ x.search('ECC');assert.equal(x.visible().length,1);
+ filters[2].click();assert.equal(x.visible().length,0);assert.equal(ids['empty-state'].hidden,false);
+ ids['clear-search'].click();assert.equal(x.visible().length,1);assert.equal(ids['toggle-favourites'].attrs['aria-pressed'],'true');
+ ids['reset-filters'].click();assert.equal(x.visible().length,22);assert.equal(ids['toggle-favourites'].attrs['aria-pressed'],'false');
+ x.search('favourite');assert.equal(x.visible().length,0);assert.equal(buttons[0].textContent,'★ Favourited');
+ x.search('');buttons[0].click();assert.equal(buttons[0].textContent,'☆ Favourite');assert.equal(buttons[0].attrs['aria-label'],'Favourite '+headings[0].textContent);assert.ok(!saved.includes(headings[0].id));
+ buttons[0].click();assert.equal(buttons[0].textContent,'★ Favourited');assert.ok(saved.includes(headings[0].id));
+ const reloaded=exerciseFavourites({getItem:()=>JSON.stringify(saved)});assert.equal(reloaded.buttons[0].attrs['aria-pressed'],'true');
+ ids['toggle-favourites'].click();buttons[0].click();assert.equal(x.visible().length,2);
+});
+gate('favourites storage failures and corrupt data degrade to empty without crashes',()=>{
+ for(const value of ['{broken','{}','null','["skill-999"]']){
+  const x=exerciseFavourites({getItem:()=>value});x.ids['toggle-favourites'].click();assert.equal(x.visible().length,0);
+ }
+ const x=exerciseFavourites({getItem(){throw Error('denied');},setItem(){throw Error('denied');}});
+ x.buttons[0].click();x.ids['toggle-favourites'].click();assert.equal(x.visible().length,0);assert.ok(x.buttons.every(b=>b.attrs['aria-pressed']==='false'));
+});
+gate('favourites exact CSS scope, accent discipline and recomputed budgets',()=>{
+ assert.ok(categoryStyles.endsWith(favouriteCSS));assert.equal((categoryStyles.match(/var\(--accent\)/g)||[]).length,3);
+ const shipped=getCards(categoryHTML),prior=getCards(undoFavouritesHTML(categoryHTML));
+ const visible=card=>card.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1');
+ for(const kind of ['visible','expanded']){
+  const measure=card=>words(kind==='visible'?visible(card):card);
+  const counts=shipped.map(([,,c])=>measure(c));
+  assert.deepEqual(counts,prior.map(([,,c])=>measure(c)+2));
+  const total=counts.reduce((a,b)=>a+b,0),max=Math.max(...counts),mean=total/22;
+  assert.equal(total,kind==='visible'?1267:6292);assert.equal(max,kind==='visible'?79:906);assert.equal(mean,kind==='visible'?1267/22:286);
+  console.log('Favourites shipped '+kind,JSON.stringify({total,max,mean,growth:44}));
+  const pageTotal=measure(categoryHTML),priorPageTotal=measure(undoFavouritesHTML(categoryHTML));
+  assert.equal(pageTotal,kind==='visible'?1465:6490);
+  assert.equal(priorPageTotal,kind==='visible'?1418:6443);
+  assert.equal(pageTotal-priorPageTotal,47);
+  console.log('Favourites whole HTML '+kind,JSON.stringify({total:pageTotal,prior:priorPageTotal,growth:pageTotal-priorPageTotal}));
+ }
+ assert.equal(words('☆ Favourite'),2);assert.equal(words('Favourites'),1);assert.equal(words('and favourite'),2);
 });
 
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
