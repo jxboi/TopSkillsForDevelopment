@@ -17,7 +17,7 @@ for (const [name, element] of Object.entries({ searchInput, clearSearch, toggleI
 let selectedCategory = 'All skills';
 const searchableCards = cards.map(card => {
   const searchable = card.cloneNode(true);
-  searchable.querySelectorAll('.favourite-button').forEach(button => button.remove());
+  searchable.querySelectorAll('.favourite-button, .item-favourite-button').forEach(button => button.remove());
   return { card, text: searchable.textContent.toLocaleLowerCase() };
 });
 
@@ -64,6 +64,67 @@ toggleFavourites?.addEventListener('click', () => {
 if (toggleFavourites) toggleFavourites.hidden = false;
 // Favourites: end
 
+// Item favourites: begin
+const itemFavouriteButtons = [...document.querySelectorAll('.item-favourite-button')];
+const validItemIds = new Set(itemFavouriteButtons.map(button => button.dataset.itemFavouriteFor));
+let itemFavourites = new Set();
+try {
+  const stored = JSON.parse(localStorage.getItem('topskills-item-favourites'));
+  if (Array.isArray(stored)) itemFavourites = new Set(stored.filter(id => validItemIds.has(id)));
+} catch (error) {
+  itemFavourites = new Set();
+}
+function hasFavouriteItem(card) {
+  return [...(card.querySelectorAll?.('.item-favourite-button') ?? [])].some(button => itemFavourites.has(button.dataset.itemFavouriteFor));
+}
+function revealItemFavourites(list) {
+  list.querySelectorAll?.('.item-favourite-button').forEach(button => {
+    const id = button.dataset.itemFavouriteFor;
+    const name = id.slice(id.indexOf(':') + 1);
+    const pressed = itemFavourites.has(id);
+    button.hidden = false;
+    button.textContent = pressed ? '★' : '☆';
+    button.setAttribute('aria-pressed', String(pressed));
+    button.setAttribute('aria-label', pressed ? `Remove ${name} from favourites` : `Favourite ${name}`);
+    button.addEventListener('click', () => {
+      if (itemFavourites.has(id)) itemFavourites.delete(id); else itemFavourites.add(id);
+      try {
+        localStorage.setItem('topskills-item-favourites', JSON.stringify([...itemFavourites]));
+      } catch (error) {
+        itemFavourites = new Set();
+      }
+      updateResults();
+    });
+  });
+}
+function updateItemFavourites(terms) {
+  insideSearch.forEach(state => {
+    const { card, inside, list } = state;
+    if (favouritesOnly && !state.filteringFavourites) {
+      state.preFavouriteOpen = searchingInside ? state.preSearchOpen : inside.open;
+      state.filteringFavourites = true;
+    }
+    const itemsOnly = favouritesOnly && !favourites.has(card.querySelector('h3')?.id);
+    list.querySelectorAll?.('li').forEach(item => {
+      const button = item.querySelector('.item-favourite-button');
+      item.hidden = itemsOnly && !itemFavourites.has(button.dataset.itemFavouriteFor);
+    });
+    if (itemsOnly && !card.hidden) inside.open = true;
+    if (!favouritesOnly && state.filteringFavourites) {
+      inside.open = state.preFavouriteOpen;
+      if (searchingInside) state.preSearchOpen = state.preFavouriteOpen;
+      state.filteringFavourites = false;
+      if (searchingInside && !card.hidden && terms.some(term => list.textContent.toLocaleLowerCase().includes(term))) {
+        state.autoOpened = !inside.open;
+        inside.open = true;
+      }
+    }
+    revealItemFavourites(list);
+  });
+  updateInsideControl();
+}
+// Item favourites: end
+
 const insideSearch = cards.map(card => {
   try {
     const inside = card.querySelector('details.inside');
@@ -105,7 +166,9 @@ function updateInsideSearch(terms) {
     [list, ...prose.map(({ element }) => element)].forEach(target => {
       const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
       const nodes = [];
-      while (walker.nextNode()) nodes.push(walker.currentNode);
+      while (walker.nextNode()) {
+        if (!walker.currentNode.parentElement?.closest('button')) nodes.push(walker.currentNode);
+      }
       nodes.forEach(node => {
         const text = node.textContent;
         const lower = text.toLocaleLowerCase();
@@ -140,12 +203,13 @@ function updateResults() {
   let count = 0;
   searchableCards.forEach(({ card, text }) => {
     const matchesCategory = selectedCategory === 'All skills' || card.dataset.category === selectedCategory;
-    const matchesFavourite = !favouritesOnly || favourites.has(card.querySelector('h3').id);
+    const matchesFavourite = !favouritesOnly || favourites.has(card.querySelector('h3').id) || hasFavouriteItem(card);
     const visible = matchesCategory && matchesFavourite && terms.every(term => text.includes(term));
     card.hidden = !visible;
     if (visible) count++;
   });
   updateInsideSearch(terms);
+  updateItemFavourites(terms);
   chapters.forEach(chapter => {
     const members = [...chapter.querySelectorAll('.skill-card')];
     const firstVisible = members.find(card => !card.hidden);

@@ -183,3 +183,5 @@ mark{font-weight:600;text-decoration:underline;text-decoration-color:var(--accen
 .item-category{font-family:var(--mono);font-size:var(--type-mono);color:var(--muted)}
 .favourite-button{padding:0;min-height:var(--touch);border:0;background:none;color:var(--muted)}
 .favourite-button[aria-pressed="true"]{color:var(--ink)}
+.item-favourite-button{padding:0 var(--space-1);border:0;background:none;font-family:var(--mono);font-size:var(--type-mono);color:var(--muted)}
+.item-favourite-button[aria-pressed="true"]{color:var(--ink)}
