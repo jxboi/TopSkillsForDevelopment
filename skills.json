@@ -87,7 +87,7 @@
           "/ecc:plan"
         ]
       },
-      "inside_summary": "Featured skills and commands",
+      "inside_summary": "Featured — 5 skills and commands, total not stated",
       "inside_note": "Featured entries, not the whole catalog.",
       "inside": [
         {
@@ -144,7 +144,7 @@
           "grill-me"
         ]
       },
-      "inside_summary": "Inside this repo — 27 skills",
+      "inside_summary": "Inside this repo — 27 of 27 skills",
       "inside_note": null,
       "inside": [
         {
@@ -165,7 +165,7 @@
           "name": "to-spec",
           "category": "Planning",
           "kind": null,
-          "function": "Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut. (Source: skills/engineering/to-spec/SKILL.md, description + Process steps 2–3; orchestrator-verified 2026-10-29.)",
+          "function": "Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut.",
           "example_prompt": "/to-spec Turn our conversation into a complete feature specification, proposing test seams and publishing it to our issue tracker."
         },
         {
@@ -355,7 +355,7 @@
           "speckit-plan"
         ]
       },
-      "inside_summary": "Inside this repo — 5 core commands",
+      "inside_summary": "Inside this repo — 5 of 5 core commands",
       "inside_note": null,
       "inside": [
         {
@@ -412,7 +412,7 @@
           "skills add"
         ]
       },
-      "inside_summary": "Inside this repo — 1 skill, 4 commands",
+      "inside_summary": "Inside this repo — 5 of 5 (1 skill, 4 commands)",
       "inside_note": null,
       "inside": [
         {
@@ -469,7 +469,7 @@
           "feature"
         ]
       },
-      "inside_summary": "Inside this repo — 23 playbooks",
+      "inside_summary": "Inside this repo — 23 of 23 playbooks",
       "inside_note": null,
       "inside": [
         {
@@ -651,7 +651,7 @@
           "karpathy-guidelines"
         ]
       },
-      "inside_summary": "Inside this repo — the only skill",
+      "inside_summary": "Inside this repo — 1 of 1 skill",
       "inside_note": null,
       "inside": [
         {
@@ -793,7 +793,7 @@
           "design-taste-frontend"
         ]
       },
-      "inside_summary": "Inside this repo — the only skill",
+      "inside_summary": "Inside this repo — 1 of 1 skill",
       "inside_note": "Earlier classic variants moved to satellite repos.",
       "inside": [
         {
@@ -822,7 +822,7 @@
           "polish"
         ]
       },
-      "inside_summary": "Inside this repo — 23 commands",
+      "inside_summary": "Inside this repo — 23 of 23 commands",
       "inside_note": null,
       "inside": [
         {
@@ -1005,7 +1005,7 @@
           "/ultracave"
         ]
       },
-      "inside_summary": "Featured skills and commands",
+      "inside_summary": "Featured — 5 skills and commands, total not stated",
       "inside_note": "Featured entries, not the whole catalog.",
       "inside": [
         {
@@ -1062,7 +1062,7 @@
           "graphify query"
         ]
       },
-      "inside_summary": "Inside this repo — 1 skill, 4 subcommands",
+      "inside_summary": "Inside this repo — 5 of 5 (1 skill, 4 subcommands)",
       "inside_note": null,
       "inside": [
         {
@@ -1290,7 +1290,7 @@
           "google-cloud-recipe-auth"
         ]
       },
-      "inside_summary": "Featured inside this catalog",
+      "inside_summary": "Featured — 5 skills, total not stated",
       "inside_note": "Featured entries, not the whole catalog.",
       "inside": [
         {
@@ -1347,7 +1347,7 @@
           "concise-planning"
         ]
       },
-      "inside_summary": "Featured inside this catalog",
+      "inside_summary": "Featured — 5 skills, total not stated",
       "inside_note": "Featured entries, not the whole catalog.",
       "inside": [
         {
@@ -1404,7 +1404,7 @@
           "Claude Code Infrastructure Showcase"
         ]
       },
-      "inside_summary": "Featured inside this catalog",
+      "inside_summary": "Featured — 5 entries, total not stated",
       "inside_note": "Featured entries, not the whole catalog.",
       "inside": [
         {
@@ -1461,7 +1461,7 @@
           "plugin-dev"
         ]
       },
-      "inside_summary": "5 first-party plugins",
+      "inside_summary": "Featured — 5 plugins, total not stated",
       "inside_note": "Featured entries, not the whole catalog.",
       "inside": [
         {
@@ -1518,7 +1518,7 @@
           "anthropics/doc-coauthoring"
         ]
       },
-      "inside_summary": "Featured inside this catalog",
+      "inside_summary": "Featured — 5 skills, total not stated",
       "inside_note": "Featured entries, not the whole catalog.",
       "inside": [
         {
@@ -1566,7 +1566,7 @@
       "level": "Intermediate",
       "stars": 28914,
       "repo": "https://github.com/alirezarezvani/claude-skills",
-      "description": "A collection of 380 Claude Code skills and plugins for engineering, product, research, and more.",
+      "description": "A collection of Claude Code skills and plugins for engineering, product, research, and more.",
       "use_when": "When you need cross-functional playbooks for executive advisory, marketing, compliance, or research, plus zero-dependency Python analysis and conversion tools.",
       "top_inside": {
         "label": "Top inside:",
@@ -1575,7 +1575,7 @@
           "pw"
         ]
       },
-      "inside_summary": "Inside this repo — 5 of 401 skills",
+      "inside_summary": "Featured — 5 skills, total not stated",
       "inside_note": null,
       "inside": [
         {

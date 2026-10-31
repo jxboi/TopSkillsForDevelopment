@@ -59,7 +59,7 @@ function generate(html,siteURL) {
       return {name:clean(nameNode),category:clean(cls(item,'item-category')),kind:kindNodes.length?clean(one(kindNodes)).replace(/^\((command|subcommand)\)$/,'$1'):null,function:fn.slice(2).trim(),example_prompt:prompt};
     });
     const notes=byClass(node,'inside-note');
-    return {id,number:Number(clean(cls(node,'number'))),title:clean(heading),category,level,stars:Number(starText.replaceAll(',','')),
+    return {id,number:Number(id.slice('skill-'.length)),title:clean(heading),category,level,stars:Number(starText.replaceAll(',','')),
       repo:one(byTag(cls(node,'card-footer'),'a')).attrs.href,
       description:singleLine(clean(cls(node,'description'))),
       use_when:text(cls(node,'fit-use'),n=>n.tag==='strong').trim(),

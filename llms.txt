@@ -66,4 +66,4 @@
 
 - [Awesome Agent Skills](https://github.com/VoltAgent/awesome-agent-skills) — Discovery · 36,519 stars — A curated collection of 1000+ agent skills from official teams and the community. — Card: https://topskillsfordevelopment.vercel.app#skill-17
 
-- [Claude Skills Collection](https://github.com/alirezarezvani/claude-skills) — Discovery · 28,914 stars — A collection of 380 Claude Code skills and plugins for engineering, product, research, and more. — Card: https://topskillsfordevelopment.vercel.app#skill-18
+- [Claude Skills Collection](https://github.com/alirezarezvani/claude-skills) — Discovery · 28,914 stars — A collection of Claude Code skills and plugins for engineering, product, research, and more. — Card: https://topskillsfordevelopment.vercel.app#skill-18

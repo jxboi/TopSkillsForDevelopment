@@ -40,7 +40,7 @@ How work moves from an idea to shipped code.
 - Description: An agent-harness optimisation system with skills, memory, security practices, and research-first workflows.
 - Use when: When running a full-lifecycle workflow in a supported harness that needs planning, test-driven implementation, fresh-context review, and build repair.
 - Top inside: Featured: tdd-workflow, /ecc:plan
-- Inside: Featured skills and commands
+- Inside: Featured — 5 skills and commands, total not stated
 - tdd-workflow [Testing] — Directs a complete test-driven development cycle requiring a failing test prior to code implementation, followed by incremental greening and refactoring targeting 80%+ test coverage across unit, integration, and E2E suites.
   > Reproduce the shopping cart checkout bug with a failing test first, then use tdd-workflow to implement the fix.
 - /ecc:plan [Planning] — Clarifies user requirements, assesses architectural and operational risks, and structures a step-by-step implementation plan while halting for explicit confirmation before code edits occur.
@@ -59,12 +59,12 @@ How work moves from an idea to shipped code.
 - Description: Skills for real engineers, including alignment interviews and disciplined test-driven loops.
 - Use when: At the start of feature or bug work, when human grilling should settle ambiguity and shared terminology before tickets and test-driven development.
 - Top inside: Top inside: grill-with-docs, grill-me
-- Inside: Inside this repo — 27 skills
+- Inside: Inside this repo — 27 of 27 skills
 - grill-with-docs [Planning] — Interrogates the user in depth about planned changes while writing Architecture Decision Records (ADRs) and maintaining a ubiquitous project domain glossary (`GLOSSARY.md`) before work starts.
   > /grill-with-docs Interview me about our proposed caching architecture while recording architectural decision records and updating our project glossary.
 - grill-me [Planning] — Recursively interviews the user on an idea, plan, or general proposal until every branch of the design decision tree is explored and aligned.
   > /grill-me Interview me relentlessly about my proposal for a team on-call rotation until every branch of the plan is resolved.
-- to-spec [Planning] — Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut. (Source: skills/engineering/to-spec/SKILL.md, description + Process steps 2–3; orchestrator-verified 2026-10-29.)
+- to-spec [Planning] — Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut.
   > /to-spec Turn our conversation into a complete feature specification, proposing test seams and publishing it to our issue tracker.
 - implement [Building] — Executes tasks defined by a specification or ticket list, triggering `/tdd` across identified seams and terminating with `/code-review` before committing changes.
   > /implement Build the feature described in ticket #104, using test-driven development at identified seams and running code review before committing.
@@ -121,7 +121,7 @@ How work moves from an idea to shipped code.
 - Description: A toolkit for spec-driven development that helps agents build from a specification.
 - Use when: When building a greenfield app or complex multi-step feature whose requirements and tasks must become executable specifications before code is generated.
 - Top inside: Top commands: speckit-specify, speckit-plan
-- Inside: Inside this repo — 5 core commands
+- Inside: Inside this repo — 5 of 5 core commands
 - speckit-specify [Planning] — Creates or updates a detailed feature specification (`spec.md`) from natural language requirements, defining functional scope, user stories, and technical constraints.
   > /speckit-specify Build a photo organizer with albums grouped by date and a tile preview of each album.
 - speckit-plan [Planning] — Executes implementation planning using design templates to generate technical design artifacts, technology choices, and architectural boundaries.
@@ -139,7 +139,7 @@ How work moves from an idea to shipped code.
 - Description: An open agent skills tool installed with npx skills.
 - Use when: When you need one CLI to search, install, update, sync, or test-run skills across several coding agent harnesses from git, URLs, or npm.
 - Top inside: Top commands: find-skills, skills add
-- Inside: Inside this repo — 1 skill, 4 commands
+- Inside: Inside this repo — 5 of 5 (1 skill, 4 commands)
 - find-skills [Discovery] — Instructs an AI coding agent on how to query and install agent skills via the Skills CLI when a user requests capabilities not natively supported.
   > Find a skill for building responsive HTML emails and install it directly into our current project workspace to style newsletters.
 - skills add (command) [Setup] — Downloads and installs agent skills from GitHub repositories, URLs, or local paths directly into the active project or globally.
@@ -157,7 +157,7 @@ How work moves from an idea to shipped code.
 - Description: Poteto's official Cursor plugin that turns Cursor into a real engineering team, helping you write less but higher quality code with rigorous engineering principles and fearless parallelism via /poteto-mode and its 23 playbooks.
 - Use when: At the start of a demanding task such as reproducing defects, tracing performance bottlenecks, or overnight autonomous work needing empirical verification.
 - Top inside: Top inside: bug-fix, feature
-- Inside: Inside this repo — 23 playbooks
+- Inside: Inside this repo — 23 of 23 playbooks
 - bug-fix [Debugging] — Mandates reproducing a reported defect directly on the matching target surface first, binary-searching root causes with runtime evidence, and staging a failing repro test commit before landing the fix.
   > /poteto-mode users get two notifications after a retry: repro first with a failing test, then fix and verify.
 - feature [Building] — Orchestrates implementing new or modified behavior by establishing domain data shapes, conducting parallel architectural exploration, writing a four-dimension throughput checkpoint, and delegating scoped implementation.
@@ -215,7 +215,7 @@ Checks that keep code honest before it ships.
 - Description: A single behaviour guide distilled from common LLM coding pitfalls.
 - Use when: During a non-trivial coding task where models tend to assume silently, add speculative abstractions, edit unrelated code, or skip verifiable test loops.
 - Top inside: Inside: karpathy-guidelines
-- Inside: Inside this repo — the only skill
+- Inside: Inside this repo — 1 of 1 skill
 - karpathy-guidelines [Planning] — Enforces four foundational behavioral principles (Think Before Coding, Simplicity First, Surgical Changes, and Goal-Driven Execution) to curb AI over-engineering, unstated assumptions, and extraneous edits.
   > Follow the karpathy-guidelines to add a feature to export user data, clarifying assumptions and delivering minimal surgical changes with verified tests.
 
@@ -265,7 +265,7 @@ Interfaces that look considered, not generated.
 - Description: Agent skills that give coding agents design taste, with art direction, reference images, and a browser check.
 - Use when: When a landing page, portfolio, or app screen looks generic or AI-made and needs custom, premium art direction.
 - Top inside: Inside: design-taste-frontend
-- Inside: Inside this repo — the only skill
+- Inside: Inside this repo — 1 of 1 skill
 - design-taste-frontend [Design] — Applies researched art directions, sources real open-archive media, and enforces an anti-slop house style with automated real-browser screenshot audits for public pages and app screens.
   > Build a landing page for Ledgerly, an invoicing tool for freelance designers, with pricing and a short FAQ.
 - Note: Earlier classic variants moved to satellite repos.
@@ -276,7 +276,7 @@ Interfaces that look considered, not generated.
 - Description: The design vocabulary for your coding agent, steering with polish and bolder, reviewing with critique and audit, and catching AI slop before it ships.
 - Use when: When designing, critiquing, polishing, or auditing frontend interfaces to elevate craft and catch AI design slop before shipping.
 - Top inside: Top commands: init, polish
-- Inside: Inside this repo — 23 commands
+- Inside: Inside this repo — 23 of 23 commands
 - init [Planning] — Runs project discovery once per project, asking only what it cannot infer, and writes PRODUCT.md that every later command reads.
   > Run /impeccable init for this project, discovering its users, jobs, and constraints and writing the PRODUCT.md every later command will read.
 - polish [Design] — Refines an existing interface for shipping without redesigning it, fixing blockers, missing states, drift, and visual inconsistencies in priority order.
@@ -334,7 +334,7 @@ Less noise between thought and output.
 - Description: Concise, token-efficient agent communication.
 - Use when: In interactive terminal coding sessions where replies pile up token waste, latency, and conversational filler.
 - Top inside: Featured: /caveman, /ultracave
-- Inside: Featured skills and commands
+- Inside: Featured — 5 skills and commands, total not stated
 - /caveman [Communication] — Enforces an ultra-concise, structured communication style (answer first, one idea per sentence, eliminating conversational filler) while preserving code, file paths, commands, and numbers character-for-character.
   > /caveman explain why my React component re-renders every time the parent updates and how to memoize props without breaking state.
 - /ultracave [Communication] — Compresses agent communication to maximum brevity using sentence fragments and single-word answers while stating each technical fact only once.
@@ -357,7 +357,7 @@ Ways to hold a codebase in your head.
 - Description: Turns a codebase into an explorable knowledge graph.
 - Use when: When exploring an unfamiliar codebase or a mixed folder of code, PDFs, notes, and images that needs a persistent, queryable graph of cross-file links.
 - Top inside: Top subcommands: /graphify, graphify query
-- Inside: Inside this repo — 1 skill, 4 subcommands
+- Inside: Inside this repo — 5 of 5 (1 skill, 4 subcommands)
 - /graphify [Understanding] — Executes the full deterministic AST parsing and extraction pipeline on a codebase to detect communities, identify god nodes, and generate an interactive HTML visual graph, GraphRAG-ready JSON, and a `GRAPH_REPORT.md` architecture summary.
   > /graphify . --mode deep to extract AST dependencies, identify god nodes, and generate the architecture report for this codebase.
 - graphify query (subcommand) [Understanding] — Answers architecture and code relationship questions using deterministic graph traversal (BFS or semantic search) against local graph artifacts instead of grepping raw source files.
@@ -429,7 +429,7 @@ Ways to hold a codebase in your head.
 - Description: Agent skills for Google products and technologies.
 - Use when: When designing or configuring services on Google Cloud, Gemini APIs, Firebase, Android, or Google Ads, or weighing Google products for a stack component.
 - Top inside: Featured: finding-google-skills, google-cloud-recipe-auth
-- Inside: Featured inside this catalog
+- Inside: Featured — 5 skills, total not stated
 - finding-google-skills [Discovery] — Serves as Google's dynamic skills catalog router, inspecting user task requirements and fetching matching Google platform decision, setup, and architecture skills on demand from `index.json`.
   > Find and load the appropriate Google Cloud database skills from the catalog index to help me migrate MySQL to Cloud SQL.
 - google-cloud-recipe-auth [Setup] — Delivers authoritative guidance on Google Cloud Identity and Access Management (IAM), configuring human and service identities, Application Default Credentials (ADC), and required API attribution headers.
@@ -452,7 +452,7 @@ Catalogs and directories for finding the right skill.
 - Description: A large catalog of agentic skills for discovering, comparing, and planning which skills to use.
 - Use when: When an autonomous agent should inspect your codebase, search a skill catalog over read-only MCP, and produce a validated stack manifest with plan preview.
 - Top inside: Featured: brainstorming, concise-planning
-- Inside: Featured inside this catalog
+- Inside: Featured — 5 skills, total not stated
 - brainstorming [Planning] — Guides the agent through collaborative reasoning and inquiry to refine ambiguous requirements and creative ideas into validated architectural designs before implementation.
   > Use @brainstorming to help me design a user profile page with authentication and dark mode before writing any application code.
 - concise-planning [Planning] — Generates actionable, atomic, and structured task checklists to organize coding tasks before source modification begins.
@@ -471,7 +471,7 @@ Catalogs and directories for finding the right skill.
 - Description: A curated collection of Claude Code skills, agents, and developer tooling.
 - Use when: When configuring Claude Code and you want a selective directory of vetted tools, status lines, hooks, subagents, and guides that meet maturity thresholds.
 - Top inside: Featured: Caveman, Claude Code Infrastructure Showcase
-- Inside: Featured inside this catalog
+- Inside: Featured — 5 entries, total not stated
 - Caveman [Communication] — Compresses agent communication tokens by instructing Claude Code to converse in concise, fragmented "caveman speak."
   > /caveman explain why my React component re-renders whenever its parent updates and how to memoize props without breaking state.
 - Claude Code Infrastructure Showcase [Discovery] — Implements dynamic skill selection by using lifecycle hooks to automatically detect and activate relevant skills based on active context.
@@ -490,7 +490,7 @@ Catalogs and directories for finding the right skill.
 - Description: The official Anthropic-managed directory of high quality Claude Code plugins.
 - Use when: When you want to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code.
 - Top inside: Featured: skill-creator, plugin-dev
-- Inside: 5 first-party plugins
+- Inside: Featured — 5 plugins, total not stated
 - skill-creator [Writing] — Guides users through creating, refining, evaluating, and benchmarking custom Claude Code agent skills with variance analysis.
   > I want to make a new skill for automating database migrations, so help me design, draft, and run evaluations on it.
 - plugin-dev [Building] — Provides developer tooling and procedural guidelines for constructing Claude Code plugins, custom commands, hooks, and MCP servers.
@@ -509,7 +509,7 @@ Catalogs and directories for finding the right skill.
 - Description: A curated collection of 1000+ agent skills from official teams and the community.
 - Use when: When you need production-ready skills authored by engineering teams such as Supabase, Stripe, Sentry, and Vercel, usable across several coding assistants.
 - Top inside: Featured: anthropics/docx, anthropics/doc-coauthoring
-- Inside: Featured inside this catalog
+- Inside: Featured — 5 skills, total not stated
 - anthropics/docx [Writing] — Enables coding agents to inspect, create, edit, and format Microsoft Word (`.docx`) documents.
   > Create a formatted project specification Word document (.docx) with a table of contents, executive summary, and custom header styling.
 - anthropics/doc-coauthoring [Writing] — Structures multi-turn collaborative document authoring, drafting, and iterative editorial reviews.
@@ -525,10 +525,10 @@ Catalogs and directories for finding the right skill.
 ### Claude Skills Collection
 
 - Category: Discovery · Level: Intermediate · Stars: 28,914 · Repo: https://github.com/alirezarezvani/claude-skills · Card: https://topskillsfordevelopment.vercel.app#skill-18
-- Description: A collection of 380 Claude Code skills and plugins for engineering, product, research, and more.
+- Description: A collection of Claude Code skills and plugins for engineering, product, research, and more.
 - Use when: When you need cross-functional playbooks for executive advisory, marketing, compliance, or research, plus zero-dependency Python analysis and conversion tools.
 - Top inside: Top inside: skill-security-auditor, pw
-- Inside: Inside this repo — 5 of 401 skills
+- Inside: Featured — 5 skills, total not stated
 - skill-security-auditor [Review] — Scans and audits AI agent skills for malicious execution patterns, subprocess calls, network data exfiltration, prompt injections, and supply-chain risks before installation, returning a strict PASS, WARN, or FAIL verdict.
   > Audit the candidate agent skill at ./custom-skill for prompt injection vectors, malicious execution patterns, and data exfiltration before installation.
 - pw [Testing] — Provides a comprehensive end-to-end Playwright testing toolkit to generate tests, diagnose and repair flaky test failures, migrate suites from Cypress or Selenium, and integrate with BrowserStack and TestRail.

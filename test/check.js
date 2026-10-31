@@ -109,7 +109,252 @@ const undoCycle2JS = text => text
  .replace("  if (revealNote) revealNote.textContent = '';\n", '')
  .replace(/\/\/ Cycle 2 reveal: begin[\s\S]*?\/\/ Cycle 2 reveal: end\n\n/, '')
  .replace("revealSkill(globalThis.location?.hash.slice(1) ?? '');\n", '');
-const cycle1HTML = fs.readFileSync(path.join(root,'index.html'),'utf8');
+// Cycle 3 expected data and reversible scope lock.
+const c3Table = [
+  {
+    "id": "skill-1",
+    "chapter": "Workflow",
+    "oldNumber": "01",
+    "newNumber": "01",
+    "oldSummary": "Inside this repo \u2014 5 of 15 skills",
+    "newSummary": "Inside this repo \u2014 5 of 15 skills",
+    "shown": 5,
+    "total": 15
+  },
+  {
+    "id": "skill-2",
+    "chapter": "Workflow",
+    "oldNumber": "02",
+    "newNumber": "02",
+    "oldSummary": "Featured skills and commands",
+    "newSummary": "Featured \u2014 5 skills and commands, total not stated",
+    "shown": 5,
+    "total": null
+  },
+  {
+    "id": "skill-4",
+    "chapter": "Workflow",
+    "oldNumber": "04",
+    "newNumber": "03",
+    "oldSummary": "Inside this repo \u2014 27 skills",
+    "newSummary": "Inside this repo \u2014 27 of 27 skills",
+    "shown": 27,
+    "total": 27
+  },
+  {
+    "id": "skill-12",
+    "chapter": "Workflow",
+    "oldNumber": "12",
+    "newNumber": "04",
+    "oldSummary": "Inside this repo \u2014 5 core commands",
+    "newSummary": "Inside this repo \u2014 5 of 5 core commands",
+    "shown": 5,
+    "total": 5
+  },
+  {
+    "id": "skill-16",
+    "chapter": "Workflow",
+    "oldNumber": "16",
+    "newNumber": "05",
+    "oldSummary": "Inside this repo \u2014 1 skill, 4 commands",
+    "newSummary": "Inside this repo \u2014 5 of 5 (1 skill, 4 commands)",
+    "shown": 5,
+    "total": 5
+  },
+  {
+    "id": "skill-20",
+    "chapter": "Workflow",
+    "oldNumber": "20",
+    "newNumber": "06",
+    "oldSummary": "Inside this repo \u2014 23 playbooks",
+    "newSummary": "Inside this repo \u2014 23 of 23 playbooks",
+    "shown": 23,
+    "total": 23
+  },
+  {
+    "id": "skill-3",
+    "chapter": "Quality",
+    "oldNumber": "03",
+    "newNumber": "01",
+    "oldSummary": "Inside this repo \u2014 the only skill",
+    "newSummary": "Inside this repo \u2014 1 of 1 skill",
+    "shown": 1,
+    "total": 1
+  },
+  {
+    "id": "skill-8",
+    "chapter": "Quality",
+    "oldNumber": "08",
+    "newNumber": "02",
+    "oldSummary": "Inside this repo \u2014 5 of 25 skills",
+    "newSummary": "Inside this repo \u2014 5 of 25 skills",
+    "shown": 5,
+    "total": 25
+  },
+  {
+    "id": "skill-5",
+    "chapter": "Design",
+    "oldNumber": "05",
+    "newNumber": "01",
+    "oldSummary": "Inside this repo \u2014 5 of 7 skills",
+    "newSummary": "Inside this repo \u2014 5 of 7 skills",
+    "shown": 5,
+    "total": 7
+  },
+  {
+    "id": "skill-21",
+    "chapter": "Design",
+    "oldNumber": "21",
+    "newNumber": "02",
+    "oldSummary": "Inside this repo \u2014 the only skill",
+    "newSummary": "Inside this repo \u2014 1 of 1 skill",
+    "shown": 1,
+    "total": 1
+  },
+  {
+    "id": "skill-22",
+    "chapter": "Design",
+    "oldNumber": "22",
+    "newNumber": "03",
+    "oldSummary": "Inside this repo \u2014 23 commands",
+    "newSummary": "Inside this repo \u2014 23 of 23 commands",
+    "shown": 23,
+    "total": 23
+  },
+  {
+    "id": "skill-6",
+    "chapter": "Efficiency",
+    "oldNumber": "06",
+    "newNumber": "01",
+    "oldSummary": "Featured skills and commands",
+    "newSummary": "Featured \u2014 5 skills and commands, total not stated",
+    "shown": 5,
+    "total": null
+  },
+  {
+    "id": "skill-7",
+    "chapter": "Knowledge",
+    "oldNumber": "07",
+    "newNumber": "01",
+    "oldSummary": "Inside this repo \u2014 1 skill, 4 subcommands",
+    "newSummary": "Inside this repo \u2014 5 of 5 (1 skill, 4 subcommands)",
+    "shown": 5,
+    "total": 5
+  },
+  {
+    "id": "skill-9",
+    "chapter": "Knowledge",
+    "oldNumber": "09",
+    "newNumber": "02",
+    "oldSummary": "Inside this repo \u2014 5 of 9 skills",
+    "newSummary": "Inside this repo \u2014 5 of 9 skills",
+    "shown": 5,
+    "total": 9
+  },
+  {
+    "id": "skill-11",
+    "chapter": "Knowledge",
+    "oldNumber": "11",
+    "newNumber": "03",
+    "oldSummary": "Inside this repo \u2014 5 of 19 skills",
+    "newSummary": "Inside this repo \u2014 5 of 19 skills",
+    "shown": 5,
+    "total": 19
+  },
+  {
+    "id": "skill-14",
+    "chapter": "Knowledge",
+    "oldNumber": "14",
+    "newNumber": "04",
+    "oldSummary": "Inside this repo \u2014 5 of 6 skills",
+    "newSummary": "Inside this repo \u2014 5 of 6 skills",
+    "shown": 5,
+    "total": 6
+  },
+  {
+    "id": "skill-19",
+    "chapter": "Knowledge",
+    "oldNumber": "19",
+    "newNumber": "05",
+    "oldSummary": "Featured inside this catalog",
+    "newSummary": "Featured \u2014 5 skills, total not stated",
+    "shown": 5,
+    "total": null
+  },
+  {
+    "id": "skill-10",
+    "chapter": "Discovery",
+    "oldNumber": "10",
+    "newNumber": "01",
+    "oldSummary": "Featured inside this catalog",
+    "newSummary": "Featured \u2014 5 skills, total not stated",
+    "shown": 5,
+    "total": null
+  },
+  {
+    "id": "skill-13",
+    "chapter": "Discovery",
+    "oldNumber": "13",
+    "newNumber": "02",
+    "oldSummary": "Featured inside this catalog",
+    "newSummary": "Featured \u2014 5 entries, total not stated",
+    "shown": 5,
+    "total": null
+  },
+  {
+    "id": "skill-15",
+    "chapter": "Discovery",
+    "oldNumber": "15",
+    "newNumber": "03",
+    "oldSummary": "5 first-party plugins",
+    "newSummary": "Featured \u2014 5 plugins, total not stated",
+    "shown": 5,
+    "total": null
+  },
+  {
+    "id": "skill-17",
+    "chapter": "Discovery",
+    "oldNumber": "17",
+    "newNumber": "04",
+    "oldSummary": "Featured inside this catalog",
+    "newSummary": "Featured \u2014 5 skills, total not stated",
+    "shown": 5,
+    "total": null
+  },
+  {
+    "id": "skill-18",
+    "chapter": "Discovery",
+    "oldNumber": "18",
+    "newNumber": "05",
+    "oldSummary": "Inside this repo \u2014 5 of 401 skills",
+    "newSummary": "Featured \u2014 5 skills, total not stated",
+    "shown": 5,
+    "total": null
+  }
+];
+const c3OldDescription = "A collection of 380 Claude Code skills and plugins for engineering, product, research, and more.";
+const c3NewDescription = "A collection of Claude Code skills and plugins for engineering, product, research, and more.";
+const c3OldProse = "Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut. (Source: skills/engineering/to-spec/SKILL.md, description + Process steps 2\u20133; orchestrator-verified 2026-10-29.)";
+const c3NewProse = "Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut.";
+const c3Hashes = {"script.js": "d5147d5a2676b9c13d0abf07ccbc8e3a4eb6c4b5e2df6555e4174c46be295e9e", "styles.css": "94dd8540f645e2328994d0bc972cadf93fa65bf0beb1163a545bbd7fc9bd653c", "README.md": "c0f012001c8c210cf9e7212410024227a0ea96c53ee06968936d4627f67023e6", "skills.json": "0f8700a5f2cecaa73eb639100fc4bdb7a773a67062834a919f4b880a3601b290", "llms.txt": "e7dda79605966d58e982e833dc32271086cd460f4a211cc27c8e755b86195553", "llms-full.txt": "8c76c03d19d1e256f8ba0f111ecb51f8676368edd2852e518b5db713ff3f3857"};
+
+const c3Read = name => fs.readFileSync(path.join(root,name),'utf8');
+const c3Pre = fs.readFileSync(path.join(__dirname,'fixtures/cycle3-pre.index.html'),'utf8');
+const c3HTML = c3Read('index.html');
+for(const [title,items] of promptMap){const card=c3Pre.match(/<article class="skill-card"[^>]*>[\s\S]*?<\/article>/g).find(c=>c.includes('>'+title+'</h3>'));for(const name of items.keys())if(!card?.includes('<code class="inside-name">'+name+'</code>'))items.delete(name);}
+function c3Transform(text, reverse = false) {
+ return text.replace(/<article class="skill-card"[^>]*>[\s\S]*?<\/article>/g, card => {
+  const row=c3Table.find(r=>card.includes('<h3 id="'+r.id+'">'));
+  const from=reverse?'new':'old',to=reverse?'old':'new';
+  return card.replace('<span class="number">'+row[from+'Number']+'</span>','<span class="number">'+row[to+'Number']+'</span>')
+   .replace('<summary>'+row[from+'Summary'],'<summary>'+row[to+'Summary'])
+   .replace(reverse?c3NewDescription:c3OldDescription,reverse?c3OldDescription:c3NewDescription)
+   .replace(reverse?c3NewProse:c3OldProse,reverse?c3OldProse:c3NewProse);
+ });
+}
+
+// Earlier-cycle gates replay their exact input after the C3 scope lock reverses this cycle.
+const cycle1HTML = c3Transform(c3HTML,true);
 const undoCycle1HTML = text => text
  .replace(/<section class="start-strip"[\s\S]*?<\/section>\n<section class="how-to"[\s\S]*?<\/section>\n(?=<section tabindex="-1" id="collection")/,'')
  .replace(/<p class="card-use">[\s\S]*?<\/p>(?=<a href=)/g,'');
@@ -316,12 +561,18 @@ const renderedText = markup => decodeHTML(markup.replace(/<[^>]*>/g, '')).trim()
 
 const field = (markup, cls, tag = 'p') => markup.match(new RegExp('<' + tag + ' class="' + cls + '"[^>]*>[\\s\\S]*?</' + tag + '>'))?.[0];
 const words = text => decodeHTML(text.replace(/<[^>]*>/g, ' ')).trim().split(/\s+/).filter(Boolean).length;
+const c3Cards = getCards(c3HTML);
+const c3Card = (id,text=c3HTML) => getCards(text).find(a=>a[2].includes('<h3 id="'+id+'">'))[2];
+const c3Summary = c => renderedText(c.match(/<summary>([\s\S]*?)<\/summary>/)[1].replace(/<svg[\s\S]*?<\/svg>/,''));
+const c3Attrs = (t,name) => [...t.matchAll(new RegExp(name+'="([^"]+)"','g'))].map(m=>m[1]);
+const c3Rows = c => [...c.matchAll(/<li>[\s\S]*?<\/li>/g)].map(m=>m[0]);
+
 const densities = categoryArticles.map(([, , c]) => ({title: renderedText(c.match(/<h3[^>]*>(.*?)<\/h3>/)[1]), visible: words(c.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g, '$1')), expanded: words(c)}));
 console.table(densities);
 for (const kind of ['visible', 'expanded']) console.log(kind, {max:Math.max(...densities.map(c=>c[kind])), total:densities.reduce((n,c)=>n+c[kind],0), mean:densities.reduce((n,c)=>n+c[kind],0)/22});
 
 const categorySource = fs.readFileSync(path.join(os.homedir(),'workspace/workflow-run-categorise/categories.md'),'utf8');
-const shippedCategoryAssignments = [...categorySource.matchAll(/^\| ([^|]+) \| ([^|]+) \| ([^|]+) \| (?:Confident|Borderline) \|/gm)].map(([,card,item,category])=>[card.trim(),item.trim(),category.trim()]);
+const shippedCategoryAssignments = [...categorySource.matchAll(/^\| ([^|]+) \| ([^|]+) \| ([^|]+) \| (?:Confident|Borderline) \|/gm)].map(([,card,item,category])=>[card.trim(),item.trim(),category.trim()]).filter(([title,name])=>{ const card=c3Pre.match(/<article class="skill-card"[^>]*>[\s\S]*?<\/article>/g).find(c=>c.includes('>'+title+'</h3>')); return card?.includes('<code class="inside-name">'+name+'</code>'); });
 runCycle2();
 assert.equal(shippedCategoryAssignments.length,160);
 const categoryAssignments = shippedCategoryAssignments.filter(([card,item])=>(card!=='pstack'||!pstack23Names.includes(item))&&(card!=='Impeccable'||!impeccable23Names.includes(item)));
@@ -349,7 +600,7 @@ gate('Inside category inventory, source pairs, exact addition scope and CSS',()=
  assert.equal(sha256(html),densityBaseline.categoryAdditionBaseline.html,'Only category spans may change HTML');
  assert.equal((categoryStyles.match(/\.item-category\s*\{/g)||[]).length,1);
  assert.equal(sha256(styles),densityBaseline['styles.css'],'Only the one exact category rule may change CSS');
- assert.equal(sha256(fs.readFileSync(path.join(root,'llms.txt'))),densityBaseline.categoryAdditionBaseline.short);
+ assert.equal(sha256(require('./generate-agent-layer').generate(cycle1HTML,'https://topskillsfordevelopment.vercel.app')['llms.txt']),densityBaseline.categoryAdditionBaseline.short);
  for(const kind of ['visible','expanded']){
   const prior=densityBaseline.categoryAdditionBaseline[kind];
   const measured=densities.reduce((n,c)=>n+c[kind],0);
@@ -365,7 +616,7 @@ gate('1b per-card expanded budgets', () => {
 gate('removal scope, numbering and counts', () => {
  for(const name of ['index.html','skills.json','llms.txt','llms-full.txt']) assert.doesNotMatch(fs.readFileSync(path.join(root,name),'utf8'),/Scientific|scientific-agent-skills|EGFR|scanpy|rdkit/i,name);
  assert.deepEqual(articles.map(a=>Number(a[0].match(/aria-labelledby="skill-(\d+)"/)[1])).sort((a,b)=>a-b),Array.from({length:22},(_,i)=>i+1));
- for(const [,,card] of articles) assert.equal(card.match(/<h3 id="skill-(\d+)"/)[1],String(Number(renderedText(field(card,'number','span')))));
+ for(const [,,card] of articles){const id=card.match(/<h3 id="([^"]+)"/)[1],r=c3Table.find(r=>r.id===id);assert.equal(renderedText(field(card,'number','span')),r.oldNumber);assert.equal(renderedText(field(c3Card(id),'number','span')),r.newNumber);}
  assert.equal(articles.filter(a=>a[1]==='Knowledge').length,5);
  assert.ok(html.includes('Knowledge (5)')); assert.ok(html.includes('Knowledge <span>(5)</span>'));
  assert.match(html,/Star counts are a snapshot supplied for 29 Oct 2026\./);
@@ -760,7 +1011,7 @@ Do not invent an install command: if the repository does not state one, say so a
 If no skill matches the task, use no skill from this catalog rather than forcing a match.`;
 const chapterMarkup = [...html.matchAll(/<section class="chapter"[^>]*>([\s\S]*?)<\/section>/g)].map(m=>m[1]);
 const agentChapters = chapterMarkup.map(c=>renderedText(c.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)[1].replace(/<span>[\s\S]*?<\/span>/,'')));
-const agentExpectedCards = getCards(shippedCategoryHTML).map(([,category,c])=>{
+const agentExpectedCards = getCards(c3Transform(shippedCategoryHTML)).map(([,category,c])=>{
  const heading=c.match(/<h3 id="([^"]+)">([^<]+)<\/h3>/); assert.ok(heading,'Missing shipped anchor');
  const stars=renderedText(field(c,'meta-stars','span'));
  assert.match(stars,/^\d{1,3}(?:,\d{3})*$/);
@@ -774,7 +1025,7 @@ const agentExpectedCards = getCards(shippedCategoryHTML).map(([,category,c])=>{
    function:renderedText(body.replace(prompts[0][0],'').replace(/<span class="inside-kind">[^<]+<\/span>/,'')),example_prompt};
  });
  const description=renderedText(field(c,'description')); assert.doesNotMatch(description,/[\r\n]/);
- return {id:heading[1],number:Number(renderedText(field(c,'number','span'))),title:decodeHTML(heading[2]),category,
+ return {id:heading[1],number:Number(heading[1].slice(6)),title:decodeHTML(heading[2]),category,
  level:renderedText(c.match(/<span class="dot">·<\/span><span>([^<]+)<\/span>/)[1]),stars:Number(stars.replaceAll(',','')),
  repo:field(c,'card-footer','div').match(/<a href="([^"]+)"/)[1],description,
  use_when:renderedText(field(c,'fit-use').replace('<strong>Use when</strong>','')),
@@ -847,7 +1098,7 @@ gate('agent text catalogs: exact headers, chapters, card lines, functions, kinds
 });
 gate('agent outputs regenerate byte-for-byte from HTML only',()=>{
  const {generate}=require('./generate-agent-layer');
- const outputs=generate(shippedHTML,'https://topskillsfordevelopment.vercel.app');
+ const outputs=generate(c3Transform(shippedHTML),'https://topskillsfordevelopment.vercel.app');
  assert.deepEqual(Object.keys(outputs),['skills.json','llms.txt','llms-full.txt']);
  for(const [name,expected] of Object.entries(outputs))assert.equal(readAgentFile(name),expected,name+' generated bytes');
 });
@@ -1250,7 +1501,7 @@ gate('impeccable23 shipped inventory, exact scope, sources, categories, buttons 
  for(const c of catalog.cards)for(const item of c.inside)assert.notEqual(item.name,'craft');
  const full=readAgentFile('llms-full.txt');assert.doesNotMatch(full,/^- craft(?: \[| \()/m);
  const expected=shippedExpectedInside.find(c=>c.title==='Impeccable');
- assert.equal(catalog.cards.find(c=>c.id==='skill-22').inside_summary,expected.summary);
+ assert.equal(catalog.cards.find(c=>c.id==='skill-22').inside_summary,c3Table.find(r=>r.id==='skill-22').newSummary);
  const sourceBody=designCopy.split('## Card 23 — Impeccable\n')[1].split('## Items deliberately NOT shipped')[0];
  for(const [i,row] of rows.entries()){
   const name=row.match(/class="inside-name">([^<]+)</)[1];
@@ -1375,6 +1626,7 @@ gate('cycle1 G8 behaviour unchanged',()=>{
  const x=cycle1Runtime(cycle1HTML),prior=cycle1Runtime(shippedHTML);
  for(const [i,n] of [[1,6],[2,3],[0,22]]){x.filters[i].click();assert.equal(x.visible().length,n);}
  x.search('Superpowers');prior.search('Superpowers');assert.deepEqual(cycle1Visible(x),cycle1Visible(prior));x.search('');x.buttons[0].click();x.ids['toggle-favourites'].click();assert.deepEqual(cycle1Visible(x),['skill-1']);x.ids['reset-filters'].click();x.search('favourite');assert.equal(x.visible().length,0);
+ assert.deepEqual(c3Cards.map(([,,c])=>renderedText(field(c,'number','span'))),c3Table.map(r=>r.newNumber));assert.deepEqual(c3Cards.map(([,,c])=>c3Summary(c)),c3Table.map(r=>r.newSummary));
  for(const cls of ['number'])assert.deepEqual(cycle1Cards.map(([,,c])=>field(c,cls,'span')),cycle1BeforeCards.map(([,,c])=>field(c,cls,'span')));
  assert.deepEqual([...cycle1HTML.matchAll(/<summary>(.*?)<\/summary>/g)].map(m=>m[1]),[...shippedHTML.matchAll(/<summary>(.*?)<\/summary>/g)].map(m=>m[1]));
 });
@@ -1384,11 +1636,61 @@ gate('cycle1 G9 accent and CSS scope',()=>{
 gate('cycle1 G10 agent files unchanged',()=>{
  const hashes={'skills.json':'0f8700a5f2cecaa73eb639100fc4bdb7a773a67062834a919f4b880a3601b290','llms.txt':'e7dda79605966d58e982e833dc32271086cd460f4a211cc27c8e755b86195553','llms-full.txt':'8c76c03d19d1e256f8ba0f111ecb51f8676368edd2852e518b5db713ff3f3857'};
  const generated=require('./generate-agent-layer').generate(cycle1HTML,'https://topskillsfordevelopment.vercel.app');
- for(const [name,hash] of Object.entries(hashes)){const disk=fs.readFileSync(path.join(root,name),'utf8');assert.equal(sha256(disk),hash);assert.deepEqual(generated[name],disk);}
+ for(const [name,hash] of Object.entries(hashes)){const disk=fs.readFileSync(path.join(root,name),'utf8');assert.equal(sha256(generated[name]),hash);assert.deepEqual(require('./generate-agent-layer').generate(c3HTML,'https://topskillsfordevelopment.vercel.app')[name],disk);}
 });
 gate('cycle1 G11 budgets',()=>{
  const totals={};for(const kind of ['visible','expanded']){const measure=t=>words(kind==='visible'?t.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1'):t);const counts=cycle1Cards.map(([,,c],i)=>{assert.equal(measure(c),measure(cycle1BeforeCards[i][2])+words(field(c,'card-use')));return measure(c);});totals[kind]={cards:counts.reduce((a,b)=>a+b,0),max:Math.max(...counts),page:measure(cycle1HTML)};assert.deepEqual(totals[kind],kind==='visible'?{cards:1552,max:87,page:1888}:{cards:8666,max:1354,page:9002});}
  assert.equal(words(cycle1Strip),58);assert.equal(words(cycle1Note),80);assert.equal(cycle1Cards.reduce((n,[,,c])=>n+words(field(c,'card-use')),0),287);console.log('Cycle1 budgets',JSON.stringify(totals),'strip 58 note 80 footers 287');
+});
+
+
+// Cycle 3 gates always inspect the actual shipped files.
+gate('cycle3 C3-G1 numbering',()=>{
+ assert.deepEqual(c3Cards.map(a=>a[2].match(/<h3 id="([^"]+)"/)[1]),c3Table.map(r=>r.id));
+ const chapters={};for(const r of c3Table){const c=c3Cards.find(a=>a[2].includes('<h3 id="'+r.id+'">'))[0];assert.equal(renderedText(field(c,'number','span')),r.newNumber);assert.match(r.newNumber,/^0\d$/);assert.equal(c3Attrs(c,'aria-labelledby')[0],r.id);assert.equal(c3Attrs(c,'data-category')[0],r.chapter);(chapters[r.chapter]??=[]).push(r.newNumber);}
+ for(const ns of Object.values(chapters))assert.deepEqual(ns,ns.map((_,i)=>String(i+1).padStart(2,'0')));
+ for(const attr of ['data-favourite-for','data-item-favourite-for'])assert.deepEqual(c3Attrs(c3HTML,attr),c3Attrs(c3Pre,attr));
+ assert.deepEqual(c3Attrs(c3HTML,'data-favourite-for'),c3Table.map(r=>r.id));assert.equal(c3Attrs(c3HTML,'data-item-favourite-for').length,160);
+ const strip=t=>t.match(/<section class="start-strip"[\s\S]*?<\/section>/)[0];assert.equal(strip(c3HTML),strip(c3Pre));assert.deepEqual(c3Attrs(strip(c3HTML),'href'),['#skill-4','#skill-3','#skill-22']);for(const href of c3Attrs(strip(c3HTML),'href'))assert.ok(c3HTML.includes('<h3 id="'+href.slice(1)+'">'));
+ assert.doesNotMatch(source,/\bnumber\b|\.number/);assert.equal(sha256(c3Read('styles.css')),c3Hashes['styles.css']);
+});
+gate('cycle3 C3-G2 summary labels',()=>{
+ let t=0,f=0;const featured=[];
+ for(const r of c3Table){const c=c3Card(r.id),old=c3Card(r.id,c3Pre),summary=c3Summary(c);assert.equal(summary,r.newSummary);assert.equal(c3Rows(c).length,r.shown);assert.equal((c.match(/<li><code class="inside-name">/g)||[]).length,r.shown);
+ const m=summary.match(r.total===null?/^Featured — (\d+) (.+), total not stated$/:/^Inside this repo — (\d+) of (\d+) (.+)$/);assert.ok(m);assert.equal(+m[1],r.shown);if(r.total===null){f++;featured.push(r.id);}else{t++;assert.equal(+m[2],r.total);}
+ assert.deepEqual(c.match(/<p class="inside-note">[^<]*<\/p>/g),old.match(/<p class="inside-note">[^<]*<\/p>/g));
+ if(r.total===null&&r.id!=='skill-18')assert.ok(c.includes('<p class="inside-note">Featured entries, not the whole catalog.</p>'));
+ if(![...c3Table.filter(r=>r.total===null&&r.id!=='skill-18').map(r=>r.id),'skill-21'].includes(r.id))assert.ok(!c.includes('class="inside-note"'));
+ assert.equal(c.match(/<summary>[\s\S]*?(<svg[\s\S]*?<\/svg>)/)[1],old.match(/<summary>[\s\S]*?(<svg[\s\S]*?<\/svg>)/)[1]);
+ if(['skill-1','skill-8','skill-5','skill-9','skill-11','skill-14'].includes(r.id))assert.deepEqual(summary.match(/(\d+) of (\d+)/).slice(1),c3Summary(old).match(/(\d+) of (\d+)/).slice(1));
+ if(['skill-16','skill-7'].includes(r.id)){const kind=r.id==='skill-16'?'command':'subcommand';assert.equal((c.match(new RegExp('class="inside-kind">\\('+kind+'\\)','g'))||[]).length,4);assert.equal(c3Rows(c).filter(li=>!li.includes('inside-kind')).length,1);assert.ok(summary.includes('(1 skill, 4 '+kind+'s)'));assert.equal(1+4,r.shown);}
+ }assert.equal(t,14);assert.equal(f,8);assert.deepEqual(featured,['skill-2','skill-6','skill-19','skill-10','skill-13','skill-15','skill-17','skill-18']);
+});
+gate('cycle3 C3-G3 skill-18 reconciliation',()=>{
+ const r=c3Table.find(r=>r.id==='skill-18'),c=c3Card(r.id);assert.equal(renderedText(field(c,'description')),c3NewDescription);assert.equal(c3Summary(c),r.newSummary);assert.doesNotMatch(renderedText(c),/\b(380|401)\b/);assert.doesNotMatch(field(c,'description')+c3Summary(c),/\bof \d|\b\d{3}\b/);
+ for(const n of ['index.html','skills.json','llms.txt','llms-full.txt'])assert.doesNotMatch(c3Read(n),/\b(380|401)\b/);
+});
+gate('cycle3 C3-G4 to-spec prose',()=>{
+ const r=c3Table.find(r=>r.id==='skill-4'),rows=c3Rows(c3Card(r.id)),old=c3Rows(c3Card(r.id,c3Pre)),matches=rows.filter(li=>li.includes('data-item-favourite-for="skill-4:to-spec"'));assert.equal(matches.length,1);assert.equal(matches[0],rows[2]);assert.equal(rows.length,r.shown);
+ const prose=matches[0].match(/<\/button> — ([\s\S]*?)<p class="example-prompt">/)[1];assert.equal(prose,c3NewProse);assert.equal(matches[0].replace(c3NewProse,c3OldProse),old[2]);for(const term of ['grilled understanding','written specification','implementation seams','tickets are cut'])assert.ok(prose.includes(term));
+ for(const n of ['index.html','skills.json','llms.txt','llms-full.txt'])assert.doesNotMatch(c3Read(n),/orchestrator-verified|orchestrator|Process steps|SKILL\.md, description|2026-10-29\.\)/);
+});
+gate('cycle3 C3-G5 regression and diff-locking',()=>{
+ // The reverse transform locks every byte outside the explicitly permitted edits.
+ assert.equal(c3Transform(c3HTML,true),c3Pre);
+ for(const [pattern,n] of [[/<article class="skill-card"/g,c3Table.length],[/<li>/g,160],[/class="example-prompt"/g,160],[/<p class="card-use">/g,22],[/class="favourite-button"/g,22],[/class="item-favourite-button"/g,160],[/id="reveal-note"/g,1]])assert.equal([...c3HTML.matchAll(pattern)].length,n);
+ assert.ok(c3HTML.includes(cycle2Note));for(const [name,hash] of Object.entries(c3Hashes).filter(([n])=>['script.js','styles.css','README.md'].includes(n)))assert.equal(sha256(c3Read(name)),hash);
+ const live=cycle1Runtime(c3HTML),pre=cycle1Runtime(c3Pre);for(const probe of ['works with','install:','see github repository','uv tool install','npx skills add','and 12 more','75+ more','codex','cursor','claude code','antigravity','opencode','claude.ai','npm install -g','npx']){live.search(probe);pre.search(probe);assert.deepEqual(cycle1Visible(live),cycle1Visible(pre),probe);}
+ new vm.Script(source);assert.equal([...c3Read('styles.css').matchAll(/var\(--accent\)/g)].length,3);
+ for(const [cls,n] of [['start-strip',58],['how-to',80]])assert.equal(words(c3HTML.match(new RegExp('<section class="'+cls+'"[\\s\\S]*?<\\/section>'))[0]),n);assert.equal(c3Cards.reduce((n,[,,c])=>n+words(field(c,'card-use')),0),287);
+ console.log('Cycle3 C3-G5 invariant clauses PASS (before agent-layer checks)');
+ const generate=require('./generate-agent-layer').generate,expected=generate(c3HTML,'https://topskillsfordevelopment.vercel.app'),prior=generate(c3Pre,'https://topskillsfordevelopment.vercel.app'),future=generate(c3Transform(c3Pre),'https://topskillsfordevelopment.vercel.app');
+ for(const [n,value] of Object.entries(expected)){assert.equal(c3Read(n),value);assert.equal(value,future[n]);assert.equal(sha256(prior[n]),c3Hashes[n]);}
+ const catalog=JSON.parse(c3Read('skills.json'));assert.equal(catalog.cards.length,c3Table.length);assert.deepEqual(catalog.cards.map(c=>c.number).sort((a,b)=>a-b),Array.from({length:22},(_,i)=>i+1));for(const c of catalog.cards)assert.equal(c.number,+c.id.slice(6));
+ console.log('Cycle3 invariant clauses PASS; agent layer regenerated and restricted to allowed HTML changes');
+});
+gate('cycle3 words measurements',()=>{
+ for(const kind of ['visible','expanded']){const measure=t=>words(kind==='visible'?t.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1'):t);const values=[c3Pre,c3HTML].map(t=>{const cs=getCards(t).map(([,,c])=>measure(c));return {cards:cs.reduce((a,b)=>a+b,0),max:Math.max(...cs),page:measure(t)};});console.log('Cycle3 words '+kind,JSON.stringify(values));}
 });
 
 if(failures.length){console.error(failures.length+' failing gates');process.exitCode=1;}else console.log('PASS all polish gates');
@@ -1404,7 +1706,7 @@ function runCycle2() {
   for (const id of ['reveal-note','results-count']) {
    let value='';Object.defineProperty(ids[id],'textContent',{get:()=>value,set(v){value=v;events.push([id,v]);}});
   }
-  const headings = [], cards = getCards(cycle1HTML).map(([,category,markup])=>{
+  const headings = [], cards = getCards(c3HTML).map(([,category,markup])=>{
    const id=cycle1Id(markup), h=Object.assign(element(),{id,hasAttribute(name){return name in this.attrs;},setAttribute(name,value){this.attrs[name]=value;events.push(['attribute',id,name,value]);},focus(opts){events.push(['focus',id,JSON.parse(JSON.stringify(opts))]);},scrollIntoView(opts){events.push(['scroll',id,JSON.parse(JSON.stringify(opts))]);}});
    headings.push(h);
    const card=Object.assign(element(),{dataset:{category},querySelector:sel=>sel==='h3'?h:null,querySelectorAll:()=>[],cloneNode(){let text=markup;return {querySelectorAll(sel){return [{remove(){text=sel==='.card-use'?text.replace(/<p class="card-use">[\s\S]*?<\/p>/g,''):text.replace(/<button\b[^>]*>[\s\S]*?<\/button>/g,'');}}];},get textContent(){return renderedText(text);}};}});
@@ -1432,6 +1734,6 @@ function runCycle2() {
  gate('cycle2 C2-G8 load hashchange modifiers',()=>{const x=runtime(source,'#skill-4','zzzz');all(x);assert.equal(note(x),'Filters cleared. Showing all skills.');assert.ok(x.events.some(e=>e[0]==='focus'));const y=runtime(source,'#skill-4');assert.equal(note(y),'');assert.ok(!y.events.some(e=>e[0]==='focus'));y.filter('Workflow');y.hash('#skill-22');all(y);for(const opts of [{ctrlKey:true},{metaKey:true},{shiftKey:true},{altKey:true},{button:1},{defaultPrevented:true}]){const z=runtime();z.filter('Design');const before=z.state();z.click('#skill-4',opts);assert.equal(z.state(),before);}});
  gate('cycle2 C2-G9 filtering unchanged',()=>{assert.equal(undoCycle2JS(source),cycle2PriorScript);const x=runtime(),prior=runtime(cycle2PriorScript),counts={};for(const probe of ['works with','install:','see github repository','uv tool install','npx skills add','and 12 more','75+ more','codex','cursor','claude code','antigravity','opencode','claude.ai','npm install -g','npx']){x.search(probe);prior.search(probe);assert.deepEqual(x.visible(),prior.visible(),probe);counts[probe]=x.visible().length;}x.search('see github repository');assert.equal(x.visible().length,0);assert.equal(x.ids['empty-state'].hidden,false);console.log('Cycle2 probe counts',JSON.stringify(counts));x.search('');prior.search('');for(const [category,n] of [['Workflow',6],['Quality',2],['Design',3],['Efficiency',1],['Knowledge',5],['Discovery',5],['All skills',22]]){x.filter(category);prior.filter(category);assert.deepEqual(x.visible(),prior.visible());assert.equal(x.visible().length,n);}for(const control of ['toggle-favourites','clear-search','reset-filters']){x.ids[control].click();prior.ids[control].click();assert.deepEqual(x.visible(),prior.visible());}});
  gate('cycle2 C2-G10 counts',()=>{assert.equal(getCards(cycle1HTML).length,22);for(const [pattern,n] of [[/<li>/g,160],[/class="example-prompt"/g,160],[/<p class="card-use">/g,22]])assert.equal(cycle1Count(cycle1HTML,pattern),n);assert.equal(words(cycle1HTML.match(/<section class="start-strip"[\s\S]*?<\/section>/)[0]),58);assert.equal(words(cycle1HTML.match(/<section class="how-to"[\s\S]*?<\/section>/)[0]),80);const hrefs=[...cycle1HTML.match(/<section class="start-strip"[\s\S]*?<\/section>/)[0].matchAll(/href="#([^"]+)"/g)].map(m=>m[1]);assert.deepEqual(hrefs,['skill-4','skill-3','skill-22']);hrefs.forEach(id=>assert.ok(cycle1HTML.includes('<h3 id="'+id+'">')));});
- gate('cycle2 C2-G11 budgets identity CSS',()=>{for(const visible of [true,false]){const measure=t=>words(visible?t.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1'):t);const counts=getCards(cycle1HTML).map(([,,c])=>measure(c));assert.deepEqual([counts.reduce((a,b)=>a+b,0),Math.max(...counts),measure(cycle1HTML)],visible?[1552,87,1888]:[8666,1354,9002]);console.log('Cycle2 words before/after',visible?'visible':'expanded',measure(cycle1HTML.replace(cycle2Note+'\n','')),measure(cycle1HTML));}for(const [name,hash] of Object.entries(cycle2Hashes)){assert.equal(sha256(fs.readFileSync(path.join(root,name))),hash);console.log('Cycle2 byte-identical '+name);}assert.equal(cycle1Count(cycle1Styles,/var\(--accent\)/g),3);assert.equal([...cycle1Styles.matchAll(/[^{}]+\{([^{}]*)\}/g)].filter(r=>r[1].includes('var(--accent)')).length,3);assert.ok(cycle1Styles.endsWith(cycle2CSS));assert.doesNotMatch(cycle2CSS,/--accent|#[0-9a-f]|rgb\(|hsl\(|border-radius|box-shadow/);});
+ gate('cycle2 C2-G11 budgets identity CSS',()=>{for(const visible of [true,false]){const measure=t=>words(visible?t.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1'):t);const counts=getCards(cycle1HTML).map(([,,c])=>measure(c));assert.deepEqual([counts.reduce((a,b)=>a+b,0),Math.max(...counts),measure(cycle1HTML)],visible?[1552,87,1888]:[8666,1354,9002]);console.log('Cycle2 words before/after',visible?'visible':'expanded',measure(cycle1HTML.replace(cycle2Note+'\n','')),measure(cycle1HTML));}for(const [name,hash] of Object.entries(cycle2Hashes)){assert.equal(sha256(name==='README.md'?fs.readFileSync(path.join(root,name)):require('./generate-agent-layer').generate(cycle1HTML,'https://topskillsfordevelopment.vercel.app')[name]),hash);console.log('Cycle2 historical byte identity '+name);}assert.equal(cycle1Count(cycle1Styles,/var\(--accent\)/g),3);assert.equal([...cycle1Styles.matchAll(/[^{}]+\{([^{}]*)\}/g)].filter(r=>r[1].includes('var(--accent)')).length,3);assert.ok(cycle1Styles.endsWith(cycle2CSS));assert.doesNotMatch(cycle2CSS,/--accent|#[0-9a-f]|rgb\(|hsl\(|border-radius|box-shadow/);});
  gate('cycle2 C2-G12 accessibility',()=>{assert.ok(cycle1HTML.includes(cycle2Note));assert.ok(cycle1Styles.includes('.skill-card h3:focus-visible{outline:2px solid var(--ink);outline-offset:var(--underline-offset)}'));const additions=source.replace(cycle2PriorScript,'');assert.doesNotMatch(additions,/keydown|tabindex="0"|tabindex', '0'/);assert.match(source,/setAttribute\('tabindex', '-1'\)/);});
 }
