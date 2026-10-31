@@ -1982,4 +1982,106 @@ function runCycle2() {
 }
 
 }
-if(process.argv.includes("--historical"))runHistorical();else (process.argv.includes("--browser")?runCycle4():runCycle4DOM()).catch(e=>{console.error("BLOCKED Cycle 4 harness:",e);process.exitCode=1;});
+// Cycle 5 is isolated from every historical gate. Baseline snapshots live outside the tree.
+function undoCycle5(html) {
+ return html.replace(/<li><span class="item-head">/g,'<li>')
+  .replace(/<\/button><\/span> <span class="item-dash">— <\/span>/g,'</button> — ');
+}
+async function runCycle5() {
+ const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+ const root=process.env.C5_ROOT||path.resolve(__dirname,'..'),base=process.env.C5_BASELINE||'/tmp/c5-baseline';
+ const read=(dir,n)=>fs.readFileSync(path.join(dir,n),'utf8');
+ const html=read(root,'index.html'),before=read(base,'index.html'),css=read(root,'styles.css'),oldCSS=read(base,'styles.css'),script=read(root,'script.js');
+ const dom=h=>cycle4DOM(h,script),raw=dom(html),old=dom(before),results=[];
+ const gate=async(id,fn)=>{try{await fn();results.push({id,status:'PASS'});console.log(id+' PASS');}catch(e){results.push({id,status:'FAIL',reason:e.message});console.log(id+' FAIL '+e.message);}};
+ const collapse=s=>s.replace(/\s+/g,' ').trim();
+ await gate('C5-G2',()=>{
+  assert.deepEqual(raw.cards.map(c=>collapse(c.textContent)),old.cards.map(c=>collapse(c.textContent)));
+  const walk=e=>{for(const n of e.childNodes){if(n.nodeType===3)assert.notEqual(n.textContent.trim(),'Example');else walk(n);}};walk(raw.doc);
+  for(const term of ['example','examples','exampl','prompt','debugging','poteto','bug-fix','advanced','stars','☆','★']){
+   const a=dom(html),b=dom(before);a.search(term);b.search(term);
+   const ids=x=>x.cards.filter(c=>!c.hidden).map(c=>c.querySelector('h3').id);
+   assert.deepEqual(ids(a),ids(b),term);if(term==='example')console.log('example baseline/build matches: '+ids(a).length);
+  }
+ });
+ await gate('C5-G7',()=>{
+  const hashes={'script.js':'d5147d5a2676b9c13d0abf07ccbc8e3a4eb6c4b5e2df6555e4174c46be295e9e','skills.json':'325c7fb8d3783f37fb89a6fa853db95de9ff7a07d61e3175f8e3549de8c9bf3a','llms.txt':'551db54859a4915724fbb1f22ecd4246507f8a356f87851b5f2e420a5e772df1','llms-full.txt':'b205ed3d42ba33db06f72721e2d25b14e0b107533b7f73013c89537cbd4e32d9'};
+  for(const [n,h]of Object.entries(hashes))assert.equal(crypto.createHash('sha256').update(read(root,n)).digest('hex'),h,n);
+  assert.equal(undoCycle5(html),before,'reverse transform bytes');
+  for(const [sel,n]of [['.skill-card',22],['details.inside',22],['.inside-list li',160],['.example-prompt',160],['.item-favourite-button',160]])assert.equal(raw.doc.querySelectorAll(sel).length,n,sel);
+  const attrs=x=>x.doc.querySelectorAll('[id],[href]').map(e=>[e.getAttribute('id'),e.getAttribute('href')]);assert.deepEqual(attrs(raw),attrs(old));
+  const rows=x=>x.cards.map(c=>c.querySelectorAll('li').map(e=>[e.querySelector('.inside-name').textContent,e.querySelector('.item-category')?.textContent,e.querySelector('button').dataset.itemFavouriteFor]));assert.deepEqual(rows(raw),rows(old));
+  assert.deepEqual(raw.doc.querySelectorAll('.item-favourite-button').map(e=>e.outerHTML),old.doc.querySelectorAll('.item-favourite-button').map(e=>e.outerHTML));
+  const files=dir=>fs.readdirSync(dir,{recursive:true}).filter(n=>fs.statSync(path.join(dir,n)).isFile());
+  for(const n of files(base).filter(n=>!['index.html','styles.css','test/check.js'].includes(n)))assert.equal(read(root,n),read(base,n),n+' protected bytes');
+ });
+ await gate('C5-G8',()=>{
+  const exercise=h=>{
+   const x=dom(h),out=[],q=s=>x.doc.querySelector(s),item=()=>q('[data-item-favourite-for="skill-20:bug-fix"]');
+   const snap=()=>out.push(JSON.stringify({ids:x.cards.filter(c=>!c.hidden).map(c=>c.querySelector('h3').id),open:x.cards.map(c=>c.querySelector('details').open),count:q('#results-count').textContent,empty:q('#empty-state').hidden,clear:q('#clear-search').hidden,toggle:q('#toggle-inside').textContent,storage:x.storage,items:x.cards.map(c=>c.querySelectorAll('li').map(l=>[l.hidden,l.querySelector('button').getAttribute('aria-pressed'),l.querySelector('button').textContent,l.querySelector('button').getAttribute('aria-label')])),marks:x.doc.querySelectorAll('mark').map(m=>m.textContent)}));
+   snap();q('#toggle-inside').click();snap();q('#toggle-inside').click();snap();
+   x.card('skill-3').querySelector('details').open=true;
+   for(const term of ['bug-fix','debugging','zz-no-match','']){x.search(term);assert.equal(x.doc.querySelectorAll('button mark').length,0);snap();}
+   for(const c of [...new Set(x.cards.map(c=>c.dataset.category)),'All skills']){x.filter(c);snap();}
+   x.search('nothing');snap();q('#clear-search').click();snap();x.reset();snap();
+   item().click();assert.equal(item().textContent,'★');assert.equal(item().getAttribute('aria-pressed'),'true');assert.equal(item().getAttribute('aria-label'),'Remove bug-fix from favourites');assert.ok(JSON.parse(x.storage['topskills-item-favourites']).includes('skill-20:bug-fix'));snap();
+   q('#toggle-favourites').click();assert.deepEqual(x.card('skill-20').querySelectorAll('li').filter(e=>!e.hidden).map(e=>e.querySelector('.inside-name').textContent),['bug-fix']);snap();
+   q('#toggle-favourites').click();x.search('bug-fix');snap();x.search('');assert.equal(item().hidden,false);item().click();snap();
+   x.card('skill-3').querySelector('.favourite-button').click();q('#toggle-favourites').click();snap();q('#toggle-favourites').click();x.card('skill-3').querySelector('.favourite-button').click();x.reset();snap();return out;
+  };assert.deepEqual(exercise(html),exercise(before));
+ });
+ await gate('C5-G9',()=>{
+  assert.equal(raw.doc.querySelectorAll('.inside-list ol,.inside-list h4,.inside-list [role="heading"]').length,0);
+  assert.doesNotMatch(css,/counter-(?:reset|increment)/);
+  const contents=s=>[...s.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m=>/(?:^|;)\s*content:/.test(m[2])).map(m=>[m[1].trim(),m[2]]);
+  assert.deepEqual(contents(css).filter(([s])=>s!=='.example-prompt::before'),contents(oldCSS));
+  assert.deepEqual(raw.doc.querySelectorAll('.inside-list .inside-name').map(e=>e.textContent),old.doc.querySelectorAll('.inside-list .inside-name').map(e=>e.textContent));
+ });
+ await gate('C5-G10',()=>{
+  assert.equal((css.match(/var\(--accent\)/g)||[]).length,3);
+  const accent=s=>[...s.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m=>m[2].includes('var(--accent)')).map(m=>m[1].trim());assert.deepEqual(accent(css),accent(oldCSS));
+  assert.equal((css.match(/#b3401e/g)||[]).length,1);assert.match(css,/--accent:#b3401e/);assert.match(css,/--muted:#6b6b64/);
+  const tokens=s=>[...s.matchAll(/(--[\w-]+)\s*:/g)].map(m=>m[1]);assert.deepEqual(tokens(css),tokens(oldCSS));
+  const decoration=s=>[...s.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m=>/box-shadow|border-radius/.test(m[2])).map(m=>m[0]);assert.deepEqual(decoration(css),decoration(oldCSS));
+ });
+ const measure=h=>{
+  const cards=h.match(/<article class="skill-card"[\s\S]*?<\/article>/g),words=s=>s.split(/\s+/).filter(Boolean).length;
+  const strip=s=>s.replace(/<svg[\s\S]*?<\/svg>/g,' ').replace(/<button\b[^>]*\bhidden\b[^>]*>[\s\S]*?<\/button>/g,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#?\w+;/g,' ');
+  let visible=0,expanded=0,pv=0,pe=0;for(const c of cards){const collapsed=c.replace(/<details class="inside">[\s\S]*?<\/details>/,m=>m.match(/<summary>[\s\S]*?<\/summary>/)[0]);const v=words(strip(collapsed)),e=words(strip(c));visible+=v;expanded+=e;if(c.includes('id="skill-20"')){pv=v;pe=e;}}
+  return {cards:cards.length,visible,expanded,pstackVisible:pv,pstackExpanded:pe,examplePrompts:(h.match(/class="example-prompt"/g)||[]).length,itemStars:(h.match(/class="item-favourite-button"/g)||[]).length,lis:(h.match(/<li>/g)||[]).length};
+ };
+ await gate('C5-G11',()=>{console.log('Budgets baseline '+JSON.stringify(measure(before)));console.log('Budgets build '+JSON.stringify(measure(html)));assert.deepEqual(measure(html),measure(before));});
+ let browser;
+ try {
+  let playwright;try{playwright=require('playwright');}catch{playwright=require('/opt/hatch/skills/spaces/ts-runtime/dist/node_modules/playwright');}
+  const policyPath='/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt',policyHash=crypto.createHash('sha256').update(fs.readFileSync(policyPath)).digest('hex');
+  browser=await playwright.chromium.launch({executablePath:'/opt/meta-chromium/chrome',headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--disable-crash-reporter','--disable-crashpad-for-testing',`--hatch-webgl-allowed-domains-file=${policyPath}`,`--hatch-webgl-allowed-domains-sha256=${policyHash}`]});
+ }catch(e){for(const id of ['C5-G1','C5-G3','C5-G4','C5-G5','C5-G6']){results.push({id,status:'BLOCKED',reason:e.message});console.log(id+' BLOCKED Chromium launch: '+e.message);}const scope=results.find(r=>r.id==='C5-G9');scope.status='BLOCKED';scope.reason='Static scope checks PASS; computed list-style requires Chromium';console.log('C5-G9 BLOCKED (static scope PASS; rendered list-style unavailable)');}
+ if(browser){try{
+  const page=await browser.newPage({viewport:{width:1280,height:900}});
+  await page.route('**/*',r=>{const n=new URL(r.request().url()).pathname.slice(1)||'index.html',body={'index.html':html,'styles.css':css,'script.js':script}[n];return body===undefined?r.abort():r.fulfill({body,contentType:n.endsWith('.css')?'text/css':n.endsWith('.js')?'application/javascript':'text/html'});});
+  await page.goto('http://cycle5.local/');await page.evaluate(()=>document.querySelectorAll('details.inside').forEach(d=>d.open=true));
+  const check=async fn=>{const errors=await page.evaluate(fn);assert.deepEqual(errors,[]);};
+  await gate('C5-G1',async()=>{
+   assert.deepEqual(await page.locator('.example-prompt').allTextContents(),old.doc.querySelectorAll('.example-prompt').map(e=>e.textContent));
+   await check(()=>{const errors=[];for(const p of document.querySelectorAll('.example-prompt')){const s=getComputedStyle(p),b=getComputedStyle(p,'::before');if(s.backgroundColor!=='rgba(0, 0, 0, 0)'||s.borderLeftWidth!=='1px'||s.borderLeftStyle!=='solid'||s.borderLeftColor!=='rgb(217, 215, 208)'||s.color!=='rgb(107, 107, 100)'||parseFloat(s.fontSize)<11||b.content!=='"Example"'||b.display!=='block')errors.push(p.textContent);}return errors;});
+   // A block ::before is the first generated child, above the first prompt text rect.
+   assert.ok(await page.locator('article[aria-labelledby="skill-20"] .example-prompt').first().evaluate(p=>{const r=document.createRange();r.selectNodeContents(p);return getComputedStyle(p,'::before').display==='block'&&r.getClientRects()[0].top>=p.getBoundingClientRect().top+parseFloat(getComputedStyle(p,'::before').lineHeight)-1;}));
+  });
+  await gate('C5-G3',async()=>{
+   const checkRows=()=>{const errors=[],lis=[...document.querySelectorAll('article[aria-labelledby="skill-20"] li')].filter(l=>!l.hidden);lis.forEach((l,i)=>{const s=getComputedStyle(l),n=getComputedStyle(l.querySelector('.inside-name'));if(i?(s.borderTopWidth!=='1px'||s.borderTopStyle!=='solid'||s.borderTopColor!=='rgb(217, 215, 208)'):parseFloat(s.borderTopWidth)!==0)errors.push('border '+i);if(+n.fontWeight<600||n.color!=='rgb(26, 26, 24)'||+n.fontWeight<=+s.fontWeight||+s.fontWeight!==400)errors.push('name '+i);});return errors;};
+   await check(checkRows);await page.locator('[data-item-favourite-for="skill-20:feature"]').click();await page.locator('#toggle-favourites').click();assert.ok(await page.locator('[data-item-favourite-for="skill-20:bug-fix"]').evaluate(b=>b.closest('li').hidden));await check(checkRows);await page.locator('#toggle-favourites').click();await page.locator('[data-item-favourite-for="skill-20:feature"]').click();
+  });
+  await gate('C5-G4',async()=>{
+   for(const width of [1280,320]){await page.setViewportSize({width,height:900});await check(()=>{const errors=[];for(const b of document.querySelectorAll('article[aria-labelledby="skill-20"] .item-favourite-button')){const r=b.getBoundingClientRect(),li=b.closest('li'),head=b.closest('.item-head'),lr=li.getBoundingClientRect(),ls=getComputedStyle(li);if(r.width<44||r.height<44||!head)errors.push('target/head');if(Math.abs(r.right-(lr.right-parseFloat(ls.paddingRight)-parseFloat(ls.borderRightWidth)))>1)errors.push('alignment');for(const n of li.childNodes)if(n.nodeType===3&&n.textContent.trim()){const range=document.createRange();range.selectNodeContents(n);for(const d of range.getClientRects())if(r.left<d.right&&r.right>d.left&&r.top<d.bottom&&r.bottom>d.top)errors.push('description collision');}}return errors;});}
+   const b=page.locator('[data-item-favourite-for="skill-20:bug-fix"]');await b.click();assert.equal(await b.getAttribute('aria-pressed'),'true');assert.equal(await b.textContent(),'★');assert.equal(await b.getAttribute('aria-label'),'Remove bug-fix from favourites');assert.ok(await page.evaluate(()=>JSON.parse(localStorage['topskills-item-favourites']).includes('skill-20:bug-fix')));await b.click();
+   assert.deepEqual(raw.doc.querySelectorAll('.item-favourite-button').map(e=>e.outerHTML),old.doc.querySelectorAll('.item-favourite-button').map(e=>e.outerHTML));
+  });
+  await gate('C5-G5',()=>check(()=>{const errors=[];for(const p of document.querySelectorAll('.card-use,.inside-meta')){const s=getComputedStyle(p);if(s.color!=='rgb(26, 26, 24)'||parseFloat(s.fontSize)<11)errors.push('meta colour/type');if(p.matches('.inside-meta')&&(s.borderBottomWidth!=='1px'||s.borderBottomStyle!=='solid'||s.borderBottomColor!=='rgb(217, 215, 208)'||p.getBoundingClientRect().bottom>p.nextElementSibling.getBoundingClientRect().top))errors.push('meta rule');}return errors;}));
+  await gate('C5-G6',async()=>{assert.deepEqual(await page.locator('details.inside > summary').allTextContents(),old.doc.querySelectorAll('summary').map(e=>e.textContent));await check(()=>{const errors=[];for(const e of document.querySelectorAll('details.inside > summary')){const s=getComputedStyle(e),l=getComputedStyle(e.parentElement.querySelector('li'));if(parseFloat(s.fontSize)<=parseFloat(l.fontSize)||+s.fontWeight<600||+s.fontWeight<=+l.fontWeight||s.color!=='rgb(26, 26, 24)'||e.getBoundingClientRect().height<44)errors.push(e.textContent);}return errors;});});
+  await gate('C5-G9 rendered list-style',()=>check(()=>[...document.querySelectorAll('.inside-list li')].filter(l=>getComputedStyle(l).listStyleType!=='none').map(l=>l.textContent)));
+ }finally{await browser.close();}}
+ console.log(JSON.stringify(results,null,2));if(results.some(r=>r.status!=='PASS'))process.exitCode=1;
+}
+
+if(process.argv.includes("--c5"))runCycle5().catch(e=>{console.error(e);process.exitCode=1;});else if(process.argv.includes("--historical"))runHistorical();else (process.argv.includes("--browser")?runCycle4():runCycle4DOM()).catch(e=>{console.error("BLOCKED Cycle 4 harness:",e);process.exitCode=1;});
