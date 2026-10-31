@@ -65,7 +65,7 @@ h1 em{font-weight:normal;color:var(--ink)}
 .skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);align-items:start}
 /* Reserve two rule pixels; the resting rule uses only the upper pixel. */
 .skill-card{padding:var(--space-4) var(--space-4) 0;border-top:2px solid transparent;position:relative}
-.skill-card::before{content:"";position:absolute;top:-2px;left:0;right:0;border-top:1px solid var(--ink)}
+.skill-card::before{content:"";position:absolute;top:-2px;left:0;right:0;border-top:1px solid var(--line)}
 .skill-grid > .skill-card:first-child::before{border-top:0}
 .skill-card:hover,.skill-card:focus-within{border-top-color:var(--ink)}
 .card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1);font-size:var(--type-label);color:var(--muted);white-space:normal}
@@ -88,7 +88,6 @@ h2,.skill-card h3{font:normal var(--type-entry)/var(--type-entry-leading) var(--
 .inside-kind{font-size:var(--type-label);color:var(--muted)}
 details{border-top:1px solid var(--line)}
 summary{display:flex;justify-content:space-between;align-items:center;list-style:none;padding:var(--space-2) 0;font-size:var(--type-body);font-weight:600;color:var(--ink);cursor:pointer}
-summary:hover{text-decoration:underline}
 summary::-webkit-details-marker{display:none}
 summary svg{width:1em;transition:transform .2s}
 details[open] summary svg{transform:rotate(180deg)}
