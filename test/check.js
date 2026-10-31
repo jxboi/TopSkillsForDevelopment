@@ -1,3 +1,102 @@
+// Exact Cycle 7 copy changes, applied only to historical copy expectations.
+const cycle7ExpectedCopy = value => [
+  [
+    "When running a full-lifecycle workflow in a supported harness that needs planning, test-driven implementation, fresh-context review, and build repair.",
+    "Running a full-lifecycle workflow in a supported harness that needs planning, test-driven implementation, fresh-context review, and build repair."
+  ],
+  [
+    "27 of 27 skills",
+    "All 27 skills"
+  ],
+  [
+    "When building a greenfield app or complex multi-step feature whose requirements and tasks must become executable specifications before code is generated.",
+    "Building a greenfield app or complex multi-step feature whose requirements and tasks must become executable specifications before code is generated."
+  ],
+  [
+    "5 of 5 core commands",
+    "All 5 core commands"
+  ],
+  [
+    "When you need one CLI to search, install, update, sync, or test-run skills across several coding agent harnesses from git, URLs, or npm.",
+    "Needing one CLI to search, install, update, sync, or test-run skills across several coding agent harnesses from git, URLs, or npm."
+  ],
+  [
+    "5 of 5 (1 skill, 4 commands)",
+    "All 5 (1 skill, 4 commands)"
+  ],
+  [
+    "23 of 23 playbooks",
+    "All 23 playbooks"
+  ],
+  [
+    "1 of 1 skill",
+    "1 skill"
+  ],
+  [
+    "When guiding an agent through multi-stage feature delivery that needs requirements, specs, tests, security passes, and human checkpoints to prevent shortcuts.",
+    "Guiding an agent through multi-stage feature delivery that needs requirements, specs, tests, security passes, and human checkpoints to prevent shortcuts."
+  ],
+  [
+    "When building, refactoring, or auditing an interface that needs concrete choices on palette, font pairing, responsive layout, and accessibility compliance.",
+    "Building, refactoring, or auditing an interface that needs concrete choices on palette, font pairing, responsive layout, and accessibility compliance."
+  ],
+  [
+    "When a landing page, portfolio, or app screen looks generic or AI-made and needs custom, premium art direction.",
+    "A landing page, portfolio, or app screen that looks generic or AI-made and needs custom, premium art direction."
+  ],
+  [
+    "When designing, critiquing, polishing, or auditing frontend interfaces to elevate craft and catch AI design slop before shipping.",
+    "Designing, critiquing, polishing, or auditing frontend interfaces to elevate craft and catch AI design slop before shipping."
+  ],
+  [
+    "23 of 23 commands",
+    "All 23 commands"
+  ],
+  [
+    "When exploring an unfamiliar codebase or a mixed folder of code, PDFs, notes, and images that needs a persistent, queryable graph of cross-file links.",
+    "Exploring an unfamiliar codebase or a mixed folder of code, PDFs, notes, and images that needs a persistent, queryable graph of cross-file links."
+  ],
+  [
+    "5 of 5 (1 skill, 4 subcommands)",
+    "All 5 (1 skill, 4 subcommands)"
+  ],
+  [
+    "When onboarding onto a large unfamiliar repository of 200,000+ lines and you need a visual dashboard of architecture layers, business flows, and diff impact.",
+    "Onboarding onto a large unfamiliar repository of 200,000+ lines and you need a visual dashboard of architecture layers, business flows, and diff impact."
+  ],
+  [
+    "When Claude needs multi-step procedural guidance for domain tasks like DOCX, PDF, PPTX, and XLSX generation, web app testing, or MCP server scaffolding.",
+    "Claude work that needs multi-step procedural guidance for domain tasks like DOCX, PDF, PPTX, and XLSX generation, web app testing, or MCP server scaffolding."
+  ],
+  [
+    "When a task writes wikilinks, embeds, or callouts, edits canvas or base files, or manages vault state through the Obsidian CLI.",
+    "A task that writes wikilinks, embeds, or callouts, edits canvas or base files, or manages vault state through the Obsidian CLI."
+  ],
+  [
+    "When designing or configuring services on Google Cloud, Gemini APIs, Firebase, Android, or Google Ads, or weighing Google products for a stack component.",
+    "Designing or configuring services on Google Cloud, Gemini APIs, Firebase, Android, or Google Ads, or weighing Google products for a stack component."
+  ],
+  [
+    "When an autonomous agent should inspect your codebase, search a skill catalog over read-only MCP, and produce a validated stack manifest with plan preview.",
+    "An autonomous agent that should inspect your codebase, search a skill catalog over read-only MCP, and produce a validated stack manifest with plan preview."
+  ],
+  [
+    "When configuring Claude Code and you want a selective directory of vetted tools, status lines, hooks, subagents, and guides that meet maturity thresholds.",
+    "Configuring Claude Code and you want a selective directory of vetted tools, status lines, hooks, subagents, and guides that meet maturity thresholds."
+  ],
+  [
+    "When you want to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code.",
+    "Wanting to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code."
+  ],
+  [
+    "When you need production-ready skills authored by engineering teams such as Supabase, Stripe, Sentry, and Vercel, usable across several coding assistants.",
+    "Needing production-ready skills authored by engineering teams such as Supabase, Stripe, Sentry, and Vercel, usable across several coding assistants."
+  ],
+  [
+    "When you need cross-functional playbooks for executive advisory, marketing, compliance, or research, plus zero-dependency Python analysis and conversion tools.",
+    "Needing cross-functional playbooks for executive advisory, marketing, compliance, or research, plus zero-dependency Python analysis and conversion tools."
+  ]
+].reduce((text, [before, after]) => text.replaceAll(before, after), value);
 // Dependency-free DOM model for the shipped HTML and script. No layout claims.
 function cycle4DOM(html, script) {
  const vm=require('node:vm');
@@ -62,7 +161,7 @@ async function runCycle4DOM(){
  const rawCards=s=>[...s.matchAll(/<article class="skill-card"[\s\S]*?<\/article>/g)].map(m=>m[0]);const prev=rawCards(baseline.files['index.html']),next=rawCards(files['index.html']);
  const field=(s,c,t='p')=>s.match(new RegExp('<'+t+' class="'+c+'"[\\s\\S]*?<\\/'+t+'>'))?.[0];
  gate('G1 — Cycle 4 collapsed block order',()=>{assert.equal(now.cards.length,22);for(const c of now.cards){assert.deepEqual(c.children.map(e=>e.tagName+'.'+e.className),['DIV.card-meta','H3.','P.description','DIV.fit','DETAILS.inside','DIV.card-footer']);assert.ok(c.querySelector('details').firstElementChild.matches('summary'));assert.ok(!c.querySelector('details').open);assert.ok(c.childNodes.filter(n=>n.nodeType===3).every(n=>!n.textContent.trim()));}});
- gate('G2 — Cycle 4 agreed visible elements and preserved controls',()=>{for(let i=0;i<next.length;i++){const a=now.cards[i],b=old.cards[i];assert.equal(a.querySelector('h3').id,b.querySelector('h3').id);assert.equal(a.dataset.category,b.dataset.category);assert.equal(a.querySelector('h3').textContent,b.querySelector('h3').textContent);assert.equal(a.querySelector('.number').outerHTML,b.querySelector('.number').outerHTML);assert.equal(field(next[i],'description'),field(prev[i],'description'));assert.equal(field(next[i],'fit','div'),field(prev[i],'fit','div'));assert.deepEqual(a.querySelector('.card-meta').children.map(e=>e.className),['number','category']);assert.equal(field(next[i],'card-footer','div'),field(prev[i],'card-footer','div').replace(field(prev[i],'card-use'),''));assert.deepEqual(a.querySelectorAll('summary,a,button').filter(e=>!e.closest('details')||e.matches('summary')).map(e=>e.tagName),['SUMMARY','A','BUTTON']);}});
+ gate('G2 — Cycle 4 agreed visible elements and preserved controls',()=>{for(let i=0;i<next.length;i++){const a=now.cards[i],b=old.cards[i];assert.equal(a.querySelector('h3').id,b.querySelector('h3').id);assert.equal(a.dataset.category,b.dataset.category);assert.equal(a.querySelector('h3').textContent,b.querySelector('h3').textContent);assert.equal(a.querySelector('.number').outerHTML,b.querySelector('.number').outerHTML);assert.equal(field(next[i],'description'),field(prev[i],'description'));assert.equal(field(next[i],'fit','div'),cycle7ExpectedCopy(field(prev[i],'fit','div')));assert.deepEqual(a.querySelector('.card-meta').children.map(e=>e.className),['number','category']);assert.equal(field(next[i],'card-footer','div'),field(prev[i],'card-footer','div').replace(field(prev[i],'card-use'),''));assert.deepEqual(a.querySelectorAll('summary,a,button').filter(e=>!e.closest('details')||e.matches('summary')).map(e=>e.tagName),['SUMMARY','A','BUTTON']);}});
  gate('G3 — Cycle 4 install destination and moved detail lines',()=>{for(let i=0;i<next.length;i++){assert.ok(!next[i].includes('see GitHub repository'));assert.equal(field(next[i],'card-use'),field(prev[i],'card-use').replace(' · <span class="card-use-label">Install:</span> see GitHub repository',''));const d=now.cards[i].querySelector('details');assert.deepEqual(d.children.slice(0,4).map(e=>e.tagName+'.'+e.className),['SUMMARY.','P.card-use','P.inside-meta','UL.inside-list']);assert.equal(d.children[1].querySelectorAll('a,button,svg,input').length,0);assert.equal(d.children[2].children.length,0);}});
  gate('G4 — Cycle 4 stars reserved for favourites',()=>{for(let i=0;i<next.length;i++){const b=old.cards[i],a=now.cards[i],level=b.querySelector('.card-meta > span:not([class])').textContent,stars=b.querySelector('.meta-stars').textContent.trim();assert.equal(a.querySelector('.inside-meta')?.textContent,`Level: ${level} · GitHub stars: ${stars}`);const clone=a.cloneNode(true);clone.querySelectorAll('.favourite-button,.item-favourite-button').forEach(e=>e.remove());assert.doesNotMatch(clone.textContent,/[☆★⭐✩✭✮✯✰]/u);assert.equal(clone.querySelectorAll('[href^="#icon-star"],.meta-stars,[class="star-icon"]').length,0);}});
  gate('G5 — Cycle 4 Featured duplication removed; Inside lists intact',()=>{assert.equal(now.doc.querySelectorAll('.top-inside').length,0);for(let i=0;i<next.length;i++){const text=s=>s.replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();assert.equal(text(field(next[i],'inside-list','ul')),text(field(prev[i],'inside-list','ul')));assert.equal(field(next[i],'inside-note'),field(prev[i],'inside-note'));const names=now.cards[i].querySelectorAll('.inside-list .inside-name').map(e=>e.textContent);for(const e of old.cards[i].querySelectorAll('.top-inside .inside-name'))assert.ok(names.includes(e.textContent));}});
@@ -71,12 +170,14 @@ async function runCycle4DOM(){
  console.log('Recorded probes / sole host signals: '+JSON.stringify(probes));
  gate('G6 — Cycle 4 search including unchanged Works-with exclusion',()=>{assert.ok(probes.works);assert.ok(probes.category);for(const x of [old,now]){x.reset();for(const term of ['skill-creator','plugin-dev','Intermediate','45,134']){x.search(term);assert.ok(!x.card('skill-15').hidden,term);}x.search('plugin-dev');assert.ok(x.card('skill-15').querySelector('details').open);assert.ok(x.card('skill-15').querySelectorAll('.inside-list mark').length>0);x.search(probes.category.term);assert.ok(!x.card(probes.category.id).hidden);x.search(probes.works.term);assert.ok(x.card(probes.works.id).hidden);x.reset();}});
  gate('G7 — Cycle 4 card and item favourites, restore',()=>{now.reset();const c=now.card('skill-15'),fav=()=>c.querySelector('.favourite-button'),item=()=>c.querySelector('[data-item-favourite-for="skill-15:skill-creator"]'),toggle=()=>now.doc.querySelector('#toggle-favourites').click();fav().click();toggle();assert.ok(!c.hidden);toggle();fav().click();item().click();c.querySelector('details').open=false;toggle();assert.ok(!c.hidden);assert.ok(c.querySelector('details').open);assert.deepEqual(c.querySelectorAll('li').filter(e=>!e.hidden).map(e=>e.querySelector('.inside-name').textContent),['skill-creator']);item().click();assert.ok(c.hidden);toggle();assert.equal(c.querySelectorAll('li').filter(e=>!e.hidden).length,5);assert.deepEqual([now.storage['topskills-favourites'],now.storage['topskills-item-favourites']],['[]','[]']);now.reset();});
- gate('G8 — Cycle 4 starter links, reveal, byte identity',()=>{assert.equal(files['script.js'],baseline.files['script.js']);for(let i=0;i<next.length;i++){assert.equal(next[i].match(/<h3[^>]*>/)[0],prev[i].match(/<h3[^>]*>/)[0]);assert.equal(next[i].match(/<summary>[\s\S]*?<\/summary>/)[0],prev[i].match(/<summary>[\s\S]*?<\/summary>/)[0].replace('Inside this repo — ',''));}const attrs=s=>[...s.replace(/<span class="meta-stars"[\s\S]*?<\/span>/g,'').matchAll(/\b(?:href|id|aria-label|data-favourite-for|data-item-favourite-for)="[^"]*"/g)].map(m=>m[0]).sort();assert.deepEqual(attrs(files['index.html']),attrs(baseline.files['index.html']));for(const [n,h]of Object.entries(baseline.hashes))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,n))).digest('hex'),h,n);const links=now.doc.querySelectorAll('.start-strip a');assert.deepEqual(links.map(e=>e.getAttribute('href')),['#skill-4','#skill-3','#skill-22']);for(const link of links){now.reset();const id=link.getAttribute('href').slice(1),c=now.card(id);c.querySelector('details').open=false;now.filter('Design');if(id==='skill-22')now.search('nonexistent-probe');assert.ok(c.hidden);link.click();assert.ok(!c.hidden);assert.equal(now.doc.querySelector('#reveal-note').textContent,'Filters cleared. Showing all skills.');assert.equal(now.doc.activeElement.id,id);assert.ok(now.doc.activeElement.scrolled);assert.ok(!c.querySelector('details').open);assert.equal(now.cards.filter(c=>!c.hidden).length,22);}});
+ gate('G8 — Cycle 4 starter links, reveal, byte identity',()=>{assert.equal(files['script.js'],baseline.files['script.js']);for(let i=0;i<next.length;i++){assert.equal(next[i].match(/<h3[^>]*>/)[0],prev[i].match(/<h3[^>]*>/)[0]);assert.equal(next[i].match(/<summary>[\s\S]*?<\/summary>/)[0],cycle7ExpectedCopy(prev[i].match(/<summary>[\s\S]*?<\/summary>/)[0].replace('Inside this repo — ','')));}const attrs=s=>[...s.replace(/<span class="meta-stars"[\s\S]*?<\/span>/g,'').matchAll(/\b(?:href|id|aria-label|data-favourite-for|data-item-favourite-for)="[^"]*"/g)].map(m=>m[0]).sort();assert.deepEqual(attrs(files['index.html']),attrs(baseline.files['index.html']));for(const [n,h]of Object.entries(baseline.hashes))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,n))).digest('hex'),h,n);const links=now.doc.querySelectorAll('.start-strip a');assert.deepEqual(links.map(e=>e.getAttribute('href')),['#skill-4','#skill-3','#skill-22']);for(const link of links){now.reset();const id=link.getAttribute('href').slice(1),c=now.card(id);c.querySelector('details').open=false;now.filter('Design');if(id==='skill-22')now.search('nonexistent-probe');assert.ok(c.hidden);link.click();assert.ok(!c.hidden);assert.equal(now.doc.querySelector('#reveal-note').textContent,'Filters cleared. Showing all skills.');assert.equal(now.doc.activeElement.id,id);assert.ok(now.doc.activeElement.scrolled);assert.ok(!c.querySelector('details').open);assert.equal(now.cards.filter(c=>!c.hidden).length,22);}});
  gate('G9 — Cycle 4 chapter filters and results count',()=>{now.reset();for(const category of [...new Set(old.cards.map(c=>c.dataset.category)),'All skills']){now.filter(category);const expected=old.cards.filter(c=>category==='All skills'||c.dataset.category===category).map(c=>c.querySelector('h3').id);assert.deepEqual(now.cards.filter(c=>!c.hidden).map(c=>c.querySelector('h3').id),expected);assert.equal(now.doc.querySelector('#results-count').textContent,`${expected.length} ${expected.length===1?'skill':'skills'} in the collection`);}});
  const words=s=>s.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/g,'').replace(/<button\b[^>]*class="(?:item-)?favourite-button"[^>]*>[\s\S]*?<\/button>/g,'').replace(/<[^>]+>/g,' ').trim().split(/\s+/).filter(w=>w&&w!=='·').length;
  const collapsed=s=>s.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1');
  const budgets=next.map((c,i)=>({id:now.cards[i].querySelector('h3').id,title:now.cards[i].querySelector('h3').textContent,collapsedBefore:words(collapsed(prev[i])),collapsedAfter:words(collapsed(c)),expandedBefore:words(prev[i]),expandedAfter:words(c),deleted:words(field(prev[i],'top-inside'))+(prev[i].includes('see GitHub repository')?4:0)+(prev[i].includes('<summary>Inside this repo — ')?4:0),moved:words(field(c,'card-use'))+2,added:3}));
- gate('Section 5 — measured budgets and deletion accounting',()=>{for(const b of budgets){assert.ok(b.collapsedAfter<b.collapsedBefore,b.id+' visible must fall');assert.equal(b.expandedAfter,b.expandedBefore-b.deleted+b.added,b.id+' expanded');assert.equal(b.collapsedBefore-b.collapsedAfter,b.deleted+b.moved,b.id+' deleted vs moved');}const b=budgets.find(c=>c.id==='skill-15');assert.deepEqual([b.collapsedBefore,b.collapsedAfter,b.expandedBefore,b.expandedAfter],[59,46,259,255]);});
+ // Cycle 7 copy delta, measured Cycle 6 -> Cycle 7 with this file's words() on full card HTML (17 Use rewrites + 8 summary transforms; all other cards 0). The Cycle 4 deletion accounting gains this term; nothing else in the identities changes.
+ const cycle7CopyDelta={'skill-2':-1,'skill-3':-2,'skill-4':-1,'skill-5':-1,'skill-7':-2,'skill-8':-1,'skill-9':-1,'skill-11':1,'skill-12':-2,'skill-13':-1,'skill-15':-2,'skill-16':-3,'skill-17':-2,'skill-18':-2,'skill-19':-1,'skill-20':-1,'skill-21':-2,'skill-22':-2};
+ gate('Section 5 — measured budgets and deletion accounting',()=>{for(const b of budgets){const d=cycle7CopyDelta[b.id]||0;assert.ok(b.collapsedAfter<b.collapsedBefore,b.id+' visible must fall');assert.equal(b.expandedAfter,b.expandedBefore-b.deleted+b.added+d,b.id+' expanded');assert.equal(b.collapsedBefore-b.collapsedAfter,b.deleted+b.moved-d,b.id+' deleted vs moved');}const b=budgets.find(c=>c.id==='skill-15');assert.deepEqual([b.collapsedBefore,b.collapsedAfter,b.expandedBefore,b.expandedAfter],[59,44,259,253]);});
  const totals=Object.fromEntries(['collapsedBefore','collapsedAfter','expandedBefore','expandedAfter','deleted','moved','added'].map(k=>[k,budgets.reduce((n,b)=>n+b[k],0)]));console.log('Budget totals: '+JSON.stringify(totals));console.table(budgets);
  const report={results,probes,budgets,totals,stopped:[],rendered:'BLOCKED: Chromium startup fails: sandbox_host_linux.cc shutdown: Operation not permitted. G10 requires independent reviewer browser check.'};fs.writeFileSync(path.join(__dirname,'cycle4-results.json'),JSON.stringify(report,null,2)+'\n');if(results.some(r=>r.status==='FAIL'))process.exitCode=1;
 }
@@ -216,9 +317,11 @@ async function runCycle4() {
  const words=s=>s.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/g,'').replace(/<button\b[^>]*class="(?:item-)?favourite-button"[^>]*>[\s\S]*?<\/button>/g,'').replace(/<[^>]+>/g,' ').trim().split(/\s+/).filter(w=>w&&w!=='·').length;
  const collapsed=s=>s.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1');
  const budgets=now.map((c,i)=>{const b=old[i],feature=b.html.match(/<p class="top-inside">[\s\S]*?<\/p>/)[0];const deleted=words(feature)+(b.cardUse.includes('see GitHub repository')?4:0);return {id:c.id,title:c.title,collapsedBefore:words(collapsed(b.html)),collapsedAfter:words(collapsed(c.html)),expandedBefore:words(b.html),expandedAfter:words(c.html),deleted,moved:2+words(c.cardUse),added:3};});
+ // Cycle 7 copy delta, same measured table as the DOM gate (rendered run is sandbox-blocked; kept identical so a future rendered run matches).
+ const cycle7CopyDelta={'skill-2':-1,'skill-3':-2,'skill-4':-1,'skill-5':-1,'skill-7':-2,'skill-8':-1,'skill-9':-1,'skill-11':1,'skill-12':-2,'skill-13':-1,'skill-15':-2,'skill-16':-3,'skill-17':-2,'skill-18':-2,'skill-19':-1,'skill-20':-1,'skill-21':-2,'skill-22':-2};
  await gate('Section 5 — measured budgets and deletion accounting',async()=>{
-  for(const b of budgets){assert.ok(b.collapsedAfter<b.collapsedBefore,b.id+' collapsed');assert.equal(b.expandedAfter,b.expandedBefore-b.deleted+b.added,b.id+' expanded accounting');assert.equal(b.collapsedBefore-b.collapsedAfter,b.deleted+b.moved,b.id+' moved accounting');}
-  const b=budgets.find(c=>c.id==='skill-15');assert.deepEqual([b.collapsedBefore,b.collapsedAfter,b.expandedBefore,b.expandedAfter],[59,46,259,255]);
+  for(const b of budgets){const d=cycle7CopyDelta[b.id]||0;assert.ok(b.collapsedAfter<b.collapsedBefore,b.id+' collapsed');assert.equal(b.expandedAfter,b.expandedBefore-b.deleted+b.added+d,b.id+' expanded accounting');assert.equal(b.collapsedBefore-b.collapsedAfter,b.deleted+b.moved-d,b.id+' moved accounting');}
+  const b=budgets.find(c=>c.id==='skill-15');assert.deepEqual([b.collapsedBefore,b.collapsedAfter,b.expandedBefore,b.expandedAfter],[59,44,259,253]);
  });
  const totals=Object.fromEntries(['collapsedBefore','collapsedAfter','expandedBefore','expandedAfter','deleted','moved','added'].map(k=>[k,budgets.reduce((n,b)=>n+b[k],0)]));
  console.log('Budgets all cards: '+JSON.stringify(budgets));console.log('Budget totals: '+JSON.stringify(totals));

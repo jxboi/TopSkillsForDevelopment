@@ -38,7 +38,7 @@ How work moves from an idea to shipped code.
 
 - Category: Workflow · Level: Advanced · Stars: 291,489 · Repo: https://github.com/affaan-m/ECC · Card: https://topskillsfordevelopment.vercel.app#skill-2
 - Description: An agent-harness optimisation system with skills, memory, security practices, and research-first workflows.
-- Use when: When running a full-lifecycle workflow in a supported harness that needs planning, test-driven implementation, fresh-context review, and build repair.
+- Use when: Running a full-lifecycle workflow in a supported harness that needs planning, test-driven implementation, fresh-context review, and build repair.
 - Top inside: Featured: tdd-workflow, /ecc:plan
 - Inside: Featured — 5 skills and commands, total not stated
 - tdd-workflow [Testing] — Directs a complete test-driven development cycle requiring a failing test prior to code implementation, followed by incremental greening and refactoring targeting 80%+ test coverage across unit, integration, and E2E suites.
@@ -59,7 +59,7 @@ How work moves from an idea to shipped code.
 - Description: Skills for real engineers, including alignment interviews and disciplined test-driven loops.
 - Use when: At the start of feature or bug work, when human grilling should settle ambiguity and shared terminology before tickets and test-driven development.
 - Top inside: Top inside: grill-with-docs, grill-me
-- Inside: 27 of 27 skills
+- Inside: All 27 skills
 - grill-with-docs [Planning] — Interrogates the user in depth about planned changes while writing Architecture Decision Records (ADRs) and maintaining a ubiquitous project domain glossary (`GLOSSARY.md`) before work starts.
   > /grill-with-docs Interview me about our proposed caching architecture while recording architectural decision records and updating our project glossary.
 - grill-me [Planning] — Recursively interviews the user on an idea, plan, or general proposal until every branch of the design decision tree is explored and aligned.
@@ -119,9 +119,9 @@ How work moves from an idea to shipped code.
 
 - Category: Workflow · Level: Intermediate · Stars: 143,671 · Repo: https://github.com/github/spec-kit · Card: https://topskillsfordevelopment.vercel.app#skill-12
 - Description: A toolkit for spec-driven development that helps agents build from a specification.
-- Use when: When building a greenfield app or complex multi-step feature whose requirements and tasks must become executable specifications before code is generated.
+- Use when: Building a greenfield app or complex multi-step feature whose requirements and tasks must become executable specifications before code is generated.
 - Top inside: Top commands: speckit-specify, speckit-plan
-- Inside: 5 of 5 core commands
+- Inside: All 5 core commands
 - speckit-specify [Planning] — Creates or updates a detailed feature specification (`spec.md`) from natural language requirements, defining functional scope, user stories, and technical constraints.
   > /speckit-specify Build a photo organizer with albums grouped by date and a tile preview of each album.
 - speckit-plan [Planning] — Executes implementation planning using design templates to generate technical design artifacts, technology choices, and architectural boundaries.
@@ -137,9 +137,9 @@ How work moves from an idea to shipped code.
 
 - Category: Workflow · Level: Intermediate · Stars: 37,031 · Repo: https://github.com/vercel-labs/skills · Card: https://topskillsfordevelopment.vercel.app#skill-16
 - Description: An open agent skills tool installed with npx skills.
-- Use when: When you need one CLI to search, install, update, sync, or test-run skills across several coding agent harnesses from git, URLs, or npm.
+- Use when: Needing one CLI to search, install, update, sync, or test-run skills across several coding agent harnesses from git, URLs, or npm.
 - Top inside: Top commands: find-skills, skills add
-- Inside: 5 of 5 (1 skill, 4 commands)
+- Inside: All 5 (1 skill, 4 commands)
 - find-skills [Discovery] — Instructs an AI coding agent on how to query and install agent skills via the Skills CLI when a user requests capabilities not natively supported.
   > Find a skill for building responsive HTML emails and install it directly into our current project workspace to style newsletters.
 - skills add (command) [Setup] — Downloads and installs agent skills from GitHub repositories, URLs, or local paths directly into the active project or globally.
@@ -157,7 +157,7 @@ How work moves from an idea to shipped code.
 - Description: Poteto's official Cursor plugin that turns Cursor into a real engineering team, helping you write less but higher quality code with rigorous engineering principles and fearless parallelism via /poteto-mode and its 23 playbooks.
 - Use when: At the start of a demanding task such as reproducing defects, tracing performance bottlenecks, or overnight autonomous work needing empirical verification.
 - Top inside: Top inside: bug-fix, feature
-- Inside: 23 of 23 playbooks
+- Inside: All 23 playbooks
 - bug-fix [Debugging] — Mandates reproducing a reported defect directly on the matching target surface first, binary-searching root causes with runtime evidence, and staging a failing repro test commit before landing the fix.
   > /poteto-mode users get two notifications after a retry: repro first with a failing test, then fix and verify.
 - feature [Building] — Orchestrates implementing new or modified behavior by establishing domain data shapes, conducting parallel architectural exploration, writing a four-dimension throughput checkpoint, and delegating scoped implementation.
@@ -215,7 +215,7 @@ Checks that keep code honest before it ships.
 - Description: A single behaviour guide distilled from common LLM coding pitfalls.
 - Use when: During a non-trivial coding task where models tend to assume silently, add speculative abstractions, edit unrelated code, or skip verifiable test loops.
 - Top inside: Inside: karpathy-guidelines
-- Inside: 1 of 1 skill
+- Inside: 1 skill
 - karpathy-guidelines [Planning] — Enforces four foundational behavioral principles (Think Before Coding, Simplicity First, Surgical Changes, and Goal-Driven Execution) to curb AI over-engineering, unstated assumptions, and extraneous edits.
   > Follow the karpathy-guidelines to add a feature to export user data, clarifying assumptions and delivering minimal surgical changes with verified tests.
 
@@ -223,7 +223,7 @@ Checks that keep code honest before it ships.
 
 - Category: Quality · Level: Advanced · Stars: 111,372 · Repo: https://github.com/addyosmani/agent-skills · Card: https://topskillsfordevelopment.vercel.app#skill-8
 - Description: Production-grade engineering skills for AI coding agents.
-- Use when: When guiding an agent through multi-stage feature delivery that needs requirements, specs, tests, security passes, and human checkpoints to prevent shortcuts.
+- Use when: Guiding an agent through multi-stage feature delivery that needs requirements, specs, tests, security passes, and human checkpoints to prevent shortcuts.
 - Top inside: Top inside: /spec, /plan
 - Inside: 5 of 25 skills
 - /spec [Planning] — Authors a comprehensive PRD covering objectives, commands, directory structure, testing strategy, and boundaries before writing any code.
@@ -245,7 +245,7 @@ Interfaces that look considered, not generated.
 
 - Category: Design · Level: Intermediate · Stars: 141,949 · Repo: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill · Card: https://topskillsfordevelopment.vercel.app#skill-5
 - Description: Design intelligence for professional, polished user interfaces.
-- Use when: When building, refactoring, or auditing an interface that needs concrete choices on palette, font pairing, responsive layout, and accessibility compliance.
+- Use when: Building, refactoring, or auditing an interface that needs concrete choices on palette, font pairing, responsive layout, and accessibility compliance.
 - Top inside: Top inside: ui-ux-pro-max, design-system
 - Inside: 5 of 7 skills
 - ui-ux-pro-max [Design] — Delivers searchable, stack-specific design intelligence across 22 frameworks, covering UI styles, color palettes, font pairings, animations, and UX best practices.
@@ -263,9 +263,9 @@ Interfaces that look considered, not generated.
 
 - Category: Design · Level: Intermediate · Stars: 105,141 · Repo: https://github.com/Leonxlnx/taste-skill · Card: https://topskillsfordevelopment.vercel.app#skill-21
 - Description: Agent skills that give coding agents design taste, with art direction, reference images, and a browser check.
-- Use when: When a landing page, portfolio, or app screen looks generic or AI-made and needs custom, premium art direction.
+- Use when: A landing page, portfolio, or app screen that looks generic or AI-made and needs custom, premium art direction.
 - Top inside: Inside: design-taste-frontend
-- Inside: 1 of 1 skill
+- Inside: 1 skill
 - design-taste-frontend [Design] — Applies researched art directions, sources real open-archive media, and enforces an anti-slop house style with automated real-browser screenshot audits for public pages and app screens.
   > Build a landing page for Ledgerly, an invoicing tool for freelance designers, with pricing and a short FAQ.
 - Note: Earlier classic variants moved to satellite repos.
@@ -274,9 +274,9 @@ Interfaces that look considered, not generated.
 
 - Category: Design · Level: Intermediate · Stars: 94,446 · Repo: https://github.com/pbakaus/impeccable · Card: https://topskillsfordevelopment.vercel.app#skill-22
 - Description: The design vocabulary for your coding agent, steering with polish and bolder, reviewing with critique and audit, and catching AI slop before it ships.
-- Use when: When designing, critiquing, polishing, or auditing frontend interfaces to elevate craft and catch AI design slop before shipping.
+- Use when: Designing, critiquing, polishing, or auditing frontend interfaces to elevate craft and catch AI design slop before shipping.
 - Top inside: Top commands: init, polish
-- Inside: 23 of 23 commands
+- Inside: All 23 commands
 - init [Planning] — Runs project discovery once per project, asking only what it cannot infer, and writes PRODUCT.md that every later command reads.
   > Run /impeccable init for this project, discovering its users, jobs, and constraints and writing the PRODUCT.md every later command will read.
 - polish [Design] — Refines an existing interface for shipping without redesigning it, fixing blockers, missing states, drift, and visual inconsistencies in priority order.
@@ -355,9 +355,9 @@ Ways to hold a codebase in your head.
 
 - Category: Knowledge · Level: Intermediate · Stars: 137,533 · Repo: https://github.com/Graphify-Labs/graphify · Card: https://topskillsfordevelopment.vercel.app#skill-7
 - Description: Turns a codebase into an explorable knowledge graph.
-- Use when: When exploring an unfamiliar codebase or a mixed folder of code, PDFs, notes, and images that needs a persistent, queryable graph of cross-file links.
+- Use when: Exploring an unfamiliar codebase or a mixed folder of code, PDFs, notes, and images that needs a persistent, queryable graph of cross-file links.
 - Top inside: Top subcommands: /graphify, graphify query
-- Inside: 5 of 5 (1 skill, 4 subcommands)
+- Inside: All 5 (1 skill, 4 subcommands)
 - /graphify [Understanding] — Executes the full deterministic AST parsing and extraction pipeline on a codebase to detect communities, identify god nodes, and generate an interactive HTML visual graph, GraphRAG-ready JSON, and a `GRAPH_REPORT.md` architecture summary.
   > /graphify . --mode deep to extract AST dependencies, identify god nodes, and generate the architecture report for this codebase.
 - graphify query (subcommand) [Understanding] — Answers architecture and code relationship questions using deterministic graph traversal (BFS or semantic search) against local graph artifacts instead of grepping raw source files.
@@ -373,7 +373,7 @@ Ways to hold a codebase in your head.
 
 - Category: Knowledge · Level: Intermediate · Stars: 88,717 · Repo: https://github.com/Egonex-AI/Understand-Anything · Card: https://topskillsfordevelopment.vercel.app#skill-9
 - Description: Turns any codebase into an interactive knowledge graph to explore, search, and ask questions about.
-- Use when: When onboarding onto a large unfamiliar repository of 200,000+ lines and you need a visual dashboard of architecture layers, business flows, and diff impact.
+- Use when: Onboarding onto a large unfamiliar repository of 200,000+ lines and you need a visual dashboard of architecture layers, business flows, and diff impact.
 - Top inside: Top inside: understand, understand-dashboard
 - Inside: 5 of 9 skills
 - understand [Understanding] — Scans the project with tree-sitter and a multi-agent pipeline to extract files, functions, classes, and dependencies into an incremental knowledge graph saved in `.ua/knowledge-graph.json`.
@@ -391,7 +391,7 @@ Ways to hold a codebase in your head.
 
 - Category: Knowledge · Level: Intermediate · Stars: 184,517 · Repo: https://github.com/anthropics/skills · Card: https://topskillsfordevelopment.vercel.app#skill-11
 - Description: The official public repository for Agent Skills from Anthropic.
-- Use when: When Claude needs multi-step procedural guidance for domain tasks like DOCX, PDF, PPTX, and XLSX generation, web app testing, or MCP server scaffolding.
+- Use when: Claude work that needs multi-step procedural guidance for domain tasks like DOCX, PDF, PPTX, and XLSX generation, web app testing, or MCP server scaffolding.
 - Top inside: Top inside: pdf, docx
 - Inside: 5 of 19 skills
 - pdf [Writing] — Reads, extracts text and tabular data, merges, splits, rotates, watermarks, creates, fills forms, encrypts/decrypts, and runs OCR on PDF files.
@@ -409,7 +409,7 @@ Ways to hold a codebase in your head.
 
 - Category: Knowledge · Level: Intermediate · Stars: 50,327 · Repo: https://github.com/kepano/obsidian-skills · Card: https://topskillsfordevelopment.vercel.app#skill-14
 - Description: Agent skills for using Obsidian through its CLI and open Markdown formats.
-- Use when: When a task writes wikilinks, embeds, or callouts, edits canvas or base files, or manages vault state through the Obsidian CLI.
+- Use when: A task that writes wikilinks, embeds, or callouts, edits canvas or base files, or manages vault state through the Obsidian CLI.
 - Top inside: Top inside: obsidian-markdown, obsidian-bases
 - Inside: 5 of 6 skills
 - obsidian-markdown [Writing] — Authors and edits Obsidian Flavored Markdown notes using wikilinks, transclusions, embeds, callout blocks, and YAML frontmatter properties.
@@ -427,7 +427,7 @@ Ways to hold a codebase in your head.
 
 - Category: Knowledge · Level: Intermediate · Stars: 21,643 · Repo: https://github.com/google/skills · Card: https://topskillsfordevelopment.vercel.app#skill-19
 - Description: Agent skills for Google products and technologies.
-- Use when: When designing or configuring services on Google Cloud, Gemini APIs, Firebase, Android, or Google Ads, or weighing Google products for a stack component.
+- Use when: Designing or configuring services on Google Cloud, Gemini APIs, Firebase, Android, or Google Ads, or weighing Google products for a stack component.
 - Top inside: Featured: finding-google-skills, google-cloud-recipe-auth
 - Inside: Featured — 5 skills, total not stated
 - finding-google-skills [Discovery] — Serves as Google's dynamic skills catalog router, inspecting user task requirements and fetching matching Google platform decision, setup, and architecture skills on demand from `index.json`.
@@ -450,7 +450,7 @@ Catalogs and directories for finding the right skill.
 
 - Category: Discovery · Level: Beginner · Stars: 48,666 · Repo: https://github.com/sickn33/agentic-awesome-skills · Card: https://topskillsfordevelopment.vercel.app#skill-10
 - Description: A large catalog of agentic skills for discovering, comparing, and planning which skills to use.
-- Use when: When an autonomous agent should inspect your codebase, search a skill catalog over read-only MCP, and produce a validated stack manifest with plan preview.
+- Use when: An autonomous agent that should inspect your codebase, search a skill catalog over read-only MCP, and produce a validated stack manifest with plan preview.
 - Top inside: Featured: brainstorming, concise-planning
 - Inside: Featured — 5 skills, total not stated
 - brainstorming [Planning] — Guides the agent through collaborative reasoning and inquiry to refine ambiguous requirements and creative ideas into validated architectural designs before implementation.
@@ -469,7 +469,7 @@ Catalogs and directories for finding the right skill.
 
 - Category: Discovery · Level: Beginner · Stars: 56,772 · Repo: https://github.com/hesreallyhim/awesome-claude-code · Card: https://topskillsfordevelopment.vercel.app#skill-13
 - Description: A curated collection of Claude Code skills, agents, and developer tooling.
-- Use when: When configuring Claude Code and you want a selective directory of vetted tools, status lines, hooks, subagents, and guides that meet maturity thresholds.
+- Use when: Configuring Claude Code and you want a selective directory of vetted tools, status lines, hooks, subagents, and guides that meet maturity thresholds.
 - Top inside: Featured: Caveman, Claude Code Infrastructure Showcase
 - Inside: Featured — 5 entries, total not stated
 - Caveman [Communication] — Compresses agent communication tokens by instructing Claude Code to converse in concise, fragmented "caveman speak."
@@ -488,7 +488,7 @@ Catalogs and directories for finding the right skill.
 
 - Category: Discovery · Level: Intermediate · Stars: 45,134 · Repo: https://github.com/anthropics/claude-plugins-official · Card: https://topskillsfordevelopment.vercel.app#skill-15
 - Description: The official Anthropic-managed directory of high quality Claude Code plugins.
-- Use when: When you want to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code.
+- Use when: Wanting to discover and install Anthropic-vetted or partner-vetted commands, MCP configurations, agents, and skill bundles inside Claude Code.
 - Top inside: Featured: skill-creator, plugin-dev
 - Inside: Featured — 5 plugins, total not stated
 - skill-creator [Writing] — Guides users through creating, refining, evaluating, and benchmarking custom Claude Code agent skills with variance analysis.
@@ -507,7 +507,7 @@ Catalogs and directories for finding the right skill.
 
 - Category: Discovery · Level: Beginner · Stars: 36,519 · Repo: https://github.com/VoltAgent/awesome-agent-skills · Card: https://topskillsfordevelopment.vercel.app#skill-17
 - Description: A curated collection of 1000+ agent skills from official teams and the community.
-- Use when: When you need production-ready skills authored by engineering teams such as Supabase, Stripe, Sentry, and Vercel, usable across several coding assistants.
+- Use when: Needing production-ready skills authored by engineering teams such as Supabase, Stripe, Sentry, and Vercel, usable across several coding assistants.
 - Top inside: Featured: anthropics/docx, anthropics/doc-coauthoring
 - Inside: Featured — 5 skills, total not stated
 - anthropics/docx [Writing] — Enables coding agents to inspect, create, edit, and format Microsoft Word (`.docx`) documents.
@@ -526,7 +526,7 @@ Catalogs and directories for finding the right skill.
 
 - Category: Discovery · Level: Intermediate · Stars: 28,914 · Repo: https://github.com/alirezarezvani/claude-skills · Card: https://topskillsfordevelopment.vercel.app#skill-18
 - Description: A collection of Claude Code skills and plugins for engineering, product, research, and more.
-- Use when: When you need cross-functional playbooks for executive advisory, marketing, compliance, or research, plus zero-dependency Python analysis and conversion tools.
+- Use when: Needing cross-functional playbooks for executive advisory, marketing, compliance, or research, plus zero-dependency Python analysis and conversion tools.
 - Top inside: Top inside: skill-security-auditor, pw
 - Inside: Featured — 5 skills, total not stated
 - skill-security-auditor [Review] — Scans and audits AI agent skills for malicious execution patterns, subprocess calls, network data exfiltration, prompt injections, and supply-chain risks before installation, returning a strict PASS, WARN, or FAIL verdict.

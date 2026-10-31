@@ -44,13 +44,10 @@ function generate(html,siteURL) {
     assert.ok(id,'Card lacks shipped h3 id');
     const meta=cls(node,'card-meta'), category=node.attrs['data-category'];
     assert.equal(category,clean(cls(meta,'category')),'Category mismatch');
-    const metaChildren=meta.children.filter(n=>typeof n!=='string');
-    const dotIndex=metaChildren.findIndex(n=>n.attrs.class==='dot');
-    assert.ok(dotIndex>=0);const level=clean(metaChildren[dotIndex+1]);
-    const starNode=cls(meta,'meta-stars'),starText=text(starNode,n=>n.tag==='svg').trim();
-    assert.match(starText,/^\d{1,3}(?:,\d{3})*$/,'Unparseable stars');
-    assert.equal(starNode.attrs['aria-label'],starText+' GitHub stars');
-    const top=cls(node,'top-inside'),inside=cls(node,'inside-list');
+    const metadata=clean(cls(node,'inside-meta')).match(/^Level: (.+) · GitHub stars: (\d{1,3}(?:,\d{3})*)$/);
+    assert.ok(metadata,'Unparseable inside metadata');
+    const [,level,starText]=metadata;
+    const inside=cls(node,'inside-list');
     const items=byTag(inside,'li').map(item=>{
       const nameNode=cls(item,'inside-name'),kindNodes=byClass(item,'inside-kind');
       const prompt=singleLine(clean(cls(item,'example-prompt')));
@@ -59,12 +56,20 @@ function generate(html,siteURL) {
       return {name:clean(nameNode),category:clean(cls(item,'item-category')),kind:kindNodes.length?clean(one(kindNodes)).replace(/^\((command|subcommand)\)$/,'$1'):null,function:fn.slice(2).trim(),example_prompt:prompt};
     });
     const notes=byClass(node,'inside-note');
+    const summary=text(one(byTag(node,'summary')),n=>n.tag==='svg').trim();
+    // Preserve the legacy preview schema from visible rows and summary kinds.
+    // Collection's historical preview used "Top inside:" despite its Featured summary.
+    const previewLabel=items.length===1?'Inside:'
+      :summary.startsWith('Featured —')&&id!=='skill-18'?'Featured:'
+      :items.some(i=>i.kind==='subcommand')?'Top subcommands:'
+      :items.some(i=>i.kind==='command')||/commands$/.test(summary)?'Top commands:'
+      :'Top inside:';
     return {id,number:Number(id.slice('skill-'.length)),title:clean(heading),category,level,stars:Number(starText.replaceAll(',','')),
       repo:one(byTag(cls(node,'card-footer'),'a')).attrs.href,
       description:singleLine(clean(cls(node,'description'))),
       use_when:text(cls(node,'fit-use'),n=>n.tag==='strong').trim(),
-      top_inside:{label:clean(cls(top,'top-inside-label')),names:byClass(top,'inside-name').map(clean)},
-      inside_summary:text(one(byTag(node,'summary')),n=>n.tag==='svg').trim(),inside_note:notes.length?clean(one(notes)):null,inside:items};
+      top_inside:{label:previewLabel,names:items.slice(0,2).map(i=>i.name)},
+      inside_summary:summary,inside_note:notes.length?clean(one(notes)):null,inside:items};
   });
   const site=clean(one(byTag(page,'title'))).split(' — ')[0];
   const description=one(descendants(page,n=>n.tag==='meta'&&n.attrs.name==='description')).attrs.content;
@@ -97,5 +102,5 @@ module.exports={generate};
 if(require.main===module) {
   const root=path.join(__dirname,'..');
   const outputs=generate(fs.readFileSync(path.join(root,'index.html'),'utf8'),process.argv[2]||'https://topskillsfordevelopment.vercel.app');
-  for(const [name,content] of Object.entries(outputs))fs.writeFileSync(path.join(root,name),content);
+  for(const [name,content] of Object.entries(outputs).filter(([name])=>name!=='llms.txt'))fs.writeFileSync(path.join(root,name),content);
 }
