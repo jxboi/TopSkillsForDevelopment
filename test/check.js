@@ -1,3 +1,246 @@
+// Dependency-free DOM model for the shipped HTML and script. No layout claims.
+function cycle4DOM(html, script) {
+ const vm=require('node:vm');
+ const decode=s=>s.replace(/&(?:amp|lt|gt|quot|apos|#39|#x[\da-f]+|#\d+);/gi,m=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&apos;':"'",'&#39;':"'"}[m]??String.fromCodePoint(parseInt(m.slice(2,-1).replace(/^x/i,''),/^&#x/i.test(m)?16:10))));
+ const escape=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ class Text {
+  constructor(text){this.nodeType=3;this.textContent=text;this.parentElement=null;}
+  get outerHTML(){return escape(this.textContent);}
+  replaceWith(node){const p=this.parentElement,i=p.childNodes.indexOf(this);const ns=node.nodeType===11?node.childNodes:[node];p.childNodes.splice(i,1,...ns);ns.forEach(n=>n.parentElement=p);}
+  cloneNode(){return new Text(this.textContent);}
+ }
+ function simple(e,s){
+  if(s==='*')return true;
+  const not=[...s.matchAll(/:not\(([^)]+)\)/g)].map(m=>m[1]);s=s.replace(/:not\([^)]+\)/g,'');if(not.some(n=>simple(e,n)))return false;
+  const tag=s.match(/^[a-z][\w-]*/i)?.[0];if(tag&&e.tagName!==tag.toUpperCase())return false;
+  for(const m of s.replace(/\[[^\]]+\]/g,'').matchAll(/#([\w-]+)/g))if(e.id!==m[1])return false;
+  const withoutAttrs=s.replace(/\[[^\]]+\]/g,'');for(const m of withoutAttrs.matchAll(/\.([\w-]+)/g))if(!e.classList.contains(m[1]))return false;
+  for(const m of s.matchAll(/\[([\w-]+)(?:(\^?=)"([^"]*)")?\]/g)){const v=e.getAttribute(m[1]);if(v===null||(m[2]==='='&&v!==m[3])||(m[2]==='^='&&!v.startsWith(m[3])))return false;}
+  return true;
+ }
+ class Element {
+  constructor(tag,attrs={}){this.nodeType=1;this.tagName=tag.toUpperCase();this.attrs={...attrs};this.childNodes=[];this.parentElement=null;this.events={};this.open=false;this.value='';this.dataset={};for(const [k,v]of Object.entries(attrs))if(k.startsWith('data-'))this.dataset[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]=v;}
+  get id(){return this.attrs.id||'';}get className(){return this.attrs.class||'';}
+  get classList(){const self=this;return {contains:c=>self.className.split(/\s+/).includes(c),toggle(c,on){const set=new Set(self.className.split(/\s+/).filter(Boolean));if(on===undefined)on=!set.has(c);if(on)set.add(c);else set.delete(c);self.attrs.class=[...set].join(' ');}};}
+  get hidden(){return this.hasAttribute('hidden');}set hidden(v){if(v)this.attrs.hidden='';else delete this.attrs.hidden;}
+  get disabled(){return this.hasAttribute('disabled');}set disabled(v){if(v)this.attrs.disabled='';else delete this.attrs.disabled;}
+  get children(){return this.childNodes.filter(n=>n.nodeType===1);}
+  get firstElementChild(){return this.children[0]||null;}
+  get textContent(){return this.childNodes.map(n=>n.textContent).join('');}set textContent(v){this.childNodes=[new Text(v)];this.childNodes[0].parentElement=this;}
+  get innerHTML(){return this.childNodes.map(n=>n.outerHTML).join('');}set innerHTML(v){this.childNodes=parse(v).childNodes;this.childNodes.forEach(n=>n.parentElement=this);}
+  get outerHTML(){const attrs=Object.entries(this.attrs).map(([k,v])=>' '+k+'="'+v.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"').join('');return '<'+this.tagName.toLowerCase()+attrs+'>'+this.innerHTML+(voids.has(this.tagName)?'':'</'+this.tagName.toLowerCase()+'>');}
+  append(...ns){for(const n of ns){if(n.nodeType===11)this.append(...n.childNodes);else {this.childNodes.push(n);n.parentElement=this;}}}
+  matches(selector){return selector.split(/,\s*/).some(s=>{
+   const parts=s.trim().split(/\s+(?![^\[]*\])/);let current=this;
+   if(!simple(current,parts.pop()))return false;
+   while(parts.length){const next=parts.pop();if(next==='>'){current=current.parentElement;if(!current||!simple(current,parts.pop()))return false;}else{current=current.parentElement;while(current&&!simple(current,next))current=current.parentElement;if(!current)return false;}}return true;
+  });}
+  querySelectorAll(s){const out=[];const walk=e=>{for(const n of e.children){if(n.matches(s))out.push(n);walk(n);}};walk(this);return out;}
+  querySelector(s){return this.querySelectorAll(s)[0]||null;}
+  closest(s){let n=this;while(n){if(n.matches(s))return n;n=n.parentElement;}return null;}
+  getAttribute(k){return this.attrs[k]??null;}hasAttribute(k){return Object.hasOwn(this.attrs,k);}setAttribute(k,v){this.attrs[k]=String(v);}
+  remove(){if(this.parentElement)this.parentElement.childNodes=this.parentElement.childNodes.filter(n=>n!==this);this.parentElement=null;}
+  cloneNode(deep){const e=new Element(this.tagName,this.attrs);if(deep)e.append(...this.childNodes.map(n=>n.cloneNode(true)));return e;}
+  addEventListener(type,fn){(this.events[type]??=[]).push(fn);}
+  fire(type,extra={}){const event={target:this,button:0,defaultPrevented:false,...extra};let e=this;while(e){for(const f of e.events[type]||[])f(event);e=e.parentElement;}return event;}
+  click(){const ev=this.fire('click');if(this.tagName==='SUMMARY'&&!ev.defaultPrevented){this.parentElement.open=!this.parentElement.open;this.parentElement.fire('toggle');}}
+  focus(){doc.activeElement=this;}scrollIntoView(){this.scrolled=true;}
+ }
+ const voids=new Set(['META','LINK','INPUT','BR','HR','IMG','USE']);
+ function parse(s){const root=new Element('document');const stack=[root];for(const token of s.match(/<!--[\s\S]*?-->|<![^>]*>|<[^>]+>|[^<]+/g)||[]){if(/^<!/.test(token))continue;if(token.startsWith('</')){const tag=token.slice(2,-1).trim().toUpperCase();for(let i=stack.length-1;i>0;i--)if(stack[i].tagName===tag){stack.length=i;break;}}else if(token[0]==='<'){const tag=token.match(/^<([\w-]+)/)?.[1];if(!tag)continue;const attrs={};for(const m of token.slice(tag.length+1).matchAll(/([\w:-]+)(?:="([^"]*)"|='([^']*)')?/g))attrs[m[1]]=decode(m[2]??m[3]??'');const e=new Element(tag,attrs);stack.at(-1).append(e);if(!voids.has(e.tagName)&&!token.endsWith('/>'))stack.push(e);}else stack.at(-1).append(new Text(decode(token)));}return root;}
+ const doc=parse(html);doc.createTextNode=t=>new Text(t);doc.createElement=t=>new Element(t);doc.createDocumentFragment=()=>{const e=new Element('fragment');e.nodeType=11;return e;};doc.createTreeWalker=target=>{const nodes=[];const walk=e=>{for(const n of e.childNodes){if(n.nodeType===3)nodes.push(n);else walk(n);}};walk(target);let i=0;return {currentNode:null,nextNode(){this.currentNode=nodes[i++];return !!this.currentNode;}};};
+ const storage={};const localStorage={getItem:k=>storage[k]??null,setItem:(k,v)=>storage[k]=v};
+ vm.runInNewContext(script,{document:doc,localStorage,NodeFilter:{SHOW_TEXT:4},console,location:{hash:''},addEventListener(){}});
+ return {doc,storage,cards:doc.querySelectorAll('.skill-card'),search(term){const e=doc.querySelector('#search');e.value=term;e.fire('input');},reset(){doc.querySelector('#reset-filters').click();},filter(c){doc.querySelector('[data-filter="'+c+'"]').click();},card(id){return doc.querySelector('#'+id).closest('.skill-card');}};
+}
+async function runCycle4DOM(){
+ const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+ const root=path.resolve(__dirname,'..'),baseline=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/cycle4-baseline.json'),'utf8'));
+ const files=Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,fs.readFileSync(path.join(root,n),'utf8')]));
+ const old=cycle4DOM(baseline.files['index.html'],baseline.files['script.js']),now=cycle4DOM(files['index.html'],files['script.js']);
+ const results=[];const gate=(name,fn)=>{try{fn();results.push({name,status:'PASS'});console.log('PASS '+name);}catch(e){results.push({name,status:'FAIL',blocked:e.message});console.error('FAIL (blocked) '+name+': '+e.message);}};
+ const rawCards=s=>[...s.matchAll(/<article class="skill-card"[\s\S]*?<\/article>/g)].map(m=>m[0]);const prev=rawCards(baseline.files['index.html']),next=rawCards(files['index.html']);
+ const field=(s,c,t='p')=>s.match(new RegExp('<'+t+' class="'+c+'"[\\s\\S]*?<\\/'+t+'>'))?.[0];
+ gate('G1 — Cycle 4 collapsed block order',()=>{assert.equal(now.cards.length,22);for(const c of now.cards){assert.deepEqual(c.children.map(e=>e.tagName+'.'+e.className),['DIV.card-meta','H3.','P.description','DIV.fit','DETAILS.inside','DIV.card-footer']);assert.ok(c.querySelector('details').firstElementChild.matches('summary'));assert.ok(!c.querySelector('details').open);assert.ok(c.childNodes.filter(n=>n.nodeType===3).every(n=>!n.textContent.trim()));}});
+ gate('G2 — Cycle 4 agreed visible elements and preserved controls',()=>{for(let i=0;i<next.length;i++){const a=now.cards[i],b=old.cards[i];assert.equal(a.querySelector('h3').id,b.querySelector('h3').id);assert.equal(a.dataset.category,b.dataset.category);assert.equal(a.querySelector('h3').textContent,b.querySelector('h3').textContent);assert.equal(a.querySelector('.number').outerHTML,b.querySelector('.number').outerHTML);assert.equal(field(next[i],'description'),field(prev[i],'description'));assert.equal(field(next[i],'fit','div'),field(prev[i],'fit','div'));assert.deepEqual(a.querySelector('.card-meta').children.map(e=>e.className),['number','category']);assert.equal(field(next[i],'card-footer','div'),field(prev[i],'card-footer','div').replace(field(prev[i],'card-use'),''));assert.deepEqual(a.querySelectorAll('summary,a,button').filter(e=>!e.closest('details')||e.matches('summary')).map(e=>e.tagName),['SUMMARY','A','BUTTON']);}});
+ gate('G3 — Cycle 4 install destination and moved detail lines',()=>{for(let i=0;i<next.length;i++){assert.ok(!next[i].includes('see GitHub repository'));assert.equal(field(next[i],'card-use'),field(prev[i],'card-use').replace(' · <span class="card-use-label">Install:</span> see GitHub repository',''));const d=now.cards[i].querySelector('details');assert.deepEqual(d.children.slice(0,4).map(e=>e.tagName+'.'+e.className),['SUMMARY.','P.card-use','P.inside-meta','UL.inside-list']);assert.equal(d.children[1].querySelectorAll('a,button,svg,input').length,0);assert.equal(d.children[2].children.length,0);}});
+ gate('G4 — Cycle 4 stars reserved for favourites',()=>{for(let i=0;i<next.length;i++){const b=old.cards[i],a=now.cards[i],level=b.querySelector('.card-meta > span:not([class])').textContent,stars=b.querySelector('.meta-stars').textContent.trim();assert.equal(a.querySelector('.inside-meta')?.textContent,`Level: ${level} · GitHub stars: ${stars}`);const clone=a.cloneNode(true);clone.querySelectorAll('.favourite-button,.item-favourite-button').forEach(e=>e.remove());assert.doesNotMatch(clone.textContent,/[☆★⭐✩✭✮✯✰]/u);assert.equal(clone.querySelectorAll('[href^="#icon-star"],.meta-stars,[class="star-icon"]').length,0);}});
+ gate('G5 — Cycle 4 Featured duplication removed; Inside lists intact',()=>{assert.equal(now.doc.querySelectorAll('.top-inside').length,0);for(let i=0;i<next.length;i++){assert.equal(field(next[i],'inside-list','ul'),field(prev[i],'inside-list','ul'));assert.equal(field(next[i],'inside-note'),field(prev[i],'inside-note'));const names=now.cards[i].querySelectorAll('.inside-list .inside-name').map(e=>e.textContent);for(const e of old.cards[i].querySelectorAll('.top-inside .inside-name'))assert.ok(names.includes(e.textContent));}});
+ const probes={sole:[]};
+ for(const c of old.cards){const id=c.querySelector('h3').id,line=c.querySelector('.card-use'),host=line.textContent.split('Works with:')[1].split('·')[0].trim(),first=host.split(',')[0].trim(),meaning=c.querySelectorAll('h3,.description,.fit-use').map(e=>e.textContent).join(' ').toLowerCase();if(!meaning.includes(host.toLowerCase())&&!meaning.includes(first.toLowerCase()))probes.sole.push({id,host,first});const rest=c.cloneNode(true);rest.querySelectorAll('.card-use,.favourite-button,.item-favourite-button').forEach(e=>e.remove());for(const term of host.match(/[\w.+-]+/g)||[])if(!probes.works&&term.length>2&&!['and','more'].includes(term)&&!rest.textContent.toLowerCase().includes(term.toLowerCase()))probes.works={id,term};const outer=c.cloneNode(true);outer.querySelector('details').remove();for(const e of c.querySelectorAll('.item-category'))if(!probes.category&&!outer.textContent.toLowerCase().includes(e.textContent.toLowerCase()))probes.category={id,term:e.textContent};}
+ console.log('Recorded probes / sole host signals: '+JSON.stringify(probes));
+ gate('G6 — Cycle 4 search including unchanged Works-with exclusion',()=>{assert.ok(probes.works);assert.ok(probes.category);for(const x of [old,now]){x.reset();for(const term of ['skill-creator','plugin-dev','Intermediate','45,134']){x.search(term);assert.ok(!x.card('skill-15').hidden,term);}x.search('plugin-dev');assert.ok(x.card('skill-15').querySelector('details').open);assert.ok(x.card('skill-15').querySelectorAll('.inside-list mark').length>0);x.search(probes.category.term);assert.ok(!x.card(probes.category.id).hidden);x.search(probes.works.term);assert.ok(x.card(probes.works.id).hidden);x.reset();}});
+ gate('G7 — Cycle 4 card and item favourites, restore',()=>{now.reset();const c=now.card('skill-15'),fav=()=>c.querySelector('.favourite-button'),item=()=>c.querySelector('[data-item-favourite-for="skill-15:skill-creator"]'),toggle=()=>now.doc.querySelector('#toggle-favourites').click();fav().click();toggle();assert.ok(!c.hidden);toggle();fav().click();item().click();c.querySelector('details').open=false;toggle();assert.ok(!c.hidden);assert.ok(c.querySelector('details').open);assert.deepEqual(c.querySelectorAll('li').filter(e=>!e.hidden).map(e=>e.querySelector('.inside-name').textContent),['skill-creator']);item().click();assert.ok(c.hidden);toggle();assert.equal(c.querySelectorAll('li').filter(e=>!e.hidden).length,5);assert.deepEqual([now.storage['topskills-favourites'],now.storage['topskills-item-favourites']],['[]','[]']);now.reset();});
+ gate('G8 — Cycle 4 starter links, reveal, byte identity',()=>{assert.equal(files['script.js'],baseline.files['script.js']);for(let i=0;i<next.length;i++){assert.equal(next[i].match(/<h3[^>]*>/)[0],prev[i].match(/<h3[^>]*>/)[0]);assert.equal(next[i].match(/<summary>[\s\S]*?<\/summary>/)[0],prev[i].match(/<summary>[\s\S]*?<\/summary>/)[0]);}const attrs=s=>[...s.replace(/<span class="meta-stars"[\s\S]*?<\/span>/g,'').matchAll(/\b(?:href|id|aria-label|data-favourite-for|data-item-favourite-for)="[^"]*"/g)].map(m=>m[0]).sort();assert.deepEqual(attrs(files['index.html']),attrs(baseline.files['index.html']));for(const [n,h]of Object.entries(baseline.hashes))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,n))).digest('hex'),h,n);const links=now.doc.querySelectorAll('.start-strip a');assert.deepEqual(links.map(e=>e.getAttribute('href')),['#skill-4','#skill-3','#skill-22']);for(const link of links){now.reset();const id=link.getAttribute('href').slice(1),c=now.card(id);c.querySelector('details').open=false;now.filter('Design');if(id==='skill-22')now.search('nonexistent-probe');assert.ok(c.hidden);link.click();assert.ok(!c.hidden);assert.equal(now.doc.querySelector('#reveal-note').textContent,'Filters cleared. Showing all skills.');assert.equal(now.doc.activeElement.id,id);assert.ok(now.doc.activeElement.scrolled);assert.ok(!c.querySelector('details').open);assert.equal(now.cards.filter(c=>!c.hidden).length,22);}});
+ gate('G9 — Cycle 4 chapter filters and results count',()=>{now.reset();for(const category of [...new Set(old.cards.map(c=>c.dataset.category)),'All skills']){now.filter(category);const expected=old.cards.filter(c=>category==='All skills'||c.dataset.category===category).map(c=>c.querySelector('h3').id);assert.deepEqual(now.cards.filter(c=>!c.hidden).map(c=>c.querySelector('h3').id),expected);assert.equal(now.doc.querySelector('#results-count').textContent,`${expected.length} ${expected.length===1?'skill':'skills'} in the collection`);}});
+ const words=s=>s.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/g,'').replace(/<button\b[^>]*class="(?:item-)?favourite-button"[^>]*>[\s\S]*?<\/button>/g,'').replace(/<[^>]+>/g,' ').trim().split(/\s+/).filter(w=>w&&w!=='·').length;
+ const collapsed=s=>s.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1');
+ const budgets=next.map((c,i)=>({id:now.cards[i].querySelector('h3').id,title:now.cards[i].querySelector('h3').textContent,collapsedBefore:words(collapsed(prev[i])),collapsedAfter:words(collapsed(c)),expandedBefore:words(prev[i]),expandedAfter:words(c),deleted:words(field(prev[i],'top-inside'))+(prev[i].includes('see GitHub repository')?4:0),moved:words(field(c,'card-use'))+2,added:3}));
+ gate('Section 5 — measured budgets and deletion accounting',()=>{for(const b of budgets){assert.ok(b.collapsedAfter<b.collapsedBefore,b.id+' visible must fall');assert.equal(b.expandedAfter,b.expandedBefore-b.deleted+b.added,b.id+' expanded');assert.equal(b.collapsedBefore-b.collapsedAfter,b.deleted+b.moved,b.id+' deleted vs moved');}const b=budgets.find(c=>c.id==='skill-15');assert.deepEqual([b.collapsedBefore,b.collapsedAfter,b.expandedBefore,b.expandedAfter],[59,46,259,255]);});
+ const totals=Object.fromEntries(['collapsedBefore','collapsedAfter','expandedBefore','expandedAfter','deleted','moved','added'].map(k=>[k,budgets.reduce((n,b)=>n+b[k],0)]));console.log('Budget totals: '+JSON.stringify(totals));console.table(budgets);
+ const report={results,probes,budgets,totals,stopped:[],rendered:'BLOCKED: Chromium startup fails: sandbox_host_linux.cc shutdown: Operation not permitted. G10 requires independent reviewer browser check.'};fs.writeFileSync(path.join(__dirname,'cycle4-results.json'),JSON.stringify(report,null,2)+'\n');if(results.some(r=>r.status==='FAIL'))process.exitCode=1;
+}
+
+'use strict';
+// Cycle 4 conformance checks to this spec's agreed list; no permanent block/element cap.
+// The historical harness is preserved below and can be invoked with --historical.
+async function runCycle4() {
+ const fs = require('node:fs');
+ const path = require('node:path');
+ const assert = require('node:assert/strict');
+ const crypto = require('node:crypto');
+ const root = path.resolve(__dirname, '..');
+ const baseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/cycle4-baseline.json'),'utf8'));
+ const shipped = Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,fs.readFileSync(path.join(root,n),'utf8')]));
+ const runtime = path.join(__dirname,'.runtime'); fs.mkdirSync(runtime,{recursive:true});
+ process.env.TMPDIR=runtime;
+ let playwright;
+ try { playwright=require('playwright'); } catch { playwright=require('/opt/hatch/skills/spaces/ts-runtime/dist/node_modules/playwright'); }
+ const policyPath='/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt';
+ const policyHash=crypto.createHash('sha256').update(fs.readFileSync(policyPath)).digest('hex');
+ const browser=await playwright.chromium.launch({executablePath:process.env.CHROMIUM_PATH || '/opt/meta-chromium/chrome',headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--disable-crash-reporter','--disable-crashpad-for-testing',`--hatch-webgl-allowed-domains-file=${policyPath}`,`--hatch-webgl-allowed-domains-sha256=${policyHash}`]});
+ const results=[];
+ async function gate(name,fn) {try {await fn();results.push({name,status:'PASS'});console.log('PASS '+name);}catch(e){results.push({name,status:'FAIL',blocked:e.message});console.error('FAIL (blocked) '+name+': '+e.message);}}
+ async function pageFor(files) {
+  const page=await browser.newPage({viewport:{width:1280,height:900}});
+  await page.route('**/*',route=>{const n=new URL(route.request().url()).pathname.slice(1)||'index.html';return files[n]!==undefined?route.fulfill({body:files[n],contentType:n.endsWith('.css')?'text/css':n.endsWith('.js')?'application/javascript':'text/html'}):route.abort();});
+  await page.goto('http://cycle4.local/');return page;
+ }
+ const before=await pageFor(baseline.files), page=await pageFor(shipped);
+ const snapshot=p=>p.evaluate(()=>[...document.querySelectorAll('.skill-card')].map(c=>({
+  id:c.querySelector('h3').id,title:c.querySelector('h3').textContent,category:c.dataset.category,
+  html:c.outerHTML,summary:c.querySelector('summary').outerHTML,number:c.querySelector('.number').outerHTML,
+  description:c.querySelector('.description').outerHTML,use:c.querySelector('.fit').outerHTML,
+  list:c.querySelector('.inside-list').outerHTML,note:c.querySelector('.inside-note')?.outerHTML,
+  footer:c.querySelector('.card-footer').innerHTML,cardUse:c.querySelector('.card-use').outerHTML,
+  featured:[...c.querySelectorAll('.top-inside .inside-name')].map(e=>e.textContent),
+  level:c.querySelector('.card-meta > span:not([class])')?.textContent,
+  stars:c.querySelector('.meta-stars')?.textContent.trim()
+ })));
+ const old=await snapshot(before), now=await snapshot(page);
+ const byId=id=>page.locator('article[aria-labelledby="'+id+'"]');
+ const search=async(p,term)=>p.locator('#search').fill(term);
+ const visible=async(p,id)=>p.locator('article[aria-labelledby="'+id+'"]').evaluate(c=>!c.hidden);
+ const reset=async p=>p.locator('#reset-filters').click({force:true});
+ await gate('G1 — Cycle 4 collapsed block order',async()=>{
+  assert.equal(now.length,22);
+  await page.evaluate(()=>{for(const c of document.querySelectorAll('.skill-card')){
+   const names=[...c.children].map(e=>e.matches('.card-meta')?'meta':e.matches('h3')?'title':e.matches('.description')?'description':e.matches('.fit')?'Use when':e.matches('details.inside')?'Inside':e.matches('.card-footer')?'footer':e.tagName+'.'+e.className);
+   if(JSON.stringify(names)!==JSON.stringify(['meta','title','description','Use when','Inside','footer']))throw Error(c.getAttribute('aria-labelledby')+': '+names.join(', '));
+   const d=c.querySelector('details');if(d.open||!d.firstElementChild.matches('summary'))throw Error('Unexpected disclosure state');
+   if([...c.childNodes].some(n=>n.nodeType===3&&n.textContent.trim()))throw Error('Unlisted visible text');
+  }});
+ });
+ await gate('G2 — Cycle 4 agreed visible elements and preserved controls',async()=>{
+  for(let i=0;i<now.length;i++){
+   const a=now[i],b=old[i];assert.equal(a.id,b.id);assert.equal(a.category,b.category);assert.equal(a.number,b.number);assert.equal(a.title,b.title);assert.equal(a.description,b.description);assert.equal(a.use,b.use);
+   assert.equal(a.footer,b.footer.replace(b.cardUse,''),a.id+' footer bytes');
+  }
+  await page.evaluate(()=>{for(const c of document.querySelectorAll('.skill-card')){
+   const m=c.querySelector('.card-meta');if([...m.children].map(e=>e.className).join(',')!=='number,category')throw Error(c.getAttribute('aria-labelledby')+' metadata');
+   const f=c.querySelector('.card-footer');if(f.children.length!==2||!f.children[0].matches('a')||!f.children[1].matches('.favourite-button'))throw Error('footer controls');
+   const focus=[...c.querySelectorAll('summary,a,button,input,[tabindex]')].filter(e=>!e.closest('details')||e.matches('summary')).map(e=>e.tagName);
+   if(focus.join(',')!=='SUMMARY,A,BUTTON')throw Error('Collapsed focus order '+focus);
+  }});
+ });
+ await gate('G3 — Cycle 4 install destination and moved detail lines',async()=>{
+  for(let i=0;i<now.length;i++){
+   const expected=old[i].cardUse.replace(' · <span class="card-use-label">Install:</span> see GitHub repository','');
+   assert.equal(now[i].cardUse,expected,now[i].id+' card-use bytes');assert.ok(!now[i].html.includes('see GitHub repository'));
+  }
+  await page.evaluate(()=>{for(const c of document.querySelectorAll('.skill-card')){
+   const d=c.querySelector('details');const kids=[...d.children];if(!kids[1]?.matches('p.card-use')||!kids[2]?.matches('p.inside-meta')||!kids[3]?.matches('ul.inside-list'))throw Error(c.getAttribute('aria-labelledby')+' detail order');
+   if(kids[1].querySelector('a,button,input,svg')||kids[2].querySelector('*'))throw Error('Details must be plain text');
+  }});
+ });
+ await gate('G4 — Cycle 4 stars reserved for favourites',async()=>{
+  for(let i=0;i<old.length;i++)assert.equal(await byId(old[i].id).locator('.inside-meta').textContent(),`Level: ${old[i].level} · GitHub stars: ${old[i].stars}`);
+  await page.evaluate(()=>{for(const card of document.querySelectorAll('.skill-card')){const c=card.cloneNode(true);c.querySelectorAll('.favourite-button,.item-favourite-button').forEach(e=>e.remove());if(/[☆★⭐✩✭✮✯✰]/u.test(c.textContent)||c.querySelector('[href*="icon-star"],.meta-stars,[class*="star-icon"]'))throw Error(card.getAttribute('aria-labelledby')+' popularity glyph');}});
+ });
+ await gate('G5 — Cycle 4 Featured duplication removed; Inside lists intact',async()=>{
+  assert.equal(await page.locator('p.top-inside').count(),0);
+  for(let i=0;i<now.length;i++) {assert.equal(now[i].list,old[i].list,now[i].id+' Inside list bytes');assert.equal(now[i].note,old[i].note);for(const n of old[i].featured)assert.ok(await byId(now[i].id).locator('.inside-list .inside-name').allTextContents().then(names=>names.includes(n)),now[i].id+' '+n);}
+ });
+ // Select probes from the baseline DOM, never from an invented fixture.
+ const probes=await before.evaluate(()=>{
+  const cards=[...document.querySelectorAll('.skill-card')], works=[],categories=[],sole=[];
+  for(const c of cards){
+   const id=c.querySelector('h3').id,line=c.querySelector('.card-use'),host=line.textContent.split('Works with:')[1].split('·')[0].trim(),first=host.split(',')[0].trim();
+   const meaning=['h3','.description','.fit-use'].map(s=>c.querySelector(s).textContent).join(' ').toLowerCase();if(!meaning.includes(host.toLowerCase())&&!meaning.includes(first.toLowerCase()))sole.push({id,host,first});
+   const rest=c.cloneNode(true);rest.querySelectorAll('.card-use,.favourite-button,.item-favourite-button').forEach(e=>e.remove());
+   for(const term of host.match(/[\w.+-]+/g)||[])if(term.length>2&&!['Works','with','and','more'].includes(term)&&!rest.textContent.toLowerCase().includes(term.toLowerCase()))works.push({id,term});
+   const outer=c.cloneNode(true);outer.querySelector('details').remove();
+   for(const e of c.querySelectorAll('.item-category'))if(!outer.textContent.toLowerCase().includes(e.textContent.toLowerCase()))categories.push({id,term:e.textContent});
+  }return {works:works[0],category:categories[0],sole};
+ });
+ console.log('Recorded probes / sole host signals: '+JSON.stringify(probes));
+ await gate('G6 — Cycle 4 search including unchanged Works-with exclusion',async()=>{
+  assert.ok(probes.works,'No Works-with-only probe found');assert.ok(probes.category,'No category-only probe found');
+  for(const p of [before,page]){
+   await reset(p);
+   for(const term of ['skill-creator','plugin-dev','Intermediate','45,134']){await search(p,term);assert.ok(await visible(p,'skill-15'),term);}
+   await search(p,'plugin-dev');const card=p.locator('article[aria-labelledby="skill-15"]');assert.ok(await card.locator('details').evaluate(e=>e.open));assert.ok(await card.locator('.inside-list mark').count()>0);
+   await search(p,probes.category.term);assert.ok(await visible(p,probes.category.id));
+   await search(p,probes.works.term);assert.equal(await visible(p,probes.works.id),false,probes.works.term+' must not match '+probes.works.id);
+   await reset(p);
+  }
+ });
+ await gate('G7 — Cycle 4 card and item favourites, restore',async()=>{
+  await reset(page);const card=byId('skill-15');await card.locator('.favourite-button').click();await page.locator('#toggle-favourites').click();assert.ok(await visible(page,'skill-15'));assert.equal(await card.locator('.inside-list li:visible').count(),0);
+  await page.locator('#toggle-favourites').click();await card.locator('.favourite-button').click();await card.locator('summary').click();await card.locator('[data-item-favourite-for="skill-15:skill-creator"]').click();await card.locator('summary').click();await page.locator('#toggle-favourites').click();
+  assert.ok(await visible(page,'skill-15'));assert.ok(await card.locator('details').evaluate(e=>e.open));assert.equal(await card.locator('.inside-list li:not([hidden])').count(),1);assert.equal(await card.locator('.inside-list li:not([hidden]) .inside-name').textContent(),'skill-creator');
+  await card.locator('[data-item-favourite-for="skill-15:skill-creator"]').click();assert.equal(await visible(page,'skill-15'),false);await page.locator('#toggle-favourites').click();assert.equal(await card.locator('.inside-list li:not([hidden])').count(),5);
+  assert.deepEqual(await page.evaluate(()=>[localStorage.getItem('topskills-favourites'),localStorage.getItem('topskills-item-favourites')]),['[]','[]']);await reset(page);
+ });
+ await gate('G8 — Cycle 4 starter links, reveal, byte identity',async()=>{
+  for(let i=0;i<now.length;i++){assert.equal(now[i].id,old[i].id);assert.equal(now[i].summary,old[i].summary);}
+  // Exact raw attribute sequence, except the deliberately deleted popularity aria-labels.
+  const attrs=s=>[...s.replace(/<span class="meta-stars"[\s\S]*?<\/span>/g,'').matchAll(/\b(?:href|id|aria-label|data-favourite-for|data-item-favourite-for)="[^"]*"/g)].map(m=>m[0]);
+  // Relocation can reorder attributes; all attributes retain exactly the same bytes and multiplicity.
+  assert.deepEqual(attrs(shipped['index.html']).sort(),attrs(baseline.files['index.html']).sort());assert.equal(shipped['script.js'],baseline.files['script.js']);
+  for(const [n,hash] of Object.entries(baseline.hashes))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,n))).digest('hex'),hash,n);
+  const links=page.locator('.start-strip a');assert.deepEqual(await links.evaluateAll(es=>es.map(e=>e.getAttribute('href'))),['#skill-4','#skill-3','#skill-22']);
+  for(const id of ['skill-4','skill-3','skill-22']){
+   await reset(page);await byId(id).locator('details').evaluate(e=>e.open=false);await page.locator('[data-filter="Design"]').click();if(id==='skill-22'){await search(page,'nonexistent-probe');}
+   await page.locator('.start-strip a[href="#'+id+'"]').click();assert.ok(await visible(page,id));assert.equal(await page.locator('#reveal-note').textContent(),'Filters cleared. Showing all skills.');assert.equal(await page.evaluate(()=>document.activeElement.id),id);assert.equal(await byId(id).locator('details').evaluate(e=>e.open),false);assert.equal(await page.locator('.skill-card:not([hidden])').count(),22);
+  }
+ });
+ await gate('G9 — Cycle 4 chapter filters and results count',async()=>{
+  await reset(page);
+  for(const category of [...new Set(old.map(c=>c.category)),'All skills']){
+   await page.locator('[data-filter="'+category+'"]').click();const expected=old.filter(c=>category==='All skills'||c.category===category).map(c=>c.id);
+   assert.deepEqual(await page.locator('.skill-card:not([hidden]) h3').evaluateAll(es=>es.map(e=>e.id)),expected);assert.equal(await page.locator('#results-count').textContent(),`${expected.length} ${expected.length===1?'skill':'skills'} in the collection`);
+  }
+ });
+ // Section 5 measurement: strip SVGs and favourite buttons, then tags; whitespace split, omit bare ·.
+ const words=s=>s.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/g,'').replace(/<button\b[^>]*class="(?:item-)?favourite-button"[^>]*>[\s\S]*?<\/button>/g,'').replace(/<[^>]+>/g,' ').trim().split(/\s+/).filter(w=>w&&w!=='·').length;
+ const collapsed=s=>s.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1');
+ const budgets=now.map((c,i)=>{const b=old[i],feature=b.html.match(/<p class="top-inside">[\s\S]*?<\/p>/)[0];const deleted=words(feature)+(b.cardUse.includes('see GitHub repository')?4:0);return {id:c.id,title:c.title,collapsedBefore:words(collapsed(b.html)),collapsedAfter:words(collapsed(c.html)),expandedBefore:words(b.html),expandedAfter:words(c.html),deleted,moved:2+words(c.cardUse),added:3};});
+ await gate('Section 5 — measured budgets and deletion accounting',async()=>{
+  for(const b of budgets){assert.ok(b.collapsedAfter<b.collapsedBefore,b.id+' collapsed');assert.equal(b.expandedAfter,b.expandedBefore-b.deleted+b.added,b.id+' expanded accounting');assert.equal(b.collapsedBefore-b.collapsedAfter,b.deleted+b.moved,b.id+' moved accounting');}
+  const b=budgets.find(c=>c.id==='skill-15');assert.deepEqual([b.collapsedBefore,b.collapsedAfter,b.expandedBefore,b.expandedAfter],[59,46,259,255]);
+ });
+ const totals=Object.fromEntries(['collapsedBefore','collapsedAfter','expandedBefore','expandedAfter','deleted','moved','added'].map(k=>[k,budgets.reduce((n,b)=>n+b[k],0)]));
+ console.log('Budgets all cards: '+JSON.stringify(budgets));console.log('Budget totals: '+JSON.stringify(totals));
+ // Builder rendered diagnostic; G10 remains an independent reviewer gate in the spec.
+ const stopped=[];
+ await gate('Builder rendered diagnostic — desktop and narrow all cards',async()=>{
+  await reset(page);
+  for(const width of [1280,375]){await page.setViewportSize({width,height:900});
+   const errors=await page.evaluate(()=>{const errors=[];for(const c of document.querySelectorAll('.skill-card')){
+    const id=c.querySelector('h3').id,d=c.querySelector('details');d.open=false;
+    const f=c.querySelector('.card-footer'),a=f.querySelector('a').getBoundingClientRect(),b=f.querySelector('button').getBoundingClientRect();if(Math.abs(a.top-b.top)>10)errors.push(id+' footer wraps');
+    if(c.scrollWidth>c.clientWidth+1)errors.push(id+' collapsed overflow');
+    d.open=true;if(c.scrollWidth>c.clientWidth+1)errors.push(id+' expanded overflow');d.open=false;
+   }return errors;});stopped.push(...errors.map(e=>width+'px '+e));
+   await byId('skill-15').scrollIntoViewIfNeeded();await byId('skill-15').screenshot({path:path.join(__dirname,'cycle4-'+width+'-collapsed.png')});await byId('skill-15').locator('summary').click();await byId('skill-15').screenshot({path:path.join(__dirname,'cycle4-'+width+'-expanded.png')});await byId('skill-15').locator('summary').click();
+  }assert.deepEqual(stopped,[]);
+ });
+ fs.writeFileSync(path.join(__dirname,'cycle4-results.json'),JSON.stringify({results,probes,budgets,totals,stopped},null,2)+'\n');
+ await browser.close();fs.rmSync(runtime,{recursive:true,force:true});if(results.some(r=>r.status==='FAIL'))process.exitCode=1;
+}
+
+function runHistorical() {
 'use strict';
 // Exercise the real script against a small DOM double built from the shipped HTML.
 const assert = require('node:assert/strict');
@@ -1737,3 +1980,6 @@ function runCycle2() {
  gate('cycle2 C2-G11 budgets identity CSS',()=>{for(const visible of [true,false]){const measure=t=>words(visible?t.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1'):t);const counts=getCards(cycle1HTML).map(([,,c])=>measure(c));assert.deepEqual([counts.reduce((a,b)=>a+b,0),Math.max(...counts),measure(cycle1HTML)],visible?[1552,87,1888]:[8666,1354,9002]);console.log('Cycle2 words before/after',visible?'visible':'expanded',measure(cycle1HTML.replace(cycle2Note+'\n','')),measure(cycle1HTML));}for(const [name,hash] of Object.entries(cycle2Hashes)){assert.equal(sha256(name==='README.md'?fs.readFileSync(path.join(root,name)):require('./generate-agent-layer').generate(cycle1HTML,'https://topskillsfordevelopment.vercel.app')[name]),hash);console.log('Cycle2 historical byte identity '+name);}assert.equal(cycle1Count(cycle1Styles,/var\(--accent\)/g),3);assert.equal([...cycle1Styles.matchAll(/[^{}]+\{([^{}]*)\}/g)].filter(r=>r[1].includes('var(--accent)')).length,3);assert.ok(cycle1Styles.endsWith(cycle2CSS));assert.doesNotMatch(cycle2CSS,/--accent|#[0-9a-f]|rgb\(|hsl\(|border-radius|box-shadow/);});
  gate('cycle2 C2-G12 accessibility',()=>{assert.ok(cycle1HTML.includes(cycle2Note));assert.ok(cycle1Styles.includes('.skill-card h3:focus-visible{outline:2px solid var(--ink);outline-offset:var(--underline-offset)}'));const additions=source.replace(cycle2PriorScript,'');assert.doesNotMatch(additions,/keydown|tabindex="0"|tabindex', '0'/);assert.match(source,/setAttribute\('tabindex', '-1'\)/);});
 }
+
+}
+if(process.argv.includes("--historical"))runHistorical();else (process.argv.includes("--browser")?runCycle4():runCycle4DOM()).catch(e=>{console.error("BLOCKED Cycle 4 harness:",e);process.exitCode=1;});
