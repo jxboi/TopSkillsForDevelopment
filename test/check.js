@@ -355,6 +355,13 @@ const pstackSkillRow = item => {
  const {name,category,fn,prompt} = Object.fromEntries(Object.entries(item).map(([k,v])=>[k,pstackSkillEscape(v)]));
  return ` <li><span class="item-head"><code class="inside-name">${name}</code> <span class="item-category">${category}</span> <button type="button" class="item-favourite-button" hidden data-item-favourite-for="skill-20:${name}" aria-pressed="false" aria-label="Favourite ${name}">☆</button></span> <span class="item-dash">— </span>${fn}<p class="example-prompt">${prompt}</p></li>\n`;
 };
+// Remove only the exact glossary additions when reconstructing historical inputs.
+const glossaryNav = "<a class=\"collection-link\" href=\"#glossary\">Glossary <span aria-hidden=\"true\">\u2197</span></a>";
+const glossarySection = "<section id=\"glossary\" class=\"how-to\" aria-labelledby=\"glossary-title\"><h2 id=\"glossary-title\">Glossary</h2><p>Words used across the collection, in plain language. Per-skill meanings live on the cards themselves.</p><dl>\n<dt>Agent</dt><dd>A coding assistant that reads instructions and carries out work in a codebase.</dd>\n<dt>Card</dt><dd>One entry in the collection, describing a single repository and the skills inside it.</dd>\n<dt>Chapter</dt><dd>A grouping of cards by the kind of work they help with, such as Workflow or Design.</dd>\n<dt>Collection</dt><dd>The 22 repositories listed on this page, presented as a starting point, not a ranking.</dd>\n<dt>Command</dt><dd>A slash invocation, such as /tdd, that asks an agent to run a skill or workflow.</dd>\n<dt>Favourite</dt><dd>A star you set on a card or an Inside item, saved in your browser, so you can filter to it later.</dd>\n<dt>Featured</dt><dd>A curated subset of a card's items, chosen by the catalogue, with no total stated.</dd>\n<dt>For agents</dt><dd>The machine-readable versions of the catalogue (skills.json, llms.txt, llms-full.txt) listed in the footer for agents to read.</dd>\n<dt>Harness</dt><dd>The coding-agent setup, such as Claude Code or Codex, that a skill runs in.</dd>\n<dt>Inside</dt><dd>The collapsed list on a card naming the skills, commands, or playbooks in that repository.</dd>\n<dt>Install</dt><dd>The step or command from a repository's own documentation for adding it to an agent.</dd>\n<dt>Mode</dt><dd>A named way of working an agent can be put into, such as /poteto-mode, which routes tasks through its playbooks.</dd>\n<dt>Playbook</dt><dd>A step-by-step workflow for a recurring kind of task, listed inside a card.</dd>\n<dt>Prompt</dt><dd>A ready-made request, shown in an Inside list, that you can paste to an agent.</dd>\n<dt>Repo</dt><dd>Short for repository, the code project on GitHub that a card describes.</dd>\n<dt>Skill</dt><dd>A set of instructions that teaches an agent a repeatable way of working.</dd>\n<dt>Star</dt><dd>A GitHub star count for a repository, shown here as a snapshot from 29 Oct 2026, not a quality score.</dd>\n<dt>TDD</dt><dd>Test-driven development, writing a failing test first and then the smallest code that passes it.</dd>\n<dt>Use when</dt><dd>The line on a card saying when that repository is worth reaching for.</dd>\n<dt>Workflow</dt><dd>How work moves from an idea to shipped code.</dd>\n<dt>Works with</dt><dd>The agents and tools a repository is documented to work with.</dd>\n<dt>Worktree</dt><dd>An isolated development workspace on a separate branch, used so work does not disturb the main code.</dd>\n</dl></section>\n";
+function undoGlossary(html) {
+ return html.replace(glossarySection, '').replace(glossaryNav, '');
+}
+
 function undoPstackSkills(html) {
  const assert=require('node:assert/strict');
  return html.replace(/<article class="skill-card"[^>]*aria-labelledby="skill-20">[\s\S]*?<\/article>/, card => {
@@ -369,7 +376,7 @@ function undoPstackSkills(html) {
 function pstackHistoricalBytes(root, name) {
  const fs=require('node:fs'),path=require('node:path');
  if(['skills.json','llms.txt','llms-full.txt'].includes(name)) {
-  const html=undoPstackSkills(fs.readFileSync(path.join(root,'index.html'),'utf8'));
+  const html=undoGlossary(undoPstackSkills(fs.readFileSync(path.join(root,'index.html'),'utf8')));
   return require('./generate-agent-layer').generate(html,'https://topskillsfordevelopment.vercel.app')[name];
  }
  return fs.readFileSync(path.join(root,name));
@@ -532,7 +539,7 @@ function cycle4DOM(html, script) {
 async function runCycle4DOM(){
  const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
  const root=path.resolve(__dirname,'..'),baseline=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/cycle4-baseline.json'),'utf8'));
- const files=Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,n==='index.html'?undoPstackSkills(fs.readFileSync(path.join(root,n),'utf8')):fs.readFileSync(path.join(root,n),'utf8')]));
+ const files=Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,n==='index.html'?undoGlossary(undoPstackSkills(fs.readFileSync(path.join(root,n),'utf8'))):fs.readFileSync(path.join(root,n),'utf8')]));
  const old=cycle4DOM(baseline.files['index.html'],baseline.files['script.js']),now=cycle4DOM(files['index.html'],files['script.js']);
  const results=[];const gate=(name,fn)=>{try{fn();results.push({name,status:'PASS'});console.log('PASS '+name);}catch(e){results.push({name,status:'FAIL',blocked:e.message});console.error('FAIL (blocked) '+name+': '+e.message);}};
  const rawCards=s=>[...s.matchAll(/<article class="skill-card"[\s\S]*?<\/article>/g)].map(m=>m[0]);const prev=rawCards(baseline.files['index.html']),next=rawCards(files['index.html']);
@@ -569,7 +576,7 @@ async function runCycle4() {
  const crypto = require('node:crypto');
  const root = path.resolve(__dirname, '..');
  const baseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/cycle4-baseline.json'),'utf8'));
- const shipped = Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,n==='index.html'?undoPstackSkills(fs.readFileSync(path.join(root,n),'utf8')):fs.readFileSync(path.join(root,n),'utf8')]));
+ const shipped = Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,n==='index.html'?undoGlossary(undoPstackSkills(fs.readFileSync(path.join(root,n),'utf8'))):fs.readFileSync(path.join(root,n),'utf8')]));
  const runtime = path.join(__dirname,'.runtime'); fs.mkdirSync(runtime,{recursive:true});
  process.env.TMPDIR=runtime;
  let playwright;
@@ -1063,8 +1070,8 @@ const c3Hashes = {"script.js": "d5147d5a2676b9c13d0abf07ccbc8e3a4eb6c4b5e2df6555
 
 const c3Read = name => {
  const value=fs.readFileSync(path.join(root,name),'utf8');
- if(name==='index.html')return undoPstackSkills(value);
- if(['skills.json','llms.txt','llms-full.txt'].includes(name))return require('./generate-agent-layer').generate(undoPstackSkills(fs.readFileSync(path.join(root,'index.html'),'utf8')),'https://topskillsfordevelopment.vercel.app')[name];
+ if(name==='index.html')return undoGlossary(undoPstackSkills(value));
+ if(['skills.json','llms.txt','llms-full.txt'].includes(name))return require('./generate-agent-layer').generate(undoGlossary(undoPstackSkills(fs.readFileSync(path.join(root,'index.html'),'utf8'))),'https://topskillsfordevelopment.vercel.app')[name];
  return value;
 };
 const c3Pre = fs.readFileSync(path.join(__dirname,'fixtures/cycle3-pre.index.html'),'utf8');
@@ -2646,7 +2653,7 @@ function runPstackSkills() {
  });
  gate('5 byte restoration, protected files, accent and budgets',()=>{
   assert.equal(hash(cardOf(prior)),'455f837f120413d6493e30eaea39db8b5cd6ee4a1cbcc667ea5a638d255bd5c2','old pstack card byte identity');
-  assert.equal(hash(prior),'6ba7f946282d62cd9c532d557045cb5826f7451a5c6b90e8e2143ba4ac7d77cf','entire old page restored: no other card or page changes');
+  assert.equal(hash(prior),'30511ec6273b92294d3e9a3e7f4d0238aae8eab8f9772f237cba52beeab77fdb','entire old page restored: no other card or page changes');
   const protectedHashes={"script.js": "d5147d5a2676b9c13d0abf07ccbc8e3a4eb6c4b5e2df6555e4174c46be295e9e", "styles.css": "34b0185e9c99a6b80e28b923f4bc60ec0f183c9251aaf36853996f9f133b4f1c", "llms.txt": "551db54859a4915724fbb1f22ecd4246507f8a356f87851b5f2e420a5e772df1", "test/generate-agent-layer.js": "f3e44e7b588fdd3cec11ad2b77ccde68906f50bb9137cc4fb9413bdd72aa11e9"};
   for(const [name,expected] of Object.entries(protectedHashes))assert.equal(hash(read(name)),expected,name+' protected bytes');
   assert.equal((read('styles.css').match(/var\(--accent\)/g)||[]).length,3);
@@ -2665,6 +2672,38 @@ function runPstackSkills() {
   console.log('pstack-skills budgets '+JSON.stringify({before,after,delta}));
  });
 }
+
+
+function runGlossary() {
+ const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+ const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ const x=cycle4DOM(html,fs.readFileSync(path.join(root,'script.js'),'utf8')),expected=[["Agent", "A coding assistant that reads instructions and carries out work in a codebase."], ["Card", "One entry in the collection, describing a single repository and the skills inside it."], ["Chapter", "A grouping of cards by the kind of work they help with, such as Workflow or Design."], ["Collection", "The 22 repositories listed on this page, presented as a starting point, not a ranking."], ["Command", "A slash invocation, such as /tdd, that asks an agent to run a skill or workflow."], ["Favourite", "A star you set on a card or an Inside item, saved in your browser, so you can filter to it later."], ["Featured", "A curated subset of a card's items, chosen by the catalogue, with no total stated."], ["For agents", "The machine-readable versions of the catalogue (skills.json, llms.txt, llms-full.txt) listed in the footer for agents to read."], ["Harness", "The coding-agent setup, such as Claude Code or Codex, that a skill runs in."], ["Inside", "The collapsed list on a card naming the skills, commands, or playbooks in that repository."], ["Install", "The step or command from a repository's own documentation for adding it to an agent."], ["Mode", "A named way of working an agent can be put into, such as /poteto-mode, which routes tasks through its playbooks."], ["Playbook", "A step-by-step workflow for a recurring kind of task, listed inside a card."], ["Prompt", "A ready-made request, shown in an Inside list, that you can paste to an agent."], ["Repo", "Short for repository, the code project on GitHub that a card describes."], ["Skill", "A set of instructions that teaches an agent a repeatable way of working."], ["Star", "A GitHub star count for a repository, shown here as a snapshot from 29 Oct 2026, not a quality score."], ["TDD", "Test-driven development, writing a failing test first and then the smallest code that passes it."], ["Use when", "The line on a card saying when that repository is worth reaching for."], ["Workflow", "How work moves from an idea to shipped code."], ["Works with", "The agents and tools a repository is documented to work with."], ["Worktree", "An isolated development workspace on a separate branch, used so work does not disturb the main code."]];
+ try {
+  const glossary=x.doc.querySelector('#glossary');assert.ok(glossary);assert.equal(glossary.tagName,'SECTION');
+  assert.equal(x.doc.querySelectorAll('#glossary').length,1);
+  assert.equal(glossary.querySelector('h2').textContent,'Glossary');
+  assert.equal(glossary.querySelector('p').textContent,'Words used across the collection, in plain language. Per-skill meanings live on the cards themselves.');
+  assert.equal(glossary.closest('#collection'),null);assert.equal(glossary.closest('.chapter'),null);
+  assert.deepEqual(expected.map(([t])=>t),expected.map(([t])=>t).sort());
+  assert.equal(glossary.querySelectorAll('dl').length,1);
+  assert.deepEqual(glossary.querySelector('dl').children.map(n=>n.tagName),expected.flatMap(()=>['DT','DD']));
+  assert.deepEqual(glossary.querySelectorAll('dt').map(n=>n.textContent),expected.map(([t])=>t));
+  assert.deepEqual(glossary.querySelectorAll('dd').map(n=>n.textContent),expected.map(([,d])=>d));
+  assert.equal(glossary.querySelectorAll('li,button,.skill-card,.item-category,.example-prompt').length,0);
+  const link=x.doc.querySelector('.site-header a[href="#glossary"]');assert.ok(link);assert.equal(link.className,'collection-link');
+  assert.ok(html.indexOf('id="glossary"')>html.indexOf('</noscript></section>'));assert.ok(html.indexOf('id="glossary"')<html.indexOf('<footer'));
+  const content=glossary.outerHTML;
+  const unchanged=()=>{assert.equal(glossary.outerHTML,content);for(let n=glossary;n;n=n.parentElement)assert.ok(!n.hidden,'glossary ancestor visible');assert.equal(glossary.querySelectorAll('dt').length,22);};
+  assert.equal(x.cards.length,22);assert.equal(x.doc.querySelector('#results-count').textContent,'22 skills in the collection');unchanged();
+  x.search('unslop');assert.equal(x.cards.filter(c=>!c.hidden).length,1);assert.equal(x.doc.querySelector('#results-count').textContent,'1 skill in the collection');unchanged();x.reset();
+  for(const category of [...new Set(x.cards.map(c=>c.dataset.category))]){x.filter(category);assert.equal(x.cards.filter(c=>!c.hidden).length,x.cards.filter(c=>c.dataset.category===category).length);unchanged();}x.reset();
+  x.doc.querySelector('#toggle-favourites').click();assert.equal(x.cards.filter(c=>!c.hidden).length,0);unchanged();
+  x.doc.querySelector('#toggle-favourites').click();assert.equal(x.cards.filter(c=>!c.hidden).length,22);unchanged();
+  assert.ok(html.includes(glossarySection));assert.ok(html.includes(glossaryNav));
+  console.log('PASS glossary exact content, placement, anchor, counts, search, chapters and Favourites');
+ } catch(e){process.exitCode=1;console.error('FAIL glossary: '+e.stack);}
+}
+runGlossary();
 
 runPstackSkills();
 if(process.argv.includes("--c5"))runCycle5().catch(e=>{console.error(e);process.exitCode=1;});else if(process.argv.includes("--historical"))runHistorical();else (process.argv.includes("--browser")?runCycle4():runCycle4DOM()).catch(e=>{console.error("BLOCKED Cycle 4 harness:",e);process.exitCode=1;});
