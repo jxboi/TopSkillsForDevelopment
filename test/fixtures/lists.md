@@ -71,9 +71,10 @@ Item 1 is the skill; items 2–5 each carry the `command` kind tag.
 4. `skills use` (command) — Generates prompt text or temporarily initializes a coding agent with a specified skill without permanently adding it to project dependencies.
 5. `skills update` (command) — Checks for and updates installed project and global skills to their latest upstream releases.
 
-### pstack — summary: "Inside this repo — 23 playbooks"
+### pstack — summary: "All 23 playbooks, 58 skills"
 
-Items are playbooks under `/poteto-mode`, not skills. Names normalised
+The card holds 23 playbooks plus 58 skills. Playbooks run under
+`/poteto-mode`. Names normalised
 to file forms: report's "bug fix" → `bug-fix`; report's "perf (or Perf
 issue)" → `perf-issue`.
 
@@ -100,6 +101,65 @@ issue)" → `perf-issue`.
 21. `trace-forensics` — Owns diagnosis from an existing artifact by identifying its format, parsing it with generic tooling, reducing it to a source-attributed finding, and distinguishing confirmed causes from hypotheses without a live rerun.
 22. `visual-parity` — Owns pixel-exact equivalence by establishing the baseline before migration, moving one component at a time, and verifying zero image diff without changing the harness or tampering with baseline images.
 23. `worktree-cleanup` — Snapshots and audits worktrees and simulator state using paths from worktree list, classifying size, age, merge state, uncommitted work, and PR state before checking active usage and pruning confirmed candidates.
+24. `architect` — Develops competing type and module sketches, synthesizes a design, and implements against it.
+25. `arena` — Runs parallel attempts at one brief and combines the strongest parts into a verified artifact.
+26. `automate-me` — Turns recurring working preferences and direct feedback into a personal mode skill.
+27. `benchmark-checklist` — Checks performance claims against actual work, bottlenecks, tuning, errors, and repeatable measurements.
+28. `blast-radius` — Investigates breakage beyond a change and runs real code to prove its critical safety assumption.
+29. `bro` — Rewrites the previous reply in simpler, concise language without jargon.
+30. `correct` — Prevents recurring agent mistakes through architecture, types, or executable checks proven against past failures.
+31. `create-formal-verification-skill` — Verifies a high-impact property with a suitable formal tool and creates a reusable project skill.
+32. `create-verification-skill` — Creates and exercises a project skill that launches the real app, drives user behavior, and retains evidence.
+33. `figure-it-out` — Designs and executes an auditable workflow with falsifiable goals, experiments, and decision records when no playbook fits.
+34. `how` — Explores code to explain subsystem structure, runtime flow, and ownership before changes.
+35. `in-your-own-words` — Restates the user's goals and the problem behind the request to check understanding.
+36. `interrogate` — Uses adversarial reviewers and reruns their reproductions to report only demonstrated failures.
+37. `ketchup` — Summarizes changes since the user's last message and supplies the context for every pending user decision.
+38. `ketchup-video` — Presents the chat's recent changes in a subtitled slide video with pending decisions listed as text.
+39. `maintain-formal-verification-skill` — Updates formal checks to match changed code and distinguishes verification drift from genuine property violations.
+40. `maintain-verification-skill` — Audits a verification skill and feature map against source and live app behavior, correcting proven drift.
+41. `make-bot-ui` — Builds a UI whose server sends webhook events to a Grok Bot while keeping the sender key out of the browser.
+42. `no-comments` — Runs Comment Sicko, audits its findings, fixes accepted root causes, and offers enforceable replacements for constraint comments.
+43. `poteto-help` — Answers pstack questions with a suitable next prompt and links to the source instructions.
+44. `poteto-mode` — Routes demanding tasks through playbooks with engineering principles, deliberate delegation, and verification of real results.
+45. `principle-attack-the-premise` — Tests the assumption shared by repeated failed fixes before attempting another repair.
+46. `principle-boundary-discipline` — Concentrates validation at system boundaries and keeps internal business logic pure and typed.
+47. `principle-build-the-lever` — Creates a rerunnable tool to perform or verify nontrivial work instead of relying on manual edits.
+48. `principle-encode-lessons-in-structure` — Converts recurring instructions and corrections into structural or executable enforcement where possible.
+49. `principle-exhaust-the-design-space` — Compares competing prototypes before choosing an unfamiliar interaction or architectural direction.
+50. `principle-experience-first` — Prioritizes the consumer's experience and polished core workflows when trading off scope and implementation effort.
+51. `principle-explain-the-number` — Establishes what a measurement means by identifying its limiter and ruling out misleading work or noise.
+52. `principle-fix-root-causes` — Traces a reproduced symptom to the first incorrect decision and fixes the fault rather than hiding its consequences.
+53. `principle-foundational-thinking` — Chooses data structures, shared-state boundaries, and reusable foundations before feature logic.
+54. `principle-guard-the-context-window` — Keeps bulk material in delegated work and concise summaries in the main conversation as context fills.
+55. `principle-laziness-protocol` — Favors deletion, consolidated decisions, and the smallest sufficient change over extra abstractions.
+56. `principle-make-operations-idempotent` — Designs state changes to reconcile existing state and converge after repeats or interrupted runs.
+57. `principle-migrate-callers-then-delete-legacy-apis` — Migrates internal callers and removes the obsolete API together when coordinated breaking changes are supported.
+58. `principle-minimize-reader-load` — Reduces unnecessary indirection and hidden mutable state so readers can trace values and ownership.
+59. `principle-model-the-domain` — Represents domain rules in suitable structures instead of spreading state assumptions across conditionals.
+60. `principle-never-block-on-the-human` — Proceeds with reasonable reversible work and presents results for asynchronous human correction.
+61. `principle-outcome-oriented-execution` — Directs planned migrations toward a verified target architecture with explicit boundaries for temporary breakage.
+62. `principle-prove-it-works` — Checks the actual artifact and records rerunnable evidence before declaring a task complete.
+63. `principle-redesign-from-first-principles` — Reconsiders the whole affected design as though a new requirement had been present from the start.
+64. `principle-separate-before-serializing-shared-state` — Eliminates shared write targets where possible and structurally serializes access only when sharing is required.
+65. `principle-sequence-verifiable-units` — Orders multi-step work into small units that each pass a concrete check before the next begins.
+66. `principle-subtract-before-you-add` — Removes dead code and redundant machinery before building on the simpler design.
+67. `principle-test-behavior-not-implementation` — Tests observable contracts so checks catch broken behavior while surviving internal refactors.
+68. `principle-type-system-discipline` — Uses domain types, validated boundaries, and exhaustive variants to make invalid states fail at compile time.
+69. `recall` — Reconstructs recent work from scoped chats, shared records, and live state into a current brief and next action.
+70. `reflect` — Reviews the active conversation through three lenses and proposes concrete skill edits for user approval.
+71. `setup-pstack` — Detects available models and writes an always-applied rule assigning pstack roles and reasoning budgets.
+72. `sharpen` — Deepens a task through professional methods, raw evidence, and independent checks, then rewrites its prompt.
+73. `show-me-your-work` — Maintains an evidence-linked TSV decision trail for long or unattended work and audits it before handoff.
+74. `statechart` — Checks a TLA+ model and draws a Mermaid statechart with shortest paths to rule violations.
+75. `swarm` — Distributes coverage slices or races across parallel workers and consolidates their evidence into one report.
+76. `tdd` — Reproduces a bug with a practical failing test before the fix and confirms the regression check passes afterward.
+77. `teach` — Combines code mechanics and design rationale into a plain explanation paced to the learner.
+78. `technical-writing` — Shapes technical documents with Diátaxis structure and clear sentences using Google, STE, and Global English rules.
+79. `typescript-best-practices` — Applies TypeScript rules for domain modeling, validated data, exhaustive narrowing, and schema-derived types.
+80. `unslop` — Removes formulaic AI phrasing and filler while preserving the text's meaning and intended tone.
+81. `why` — Investigates code decisions across available evidence sources and separates cited findings from inference and unknowns.
+
 
 ## Quality
 

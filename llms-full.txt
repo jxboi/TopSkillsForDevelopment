@@ -157,7 +157,7 @@ How work moves from an idea to shipped code.
 - Description: Poteto's official Cursor plugin that turns Cursor into a real engineering team, helping you write less but higher quality code with rigorous engineering principles and fearless parallelism via /poteto-mode and its 23 playbooks.
 - Use when: At the start of a demanding task such as reproducing defects, tracing performance bottlenecks, or overnight autonomous work needing empirical verification.
 - Top inside: Top inside: bug-fix, feature
-- Inside: All 23 playbooks
+- Inside: All 23 playbooks, 58 skills
 - bug-fix [Debugging] — Mandates reproducing a reported defect directly on the matching target surface first, binary-searching root causes with runtime evidence, and staging a failing repro test commit before landing the fix.
   > /poteto-mode users get two notifications after a retry: repro first with a failing test, then fix and verify.
 - feature [Building] — Orchestrates implementing new or modified behavior by establishing domain data shapes, conducting parallel architectural exploration, writing a four-dimension throughput checkpoint, and delegating scoped implementation.
@@ -204,6 +204,122 @@ How work moves from an idea to shipped code.
   > /poteto-mode Migrate the invoice status component against its existing screenshot baseline, checking every state by image diff and preserving the harness and baseline images.
 - worktree-cleanup [Setup] — Snapshots and audits worktrees and simulator state using paths from worktree list, classifying size, age, merge state, uncommitted work, and PR state before checking active usage and pruning confirmed candidates.
   > /poteto-mode Audit worktrees and simulator storage, classify candidates from worktree list, cross-check active chats, and hold any uncommitted work for my decision.
+- architect [Design] — Develops competing type and module sketches, synthesizes a design, and implements against it.
+  > /architect Design the reservation service types and module boundaries before implementing the booking flow.
+- arena [Building] — Runs parallel attempts at one brief and combines the strongest parts into a verified artifact.
+  > /arena Produce competing CSV importers and synthesize the clearest implementation with verified error handling.
+- automate-me [Writing] — Turns recurring working preferences and direct feedback into a personal mode skill.
+  > /poteto-mode use automate-me to capture my review preferences in a personal mode skill.
+- benchmark-checklist [Testing] — Checks performance claims against actual work, bottlenecks, tuning, errors, and repeatable measurements.
+  > /poteto-mode use benchmark-checklist to vet the claimed export speedup before we choose a serializer.
+- blast-radius [Review] — Investigates breakage beyond a change and runs real code to prove its critical safety assumption.
+  > /poteto-mode use blast-radius to check what removing the session cache eviction call could break.
+- bro [Communication] — Rewrites the previous reply in simpler, concise language without jargon.
+  > /poteto-mode use bro to restate your last explanation of transaction isolation in plain words.
+- correct [Building] — Prevents recurring agent mistakes through architecture, types, or executable checks proven against past failures.
+  > /correct Prevent agents from repeatedly bypassing the permission parser and prove the enforcement catches a past mistake.
+- create-formal-verification-skill [Testing] — Verifies a high-impact property with a suitable formal tool and creates a reusable project skill.
+  > /create-formal-verification-skill Verify that concurrent lease renewals cannot grant two owners and leave a rerunnable skill.
+- create-verification-skill [Testing] — Creates and exercises a project skill that launches the real app, drives user behavior, and retains evidence.
+  > /create-verification-skill Build a verification skill for our inventory CLI and prove its stock adjustment journey.
+- figure-it-out [Planning] — Designs and executes an auditable workflow with falsifiable goals, experiments, and decision records when no playbook fits.
+  > /figure-it-out Plan and execute the tenant storage migration with independently verifiable units and an audit trail.
+- how [Understanding] — Explores code to explain subsystem structure, runtime flow, and ownership before changes.
+  > /poteto-mode use how to explain where notification delivery is owned and how retries reach the queue.
+- in-your-own-words [Understanding] — Restates the user's goals and the problem behind the request to check understanding.
+  > /in-your-own-words Restate what I need from offline invoice editing and the problem it solves for field staff.
+- interrogate [Review] — Uses adversarial reviewers and reruns their reproductions to report only demonstrated failures.
+  > /poteto-mode use interrogate to challenge the new password reset flow and report only failures proven by a run.
+- ketchup [Communication] — Summarizes changes since the user's last message and supplies the context for every pending user decision.
+  > /ketchup Catch me up on the import work since my last message and explain any decisions waiting on me.
+- ketchup-video [Communication] — Presents the chat's recent changes in a subtitled slide video with pending decisions listed as text.
+  > /ketchup-video Show what changed in the calendar redesign and list the choices that still need me.
+- maintain-formal-verification-skill [Testing] — Updates formal checks to match changed code and distinguishes verification drift from genuine property violations.
+  > /maintain-formal-verification-skill Reconcile the lease model with the renewal refactor and classify each failure as drift or a bug.
+- maintain-verification-skill [Testing] — Audits a verification skill and feature map against source and live app behavior, correcting proven drift.
+  > /maintain-verification-skill Audit the inventory verification map against the current CLI and exercise every mapped feature.
+- make-bot-ui [Building] — Builds a UI whose server sends webhook events to a Grok Bot while keeping the sender key out of the browser.
+  > /poteto-mode use make-bot-ui to build a task dashboard whose buttons wake a Grok Bot through a server-held webhook key.
+- no-comments [Review] — Runs Comment Sicko, audits its findings, fixes accepted root causes, and offers enforceable replacements for constraint comments.
+  > /no-comments Review the invoice parser diff and address accepted findings within that scope.
+- poteto-help [Understanding] — Answers pstack questions with a suitable next prompt and links to the source instructions.
+  > /poteto-help Which workflow should I use to verify a change before handing it over?
+- poteto-mode [Building] — Routes demanding tasks through playbooks with engineering principles, deliberate delegation, and verification of real results.
+  > /poteto-mode Add cancellation to scheduled reports and verify that canceled reports never send email.
+- principle-attack-the-premise [Debugging] — Tests the assumption shared by repeated failed fixes before attempting another repair.
+  > /poteto-mode apply attack the premise: test whether clock skew actually explains the two failed retry fixes.
+- principle-boundary-discipline [Building] — Concentrates validation at system boundaries and keeps internal business logic pure and typed.
+  > /poteto-mode apply boundary discipline: parse incoming shipment payloads once before passing typed data to the service.
+- principle-build-the-lever [Building] — Creates a rerunnable tool to perform or verify nontrivial work instead of relying on manual edits.
+  > /poteto-mode apply build the lever: write a rerunnable codemod for the route parameter rename.
+- principle-encode-lessons-in-structure [Building] — Converts recurring instructions and corrections into structural or executable enforcement where possible.
+  > /poteto-mode apply encode lessons in structure: enforce the repeated rule against importing storage internals.
+- principle-exhaust-the-design-space [Design] — Compares competing prototypes before choosing an unfamiliar interaction or architectural direction.
+  > /poteto-mode apply exhaust the design space: prototype three keyboard navigation patterns for the command palette.
+- principle-experience-first [Design] — Prioritizes the consumer's experience and polished core workflows when trading off scope and implementation effort.
+  > /poteto-mode apply experience first: narrow the launch scope so the booking confirmation flow feels complete.
+- principle-explain-the-number [Testing] — Establishes what a measurement means by identifying its limiter and ruling out misleading work or noise.
+  > /poteto-mode apply explain the number: investigate what bounds our claimed search throughput and whether every query ran.
+- principle-fix-root-causes [Debugging] — Traces a reproduced symptom to the first incorrect decision and fixes the fault rather than hiding its consequences.
+  > /poteto-mode apply fix root causes: trace why stale cart totals are created before adding another checkout guard.
+- principle-foundational-thinking [Planning] — Chooses data structures, shared-state boundaries, and reusable foundations before feature logic.
+  > /poteto-mode apply foundational thinking: settle the shipment state model and verification scaffold before adding transitions.
+- principle-guard-the-context-window [Planning] — Keeps bulk material in delegated work and concise summaries in the main conversation as context fills.
+  > /poteto-mode apply guard the context window: delegate the large trace reads and retain only cited findings here.
+- principle-laziness-protocol [Building] — Favors deletion, consolidated decisions, and the smallest sufficient change over extra abstractions.
+  > /poteto-mode apply laziness protocol: simplify the single-caller report adapters before proposing another layer.
+- principle-make-operations-idempotent [Building] — Designs state changes to reconcile existing state and converge after repeats or interrupted runs.
+  > /poteto-mode apply make operations idempotent: make interrupted attachment imports safe to resume without duplicates.
+- principle-migrate-callers-then-delete-legacy-apis [Building] — Migrates internal callers and removes the obsolete API together when coordinated breaking changes are supported.
+  > /poteto-mode apply migrate callers then delete legacy apis: move every internal pricing caller to the new contract in one wave.
+- principle-minimize-reader-load [Building] — Reduces unnecessary indirection and hidden mutable state so readers can trace values and ownership.
+  > /poteto-mode apply minimize reader load: collapse pass-through permission wrappers and reduce shared mutable flags.
+- principle-model-the-domain [Design] — Represents domain rules in suitable structures instead of spreading state assumptions across conditionals.
+  > /poteto-mode apply model the domain: replace the subscription lifecycle booleans with explicit states and transitions.
+- principle-never-block-on-the-human [Planning] — Proceeds with reasonable reversible work and presents results for asynchronous human correction.
+  > /poteto-mode apply never block on the human: complete the reversible formatter cleanup and show me the result.
+- principle-outcome-oriented-execution [Planning] — Directs planned migrations toward a verified target architecture with explicit boundaries for temporary breakage.
+  > /poteto-mode apply outcome oriented execution: migrate the event store toward the agreed design with explicit verification checkpoints.
+- principle-prove-it-works [Testing] — Checks the actual artifact and records rerunnable evidence before declaring a task complete.
+  > /poteto-mode apply prove it works: run the report cancellation path and inspect the actual delivery records.
+- principle-redesign-from-first-principles [Design] — Reconsiders the whole affected design as though a new requirement had been present from the start.
+  > /poteto-mode apply redesign from first principles: reshape the upload design around resumability and update its references.
+- principle-separate-before-serializing-shared-state [Design] — Eliminates shared write targets where possible and structurally serializes access only when sharing is required.
+  > /poteto-mode apply separate before serializing shared state: give metrics workers independent output files before considering a lock.
+- principle-sequence-verifiable-units [Planning] — Orders multi-step work into small units that each pass a concrete check before the next begins.
+  > /poteto-mode apply sequence verifiable units: migrate one search index at a time and verify each before proceeding.
+- principle-subtract-before-you-add [Building] — Removes dead code and redundant machinery before building on the simpler design.
+  > /poteto-mode apply subtract before you add: remove the unused coupon validators before adding the promotion route.
+- principle-test-behavior-not-implementation [Testing] — Tests observable contracts so checks catch broken behavior while surviving internal refactors.
+  > /poteto-mode apply test behavior not implementation: assert the receipt is sent once without pinning private helper order.
+- principle-type-system-discipline [Building] — Uses domain types, validated boundaries, and exhaustive variants to make invalid states fail at compile time.
+  > /poteto-mode apply type system discipline: distinguish CustomerId from InvoiceId and exhaust payment result variants.
+- recall [Understanding] — Reconstructs recent work from scoped chats, shared records, and live state into a current brief and next action.
+  > /poteto-mode use recall to reconstruct this week's work on payment retries and identify the next useful action.
+- reflect [Review] — Reviews the active conversation through three lenses and proposes concrete skill edits for user approval.
+  > /reflect Review this session for durable lessons and propose edits to the existing verification skills.
+- setup-pstack [Setup] — Detects available models and writes an always-applied rule assigning pstack roles and reasoning budgets.
+  > /setup-pstack Configure a medium reasoning budget using the models available in this session.
+- sharpen [Planning] — Deepens a task through professional methods, raw evidence, and independent checks, then rewrites its prompt.
+  > /sharpen Rewrite my request to investigate churn using raw cancellation evidence and an outside check.
+- show-me-your-work [Communication] — Maintains an evidence-linked TSV decision trail for long or unattended work and audits it before handoff.
+  > /show-me-your-work Keep a decision trail for the catalog migration with reasons, evidence, and verified outcomes.
+- statechart [Testing] — Checks a TLA+ model and draws a Mermaid statechart with shortest paths to rule violations.
+  > /statechart Model the reservation hold lifecycle and show the shortest path to any double-booking violation.
+- swarm [Research] — Distributes coverage slices or races across parallel workers and consolidates their evidence into one report.
+  > /swarm Investigate queue backpressure across producer, broker, and consumer slices and return one evidence-backed report.
+- tdd [Testing] — Reproduces a bug with a practical failing test before the fix and confirms the regression check passes afterward.
+  > /poteto-mode use tdd to fix the date parser regression with a cheap local failing test first.
+- teach [Understanding] — Combines code mechanics and design rationale into a plain explanation paced to the learner.
+  > /poteto-mode use teach to explain how the reservation scheduler works and why it uses leases.
+- technical-writing [Writing] — Shapes technical documents with Diátaxis structure and clear sentences using Google, STE, and Global English rules.
+  > /technical-writing Rewrite the backup recovery guide as a focused how-to with unambiguous restore steps.
+- typescript-best-practices [Building] — Applies TypeScript rules for domain modeling, validated data, exhaustive narrowing, and schema-derived types.
+  > /poteto-mode use typescript-best-practices to review the payment event types and replace unsafe casts with validated narrowing.
+- unslop [Writing] — Removes formulaic AI phrasing and filler while preserving the text's meaning and intended tone.
+  > /poteto-mode use unslop to revise the release announcement while preserving every factual claim.
+- why [Understanding] — Investigates code decisions across available evidence sources and separates cited findings from inference and unknowns.
+  > /poteto-mode use why to investigate the rationale for the invoice retention threshold and distinguish evidence from inference.
 
 ## Quality
 

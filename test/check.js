@@ -1,3 +1,380 @@
+// Pinned pstack skills input; copied verbatim from the supplied items.json.
+const pstackSkills = [
+  {
+    "name": "architect",
+    "category": "Design",
+    "fn": "Develops competing type and module sketches, synthesizes a design, and implements against it.",
+    "prompt": "/architect Design the reservation service types and module boundaries before implementing the booking flow."
+  },
+  {
+    "name": "arena",
+    "category": "Building",
+    "fn": "Runs parallel attempts at one brief and combines the strongest parts into a verified artifact.",
+    "prompt": "/arena Produce competing CSV importers and synthesize the clearest implementation with verified error handling."
+  },
+  {
+    "name": "automate-me",
+    "category": "Writing",
+    "fn": "Turns recurring working preferences and direct feedback into a personal mode skill.",
+    "prompt": "/poteto-mode use automate-me to capture my review preferences in a personal mode skill."
+  },
+  {
+    "name": "benchmark-checklist",
+    "category": "Testing",
+    "fn": "Checks performance claims against actual work, bottlenecks, tuning, errors, and repeatable measurements.",
+    "prompt": "/poteto-mode use benchmark-checklist to vet the claimed export speedup before we choose a serializer."
+  },
+  {
+    "name": "blast-radius",
+    "category": "Review",
+    "fn": "Investigates breakage beyond a change and runs real code to prove its critical safety assumption.",
+    "prompt": "/poteto-mode use blast-radius to check what removing the session cache eviction call could break."
+  },
+  {
+    "name": "bro",
+    "category": "Communication",
+    "fn": "Rewrites the previous reply in simpler, concise language without jargon.",
+    "prompt": "/poteto-mode use bro to restate your last explanation of transaction isolation in plain words."
+  },
+  {
+    "name": "correct",
+    "category": "Building",
+    "fn": "Prevents recurring agent mistakes through architecture, types, or executable checks proven against past failures.",
+    "prompt": "/correct Prevent agents from repeatedly bypassing the permission parser and prove the enforcement catches a past mistake."
+  },
+  {
+    "name": "create-formal-verification-skill",
+    "category": "Testing",
+    "fn": "Verifies a high-impact property with a suitable formal tool and creates a reusable project skill.",
+    "prompt": "/create-formal-verification-skill Verify that concurrent lease renewals cannot grant two owners and leave a rerunnable skill."
+  },
+  {
+    "name": "create-verification-skill",
+    "category": "Testing",
+    "fn": "Creates and exercises a project skill that launches the real app, drives user behavior, and retains evidence.",
+    "prompt": "/create-verification-skill Build a verification skill for our inventory CLI and prove its stock adjustment journey."
+  },
+  {
+    "name": "figure-it-out",
+    "category": "Planning",
+    "fn": "Designs and executes an auditable workflow with falsifiable goals, experiments, and decision records when no playbook fits.",
+    "prompt": "/figure-it-out Plan and execute the tenant storage migration with independently verifiable units and an audit trail."
+  },
+  {
+    "name": "how",
+    "category": "Understanding",
+    "fn": "Explores code to explain subsystem structure, runtime flow, and ownership before changes.",
+    "prompt": "/poteto-mode use how to explain where notification delivery is owned and how retries reach the queue."
+  },
+  {
+    "name": "in-your-own-words",
+    "category": "Understanding",
+    "fn": "Restates the user's goals and the problem behind the request to check understanding.",
+    "prompt": "/in-your-own-words Restate what I need from offline invoice editing and the problem it solves for field staff."
+  },
+  {
+    "name": "interrogate",
+    "category": "Review",
+    "fn": "Uses adversarial reviewers and reruns their reproductions to report only demonstrated failures.",
+    "prompt": "/poteto-mode use interrogate to challenge the new password reset flow and report only failures proven by a run."
+  },
+  {
+    "name": "ketchup",
+    "category": "Communication",
+    "fn": "Summarizes changes since the user's last message and supplies the context for every pending user decision.",
+    "prompt": "/ketchup Catch me up on the import work since my last message and explain any decisions waiting on me."
+  },
+  {
+    "name": "ketchup-video",
+    "category": "Communication",
+    "fn": "Presents the chat's recent changes in a subtitled slide video with pending decisions listed as text.",
+    "prompt": "/ketchup-video Show what changed in the calendar redesign and list the choices that still need me."
+  },
+  {
+    "name": "maintain-formal-verification-skill",
+    "category": "Testing",
+    "fn": "Updates formal checks to match changed code and distinguishes verification drift from genuine property violations.",
+    "prompt": "/maintain-formal-verification-skill Reconcile the lease model with the renewal refactor and classify each failure as drift or a bug."
+  },
+  {
+    "name": "maintain-verification-skill",
+    "category": "Testing",
+    "fn": "Audits a verification skill and feature map against source and live app behavior, correcting proven drift.",
+    "prompt": "/maintain-verification-skill Audit the inventory verification map against the current CLI and exercise every mapped feature."
+  },
+  {
+    "name": "make-bot-ui",
+    "category": "Building",
+    "fn": "Builds a UI whose server sends webhook events to a Grok Bot while keeping the sender key out of the browser.",
+    "prompt": "/poteto-mode use make-bot-ui to build a task dashboard whose buttons wake a Grok Bot through a server-held webhook key."
+  },
+  {
+    "name": "no-comments",
+    "category": "Review",
+    "fn": "Runs Comment Sicko, audits its findings, fixes accepted root causes, and offers enforceable replacements for constraint comments.",
+    "prompt": "/no-comments Review the invoice parser diff and address accepted findings within that scope."
+  },
+  {
+    "name": "poteto-help",
+    "category": "Understanding",
+    "fn": "Answers pstack questions with a suitable next prompt and links to the source instructions.",
+    "prompt": "/poteto-help Which workflow should I use to verify a change before handing it over?"
+  },
+  {
+    "name": "poteto-mode",
+    "category": "Building",
+    "fn": "Routes demanding tasks through playbooks with engineering principles, deliberate delegation, and verification of real results.",
+    "prompt": "/poteto-mode Add cancellation to scheduled reports and verify that canceled reports never send email."
+  },
+  {
+    "name": "principle-attack-the-premise",
+    "category": "Debugging",
+    "fn": "Tests the assumption shared by repeated failed fixes before attempting another repair.",
+    "prompt": "/poteto-mode apply attack the premise: test whether clock skew actually explains the two failed retry fixes."
+  },
+  {
+    "name": "principle-boundary-discipline",
+    "category": "Building",
+    "fn": "Concentrates validation at system boundaries and keeps internal business logic pure and typed.",
+    "prompt": "/poteto-mode apply boundary discipline: parse incoming shipment payloads once before passing typed data to the service."
+  },
+  {
+    "name": "principle-build-the-lever",
+    "category": "Building",
+    "fn": "Creates a rerunnable tool to perform or verify nontrivial work instead of relying on manual edits.",
+    "prompt": "/poteto-mode apply build the lever: write a rerunnable codemod for the route parameter rename."
+  },
+  {
+    "name": "principle-encode-lessons-in-structure",
+    "category": "Building",
+    "fn": "Converts recurring instructions and corrections into structural or executable enforcement where possible.",
+    "prompt": "/poteto-mode apply encode lessons in structure: enforce the repeated rule against importing storage internals."
+  },
+  {
+    "name": "principle-exhaust-the-design-space",
+    "category": "Design",
+    "fn": "Compares competing prototypes before choosing an unfamiliar interaction or architectural direction.",
+    "prompt": "/poteto-mode apply exhaust the design space: prototype three keyboard navigation patterns for the command palette."
+  },
+  {
+    "name": "principle-experience-first",
+    "category": "Design",
+    "fn": "Prioritizes the consumer's experience and polished core workflows when trading off scope and implementation effort.",
+    "prompt": "/poteto-mode apply experience first: narrow the launch scope so the booking confirmation flow feels complete."
+  },
+  {
+    "name": "principle-explain-the-number",
+    "category": "Testing",
+    "fn": "Establishes what a measurement means by identifying its limiter and ruling out misleading work or noise.",
+    "prompt": "/poteto-mode apply explain the number: investigate what bounds our claimed search throughput and whether every query ran."
+  },
+  {
+    "name": "principle-fix-root-causes",
+    "category": "Debugging",
+    "fn": "Traces a reproduced symptom to the first incorrect decision and fixes the fault rather than hiding its consequences.",
+    "prompt": "/poteto-mode apply fix root causes: trace why stale cart totals are created before adding another checkout guard."
+  },
+  {
+    "name": "principle-foundational-thinking",
+    "category": "Planning",
+    "fn": "Chooses data structures, shared-state boundaries, and reusable foundations before feature logic.",
+    "prompt": "/poteto-mode apply foundational thinking: settle the shipment state model and verification scaffold before adding transitions."
+  },
+  {
+    "name": "principle-guard-the-context-window",
+    "category": "Planning",
+    "fn": "Keeps bulk material in delegated work and concise summaries in the main conversation as context fills.",
+    "prompt": "/poteto-mode apply guard the context window: delegate the large trace reads and retain only cited findings here."
+  },
+  {
+    "name": "principle-laziness-protocol",
+    "category": "Building",
+    "fn": "Favors deletion, consolidated decisions, and the smallest sufficient change over extra abstractions.",
+    "prompt": "/poteto-mode apply laziness protocol: simplify the single-caller report adapters before proposing another layer."
+  },
+  {
+    "name": "principle-make-operations-idempotent",
+    "category": "Building",
+    "fn": "Designs state changes to reconcile existing state and converge after repeats or interrupted runs.",
+    "prompt": "/poteto-mode apply make operations idempotent: make interrupted attachment imports safe to resume without duplicates."
+  },
+  {
+    "name": "principle-migrate-callers-then-delete-legacy-apis",
+    "category": "Building",
+    "fn": "Migrates internal callers and removes the obsolete API together when coordinated breaking changes are supported.",
+    "prompt": "/poteto-mode apply migrate callers then delete legacy apis: move every internal pricing caller to the new contract in one wave."
+  },
+  {
+    "name": "principle-minimize-reader-load",
+    "category": "Building",
+    "fn": "Reduces unnecessary indirection and hidden mutable state so readers can trace values and ownership.",
+    "prompt": "/poteto-mode apply minimize reader load: collapse pass-through permission wrappers and reduce shared mutable flags."
+  },
+  {
+    "name": "principle-model-the-domain",
+    "category": "Design",
+    "fn": "Represents domain rules in suitable structures instead of spreading state assumptions across conditionals.",
+    "prompt": "/poteto-mode apply model the domain: replace the subscription lifecycle booleans with explicit states and transitions."
+  },
+  {
+    "name": "principle-never-block-on-the-human",
+    "category": "Planning",
+    "fn": "Proceeds with reasonable reversible work and presents results for asynchronous human correction.",
+    "prompt": "/poteto-mode apply never block on the human: complete the reversible formatter cleanup and show me the result."
+  },
+  {
+    "name": "principle-outcome-oriented-execution",
+    "category": "Planning",
+    "fn": "Directs planned migrations toward a verified target architecture with explicit boundaries for temporary breakage.",
+    "prompt": "/poteto-mode apply outcome oriented execution: migrate the event store toward the agreed design with explicit verification checkpoints."
+  },
+  {
+    "name": "principle-prove-it-works",
+    "category": "Testing",
+    "fn": "Checks the actual artifact and records rerunnable evidence before declaring a task complete.",
+    "prompt": "/poteto-mode apply prove it works: run the report cancellation path and inspect the actual delivery records."
+  },
+  {
+    "name": "principle-redesign-from-first-principles",
+    "category": "Design",
+    "fn": "Reconsiders the whole affected design as though a new requirement had been present from the start.",
+    "prompt": "/poteto-mode apply redesign from first principles: reshape the upload design around resumability and update its references."
+  },
+  {
+    "name": "principle-separate-before-serializing-shared-state",
+    "category": "Design",
+    "fn": "Eliminates shared write targets where possible and structurally serializes access only when sharing is required.",
+    "prompt": "/poteto-mode apply separate before serializing shared state: give metrics workers independent output files before considering a lock."
+  },
+  {
+    "name": "principle-sequence-verifiable-units",
+    "category": "Planning",
+    "fn": "Orders multi-step work into small units that each pass a concrete check before the next begins.",
+    "prompt": "/poteto-mode apply sequence verifiable units: migrate one search index at a time and verify each before proceeding."
+  },
+  {
+    "name": "principle-subtract-before-you-add",
+    "category": "Building",
+    "fn": "Removes dead code and redundant machinery before building on the simpler design.",
+    "prompt": "/poteto-mode apply subtract before you add: remove the unused coupon validators before adding the promotion route."
+  },
+  {
+    "name": "principle-test-behavior-not-implementation",
+    "category": "Testing",
+    "fn": "Tests observable contracts so checks catch broken behavior while surviving internal refactors.",
+    "prompt": "/poteto-mode apply test behavior not implementation: assert the receipt is sent once without pinning private helper order."
+  },
+  {
+    "name": "principle-type-system-discipline",
+    "category": "Building",
+    "fn": "Uses domain types, validated boundaries, and exhaustive variants to make invalid states fail at compile time.",
+    "prompt": "/poteto-mode apply type system discipline: distinguish CustomerId from InvoiceId and exhaust payment result variants."
+  },
+  {
+    "name": "recall",
+    "category": "Understanding",
+    "fn": "Reconstructs recent work from scoped chats, shared records, and live state into a current brief and next action.",
+    "prompt": "/poteto-mode use recall to reconstruct this week's work on payment retries and identify the next useful action."
+  },
+  {
+    "name": "reflect",
+    "category": "Review",
+    "fn": "Reviews the active conversation through three lenses and proposes concrete skill edits for user approval.",
+    "prompt": "/reflect Review this session for durable lessons and propose edits to the existing verification skills."
+  },
+  {
+    "name": "setup-pstack",
+    "category": "Setup",
+    "fn": "Detects available models and writes an always-applied rule assigning pstack roles and reasoning budgets.",
+    "prompt": "/setup-pstack Configure a medium reasoning budget using the models available in this session."
+  },
+  {
+    "name": "sharpen",
+    "category": "Planning",
+    "fn": "Deepens a task through professional methods, raw evidence, and independent checks, then rewrites its prompt.",
+    "prompt": "/sharpen Rewrite my request to investigate churn using raw cancellation evidence and an outside check."
+  },
+  {
+    "name": "show-me-your-work",
+    "category": "Communication",
+    "fn": "Maintains an evidence-linked TSV decision trail for long or unattended work and audits it before handoff.",
+    "prompt": "/show-me-your-work Keep a decision trail for the catalog migration with reasons, evidence, and verified outcomes."
+  },
+  {
+    "name": "statechart",
+    "category": "Testing",
+    "fn": "Checks a TLA+ model and draws a Mermaid statechart with shortest paths to rule violations.",
+    "prompt": "/statechart Model the reservation hold lifecycle and show the shortest path to any double-booking violation."
+  },
+  {
+    "name": "swarm",
+    "category": "Research",
+    "fn": "Distributes coverage slices or races across parallel workers and consolidates their evidence into one report.",
+    "prompt": "/swarm Investigate queue backpressure across producer, broker, and consumer slices and return one evidence-backed report."
+  },
+  {
+    "name": "tdd",
+    "category": "Testing",
+    "fn": "Reproduces a bug with a practical failing test before the fix and confirms the regression check passes afterward.",
+    "prompt": "/poteto-mode use tdd to fix the date parser regression with a cheap local failing test first."
+  },
+  {
+    "name": "teach",
+    "category": "Understanding",
+    "fn": "Combines code mechanics and design rationale into a plain explanation paced to the learner.",
+    "prompt": "/poteto-mode use teach to explain how the reservation scheduler works and why it uses leases."
+  },
+  {
+    "name": "technical-writing",
+    "category": "Writing",
+    "fn": "Shapes technical documents with Diátaxis structure and clear sentences using Google, STE, and Global English rules.",
+    "prompt": "/technical-writing Rewrite the backup recovery guide as a focused how-to with unambiguous restore steps."
+  },
+  {
+    "name": "typescript-best-practices",
+    "category": "Building",
+    "fn": "Applies TypeScript rules for domain modeling, validated data, exhaustive narrowing, and schema-derived types.",
+    "prompt": "/poteto-mode use typescript-best-practices to review the payment event types and replace unsafe casts with validated narrowing."
+  },
+  {
+    "name": "unslop",
+    "category": "Writing",
+    "fn": "Removes formulaic AI phrasing and filler while preserving the text's meaning and intended tone.",
+    "prompt": "/poteto-mode use unslop to revise the release announcement while preserving every factual claim."
+  },
+  {
+    "name": "why",
+    "category": "Understanding",
+    "fn": "Investigates code decisions across available evidence sources and separates cited findings from inference and unknowns.",
+    "prompt": "/poteto-mode use why to investigate the rationale for the invoice retention threshold and distinguish evidence from inference."
+  }
+];
+const pstackSkillsNames = new Set(pstackSkills.map(item => item.name));
+const pstackSkillEscape = value => value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+const pstackSkillRow = item => {
+ const {name,category,fn,prompt} = Object.fromEntries(Object.entries(item).map(([k,v])=>[k,pstackSkillEscape(v)]));
+ return ` <li><span class="item-head"><code class="inside-name">${name}</code> <span class="item-category">${category}</span> <button type="button" class="item-favourite-button" hidden data-item-favourite-for="skill-20:${name}" aria-pressed="false" aria-label="Favourite ${name}">☆</button></span> <span class="item-dash">— </span>${fn}<p class="example-prompt">${prompt}</p></li>\n`;
+};
+function undoPstackSkills(html) {
+ const assert=require('node:assert/strict');
+ return html.replace(/<article class="skill-card"[^>]*aria-labelledby="skill-20">[\s\S]*?<\/article>/, card => {
+  if (!card.includes('All 23 playbooks, 58 skills')) return card;
+  for(const item of pstackSkills){const row=pstackSkillRow(item);assert.equal(card.split(row).length,2,'pstack skills undo '+item.name);card=card.replace(row,'');}
+  return card.replace('All 23 playbooks, 58 skills','All 23 playbooks');
+ });
+}
+
+// Rebuild historical agent inputs from the restored HTML; the existing G8
+// baseline hashes and exact copy mappings remain unchanged.
+function pstackHistoricalBytes(root, name) {
+ const fs=require('node:fs'),path=require('node:path');
+ if(['skills.json','llms.txt','llms-full.txt'].includes(name)) {
+  const html=undoPstackSkills(fs.readFileSync(path.join(root,'index.html'),'utf8'));
+  return require('./generate-agent-layer').generate(html,'https://topskillsfordevelopment.vercel.app')[name];
+ }
+ return fs.readFileSync(path.join(root,name));
+}
+
 // Exact Cycle 7 copy changes, applied only to historical copy expectations.
 const cycle7ExpectedCopy = value => [
   [
@@ -155,7 +532,7 @@ function cycle4DOM(html, script) {
 async function runCycle4DOM(){
  const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
  const root=path.resolve(__dirname,'..'),baseline=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/cycle4-baseline.json'),'utf8'));
- const files=Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,fs.readFileSync(path.join(root,n),'utf8')]));
+ const files=Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,n==='index.html'?undoPstackSkills(fs.readFileSync(path.join(root,n),'utf8')):fs.readFileSync(path.join(root,n),'utf8')]));
  const old=cycle4DOM(baseline.files['index.html'],baseline.files['script.js']),now=cycle4DOM(files['index.html'],files['script.js']);
  const results=[];const gate=(name,fn)=>{try{fn();results.push({name,status:'PASS'});console.log('PASS '+name);}catch(e){results.push({name,status:'FAIL',blocked:e.message});console.error('FAIL (blocked) '+name+': '+e.message);}};
  const rawCards=s=>[...s.matchAll(/<article class="skill-card"[\s\S]*?<\/article>/g)].map(m=>m[0]);const prev=rawCards(baseline.files['index.html']),next=rawCards(files['index.html']);
@@ -170,7 +547,7 @@ async function runCycle4DOM(){
  console.log('Recorded probes / sole host signals: '+JSON.stringify(probes));
  gate('G6 — Cycle 4 search including unchanged Works-with exclusion',()=>{assert.ok(probes.works);assert.ok(probes.category);for(const x of [old,now]){x.reset();for(const term of ['skill-creator','plugin-dev','Intermediate','45,134']){x.search(term);assert.ok(!x.card('skill-15').hidden,term);}x.search('plugin-dev');assert.ok(x.card('skill-15').querySelector('details').open);assert.ok(x.card('skill-15').querySelectorAll('.inside-list mark').length>0);x.search(probes.category.term);assert.ok(!x.card(probes.category.id).hidden);x.search(probes.works.term);assert.ok(x.card(probes.works.id).hidden);x.reset();}});
  gate('G7 — Cycle 4 card and item favourites, restore',()=>{now.reset();const c=now.card('skill-15'),fav=()=>c.querySelector('.favourite-button'),item=()=>c.querySelector('[data-item-favourite-for="skill-15:skill-creator"]'),toggle=()=>now.doc.querySelector('#toggle-favourites').click();fav().click();toggle();assert.ok(!c.hidden);toggle();fav().click();item().click();c.querySelector('details').open=false;toggle();assert.ok(!c.hidden);assert.ok(c.querySelector('details').open);assert.deepEqual(c.querySelectorAll('li').filter(e=>!e.hidden).map(e=>e.querySelector('.inside-name').textContent),['skill-creator']);item().click();assert.ok(c.hidden);toggle();assert.equal(c.querySelectorAll('li').filter(e=>!e.hidden).length,5);assert.deepEqual([now.storage['topskills-favourites'],now.storage['topskills-item-favourites']],['[]','[]']);now.reset();});
- gate('G8 — Cycle 4 starter links, reveal, byte identity',()=>{assert.equal(files['script.js'],baseline.files['script.js']);for(let i=0;i<next.length;i++){assert.equal(next[i].match(/<h3[^>]*>/)[0],prev[i].match(/<h3[^>]*>/)[0]);assert.equal(next[i].match(/<summary>[\s\S]*?<\/summary>/)[0],cycle7ExpectedCopy(prev[i].match(/<summary>[\s\S]*?<\/summary>/)[0].replace('Inside this repo — ','')));}const attrs=s=>[...s.replace(/<span class="meta-stars"[\s\S]*?<\/span>/g,'').matchAll(/\b(?:href|id|aria-label|data-favourite-for|data-item-favourite-for)="[^"]*"/g)].map(m=>m[0]).sort();assert.deepEqual(attrs(files['index.html']),attrs(baseline.files['index.html']));for(const [n,h]of Object.entries(baseline.hashes))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,n))).digest('hex'),h,n);const links=now.doc.querySelectorAll('.start-strip a');assert.deepEqual(links.map(e=>e.getAttribute('href')),['#skill-4','#skill-3','#skill-22']);for(const link of links){now.reset();const id=link.getAttribute('href').slice(1),c=now.card(id);c.querySelector('details').open=false;now.filter('Design');if(id==='skill-22')now.search('nonexistent-probe');assert.ok(c.hidden);link.click();assert.ok(!c.hidden);assert.equal(now.doc.querySelector('#reveal-note').textContent,'Filters cleared. Showing all skills.');assert.equal(now.doc.activeElement.id,id);assert.ok(now.doc.activeElement.scrolled);assert.ok(!c.querySelector('details').open);assert.equal(now.cards.filter(c=>!c.hidden).length,22);}});
+ gate('G8 — Cycle 4 starter links, reveal, byte identity',()=>{assert.equal(files['script.js'],baseline.files['script.js']);for(let i=0;i<next.length;i++){assert.equal(next[i].match(/<h3[^>]*>/)[0],prev[i].match(/<h3[^>]*>/)[0]);assert.equal(next[i].match(/<summary>[\s\S]*?<\/summary>/)[0],cycle7ExpectedCopy(prev[i].match(/<summary>[\s\S]*?<\/summary>/)[0].replace('Inside this repo — ','')));}const attrs=s=>[...s.replace(/<span class="meta-stars"[\s\S]*?<\/span>/g,'').matchAll(/\b(?:href|id|aria-label|data-favourite-for|data-item-favourite-for)="[^"]*"/g)].map(m=>m[0]).sort();assert.deepEqual(attrs(files['index.html']),attrs(baseline.files['index.html']));for(const [n,h]of Object.entries(baseline.hashes))assert.equal(crypto.createHash('sha256').update(pstackHistoricalBytes(root,n)).digest('hex'),h,n);const links=now.doc.querySelectorAll('.start-strip a');assert.deepEqual(links.map(e=>e.getAttribute('href')),['#skill-4','#skill-3','#skill-22']);for(const link of links){now.reset();const id=link.getAttribute('href').slice(1),c=now.card(id);c.querySelector('details').open=false;now.filter('Design');if(id==='skill-22')now.search('nonexistent-probe');assert.ok(c.hidden);link.click();assert.ok(!c.hidden);assert.equal(now.doc.querySelector('#reveal-note').textContent,'Filters cleared. Showing all skills.');assert.equal(now.doc.activeElement.id,id);assert.ok(now.doc.activeElement.scrolled);assert.ok(!c.querySelector('details').open);assert.equal(now.cards.filter(c=>!c.hidden).length,22);}});
  gate('G9 — Cycle 4 chapter filters and results count',()=>{now.reset();for(const category of [...new Set(old.cards.map(c=>c.dataset.category)),'All skills']){now.filter(category);const expected=old.cards.filter(c=>category==='All skills'||c.dataset.category===category).map(c=>c.querySelector('h3').id);assert.deepEqual(now.cards.filter(c=>!c.hidden).map(c=>c.querySelector('h3').id),expected);assert.equal(now.doc.querySelector('#results-count').textContent,`${expected.length} ${expected.length===1?'skill':'skills'} in the collection`);}});
  const words=s=>s.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/g,'').replace(/<button\b[^>]*class="(?:item-)?favourite-button"[^>]*>[\s\S]*?<\/button>/g,'').replace(/<[^>]+>/g,' ').trim().split(/\s+/).filter(w=>w&&w!=='·').length;
  const collapsed=s=>s.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1');
@@ -192,7 +569,7 @@ async function runCycle4() {
  const crypto = require('node:crypto');
  const root = path.resolve(__dirname, '..');
  const baseline = JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/cycle4-baseline.json'),'utf8'));
- const shipped = Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,fs.readFileSync(path.join(root,n),'utf8')]));
+ const shipped = Object.fromEntries(['index.html','styles.css','script.js'].map(n=>[n,n==='index.html'?undoPstackSkills(fs.readFileSync(path.join(root,n),'utf8')):fs.readFileSync(path.join(root,n),'utf8')]));
  const runtime = path.join(__dirname,'.runtime'); fs.mkdirSync(runtime,{recursive:true});
  process.env.TMPDIR=runtime;
  let playwright;
@@ -299,7 +676,7 @@ async function runCycle4() {
   const attrs=s=>[...s.replace(/<span class="meta-stars"[\s\S]*?<\/span>/g,'').matchAll(/\b(?:href|id|aria-label|data-favourite-for|data-item-favourite-for)="[^"]*"/g)].map(m=>m[0]);
   // Relocation can reorder attributes; all attributes retain exactly the same bytes and multiplicity.
   assert.deepEqual(attrs(shipped['index.html']).sort(),attrs(baseline.files['index.html']).sort());assert.equal(shipped['script.js'],baseline.files['script.js']);
-  for(const [n,hash] of Object.entries(baseline.hashes))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,n))).digest('hex'),hash,n);
+  for(const [n,hash] of Object.entries(baseline.hashes))assert.equal(crypto.createHash('sha256').update(pstackHistoricalBytes(root,n)).digest('hex'),hash,n);
   const links=page.locator('.start-strip a');assert.deepEqual(await links.evaluateAll(es=>es.map(e=>e.getAttribute('href'))),['#skill-4','#skill-3','#skill-22']);
   for(const id of ['skill-4','skill-3','skill-22']){
    await reset(page);await byId(id).locator('details').evaluate(e=>e.open=false);await page.locator('[data-filter="Design"]').click();if(id==='skill-22'){await search(page,'nonexistent-probe');}
@@ -684,7 +1061,12 @@ const c3OldProse = "Turns a grilled understanding into a written specification, 
 const c3NewProse = "Turns a grilled understanding into a written specification, with implementation seams agreed up front before tickets are cut.";
 const c3Hashes = {"script.js": "d5147d5a2676b9c13d0abf07ccbc8e3a4eb6c4b5e2df6555e4174c46be295e9e", "styles.css": "94dd8540f645e2328994d0bc972cadf93fa65bf0beb1163a545bbd7fc9bd653c", "README.md": "c0f012001c8c210cf9e7212410024227a0ea96c53ee06968936d4627f67023e6", "skills.json": "0f8700a5f2cecaa73eb639100fc4bdb7a773a67062834a919f4b880a3601b290", "llms.txt": "e7dda79605966d58e982e833dc32271086cd460f4a211cc27c8e755b86195553", "llms-full.txt": "8c76c03d19d1e256f8ba0f111ecb51f8676368edd2852e518b5db713ff3f3857"};
 
-const c3Read = name => fs.readFileSync(path.join(root,name),'utf8');
+const c3Read = name => {
+ const value=fs.readFileSync(path.join(root,name),'utf8');
+ if(name==='index.html')return undoPstackSkills(value);
+ if(['skills.json','llms.txt','llms-full.txt'].includes(name))return require('./generate-agent-layer').generate(undoPstackSkills(fs.readFileSync(path.join(root,'index.html'),'utf8')),'https://topskillsfordevelopment.vercel.app')[name];
+ return value;
+};
 const c3Pre = fs.readFileSync(path.join(__dirname,'fixtures/cycle3-pre.index.html'),'utf8');
 const c3HTML = c3Read('index.html');
 for(const [title,items] of promptMap){const card=c3Pre.match(/<article class="skill-card"[^>]*>[\s\S]*?<\/article>/g).find(c=>c.includes('>'+title+'</h3>'));for(const name of items.keys())if(!card?.includes('<code class="inside-name">'+name+'</code>'))items.delete(name);}
@@ -880,7 +1262,7 @@ const articles = getCards(html), categoryArticles = getCards(undoPolishHTML(undo
 const failures = [];
 function gate(name, fn) { try { fn(); console.log('PASS ' + name); } catch (e) { failures.push(name + ': ' + e.message); console.error('FAIL ' + name + ': ' + e.message); } }
 const copyPath = path.join(__dirname, 'fixtures/lists.md');
-const approvedCopy = fs.readFileSync(copyPath, 'utf8');
+const approvedCopy = fs.readFileSync(copyPath, 'utf8').replace(/^\d+\. `([^`]+)`[^\n]*\n/gm,(line,name)=>pstackSkillsNames.has(name)&&pstackSkills.some(item=>line.includes(item.fn))?'':line).replace('All 23 playbooks, 58 skills','Inside this repo — 23 playbooks');
 const expectedInside = [...approvedCopy.matchAll(/^### (.+?) — summary: "([^"]+)"([^\n]*)\n([\s\S]*?)(?=^### |^## |$(?![\s\S]))/gm)].map(([, title, summary, annotations, body]) => ({
   title, summary, note: annotations.match(/note: "([^"]+)"/)?.[1],
   items: [...body.matchAll(/^\d+\. `([^`]+)`[^\n]*? — (.+)$/gm)].map(([, name, fn]) => ({ name, fn })),
@@ -2187,4 +2569,102 @@ async function runCycle5() {
  console.log(JSON.stringify(results,null,2));if(results.some(r=>r.status!=='PASS'))process.exitCode=1;
 }
 
+// This pass's shipped pins are 218; all 160/124 pins in replayed layers
+// above describe their original historical surfaces after undoPstackSkills.
+function runPstackSkills() {
+ const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+ const root=path.resolve(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
+ const html=read('index.html'),script=read('script.js'),prior=undoPstackSkills(html);
+ const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
+ const cardOf=value=>value.match(/<article class="skill-card"[^>]*aria-labelledby="skill-20">[\s\S]*?<\/article>/)[0];
+ const card=cardOf(html),rows=[...card.matchAll(/ <li>[^\n]*<\/li>\n/g)].map(m=>m[0]);
+ const names=rows.map(row=>row.match(/class="inside-name">([^<]+)</)[1]);
+ const originalPlaybooks=["bug-fix", "feature", "investigation", "refactoring", "perf-issue", "authoring-a-skill", "autonomous-run", "autopilot-full", "autopilot-stack", "babysit", "eval", "hillclimb", "multi-phase-plan", "opening-a-pr", "orchestrate", "pause-safely", "prototype", "runtime-forensics", "session-pickup", "shipping", "trace-forensics", "visual-parity", "worktree-cleanup"];
+ const gate=(name,fn)=>{try{fn();console.log('PASS pstack-skills '+name);}catch(e){process.exitCode=1;console.error('FAIL pstack-skills '+name+': '+e.stack);}};
+ gate('1 exact 81-item order and shipped 218 pins',()=>{
+  assert.equal(pstackSkills.length,58);
+  assert.deepEqual([...pstackSkillsNames],[...pstackSkillsNames].sort());
+  assert.equal(rows.length,81);
+  assert.deepEqual(names,[...originalPlaybooks,...pstackSkills.map(item=>item.name)]);
+  assert.ok(card.includes('<summary>All 23 playbooks, 58 skills'));
+  for(const pattern of [/<li>/g,/class="item-category"/g,/class="example-prompt"/g,/class="item-favourite-button"/g])assert.equal([...html.matchAll(pattern)].length,218);
+  const generated=require('./generate-agent-layer').generate(html,'https://topskillsfordevelopment.vercel.app');
+  for(const [name,expected] of Object.entries(generated))assert.equal(read(name),expected,name+' generated bytes');
+  const catalog=JSON.parse(read('skills.json'));
+  assert.equal(catalog.cards.length,22);
+  assert.equal(catalog.cards.reduce((n,c)=>n+c.inside.length,0),218);
+  const pstack=catalog.cards.find(c=>c.id==='skill-20');
+  assert.equal(pstack.inside_summary,'All 23 playbooks, 58 skills');
+  assert.deepEqual(pstack.inside.slice(23),pstackSkills.map(({name,category,fn,prompt})=>({name,category,kind:null,function:fn,example_prompt:prompt})));
+  const oldCatalog=require('./generate-agent-layer').generate(prior,'https://topskillsfordevelopment.vercel.app');
+  const oldCards=JSON.parse(oldCatalog['skills.json']).cards;
+  assert.deepEqual(catalog.cards.filter(c=>c.id!=='skill-20'),oldCards.filter(c=>c.id!=='skill-20'));
+ });
+ gate('2 exact rows, category, favourite, unique prompt and fixture',()=>{
+  const allPrompts=[...html.matchAll(/class="example-prompt">([^<]*)</g)].map(m=>m[1]);
+  assert.equal(new Set(allPrompts).size,218);
+  const fixture=read('test/fixtures/lists.md').split('### pstack')[1].split('\n## Quality')[0];
+  assert.ok(fixture.includes('23 playbooks plus 58 skills'));
+  const fixtureItems=[...fixture.matchAll(/^\d+\. `([^`]+)` — (.+)$/gm)].map(([,name,fn])=>({name,fn}));
+  assert.equal(fixtureItems.length,81);
+  assert.deepEqual(fixtureItems.map(item=>item.name),names);
+  const catalog=JSON.parse(read('skills.json')).cards.find(c=>c.id==='skill-20');
+  assert.deepEqual(fixtureItems,catalog.inside.map(({name,function:fn})=>({name,fn})));
+  for(const [i,item] of pstackSkills.entries()){
+   const row=rows[i+23];assert.equal(row,pstackSkillRow(item),item.name+' pinned fields and Cycle 7 markup');
+   assert.equal((row.match(/class="item-category"/g)||[]).length,1);
+   assert.equal((row.match(/class="item-favourite-button"/g)||[]).length,1);
+   assert.equal((row.match(/class="example-prompt"/g)||[]).length,1);
+  }
+ });
+ gate('3 search and Favourites over all 58 skills',()=>{
+  for(const item of pstackSkills){
+   const x=cycle4DOM(html,script),c=x.card('skill-20'),id='skill-20:'+item.name;
+   const button=()=>c.querySelector('[data-item-favourite-for="'+id+'"]');
+   for(const term of [item.name,item.prompt]){
+    x.search(term);assert.ok(!c.hidden,item.name+' searchable');assert.ok(c.querySelector('details').open);
+    assert.ok(c.querySelectorAll('mark').length>0);assert.equal(x.doc.querySelectorAll('button mark').length,0);
+   }
+   x.search('');button().click();assert.equal(button().getAttribute('aria-pressed'),'true');
+   assert.equal(button().getAttribute('aria-label'),'Remove '+item.name+' from favourites');
+   assert.ok(JSON.parse(x.storage['topskills-item-favourites']).includes(id));
+   x.doc.querySelector('#toggle-favourites').click();assert.ok(!c.hidden);assert.ok(c.querySelector('details').open);
+   const visible=()=>c.querySelectorAll('li').filter(row=>!row.hidden).map(row=>row.querySelector('.inside-name').textContent);
+   assert.deepEqual(visible(),[item.name]);
+   button().click();assert.ok(c.hidden);assert.equal(button().getAttribute('aria-pressed'),'false');
+   x.doc.querySelector('#toggle-favourites').click();assert.equal(visible().length,81);
+  }
+  const x=cycle4DOM(html,script),c=x.card('skill-20');
+  c.querySelector('[data-item-favourite-for="skill-20:unslop"]').click();x.doc.querySelector('#toggle-favourites').click();
+  x.search('principle-subtract-before-you-add');assert.ok(!c.hidden);
+  assert.deepEqual(c.querySelectorAll('li').filter(row=>!row.hidden).map(row=>row.querySelector('.inside-name').textContent),['principle-subtract-before-you-add','unslop']);
+  x.search('');assert.deepEqual(c.querySelectorAll('li').filter(row=>!row.hidden).map(row=>row.querySelector('.inside-name').textContent),['unslop']);
+ });
+ gate('4 unique names and no playbook collisions',()=>{
+  assert.equal(new Set(names).size,81);assert.equal(pstackSkillsNames.size,58);
+  for(const name of pstackSkillsNames)assert.ok(!originalPlaybooks.includes(name),name);
+ });
+ gate('5 byte restoration, protected files, accent and budgets',()=>{
+  assert.equal(hash(cardOf(prior)),'455f837f120413d6493e30eaea39db8b5cd6ee4a1cbcc667ea5a638d255bd5c2','old pstack card byte identity');
+  assert.equal(hash(prior),'6ba7f946282d62cd9c532d557045cb5826f7451a5c6b90e8e2143ba4ac7d77cf','entire old page restored: no other card or page changes');
+  const protectedHashes={"script.js": "d5147d5a2676b9c13d0abf07ccbc8e3a4eb6c4b5e2df6555e4174c46be295e9e", "styles.css": "34b0185e9c99a6b80e28b923f4bc60ec0f183c9251aaf36853996f9f133b4f1c", "llms.txt": "551db54859a4915724fbb1f22ecd4246507f8a356f87851b5f2e420a5e772df1", "test/generate-agent-layer.js": "f3e44e7b588fdd3cec11ad2b77ccde68906f50bb9137cc4fb9413bdd72aa11e9"};
+  for(const [name,expected] of Object.entries(protectedHashes))assert.equal(hash(read(name)),expected,name+' protected bytes');
+  assert.equal((read('styles.css').match(/var\(--accent\)/g)||[]).length,3);
+  // Section 5 convention: omit SVGs, favourite buttons and bare middle dots;
+  // replace tags with spaces, then split on whitespace. Whole-page includes head.
+  const words=s=>s.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/g,'').replace(/<button\b[^>]*class="(?:item-)?favourite-button"[^>]*>[\s\S]*?<\/button>/g,'').replace(/<[^>]+>/g,' ').trim().split(/\s+/).filter(w=>w&&w!=='·').length;
+  const visible=s=>s.replace(/<details\b[^>]*>\s*(<summary>[\s\S]*?<\/summary>)[\s\S]*?<\/details>/g,'$1');
+  const measure=s=>{
+   const cards=s.match(/<article class="skill-card"[\s\S]*?<\/article>/g);
+   return {shippedVisible:cards.reduce((n,c)=>n+words(visible(c)),0),shippedExpanded:cards.reduce((n,c)=>n+words(c),0),wholePageVisible:words(visible(s)),wholePageExpanded:words(s)};
+  };
+  const before=measure(prior),after=measure(html),delta=Object.fromEntries(Object.keys(after).map(k=>[k,after[k]-before[k]]));
+  assert.equal(delta.shippedVisible,2);assert.equal(delta.wholePageVisible,2);
+  assert.equal(delta.shippedExpanded,words(pstackSkills.map(pstackSkillRow).join(''))+2);
+  assert.equal(delta.wholePageExpanded,delta.shippedExpanded);
+  console.log('pstack-skills budgets '+JSON.stringify({before,after,delta}));
+ });
+}
+
+runPstackSkills();
 if(process.argv.includes("--c5"))runCycle5().catch(e=>{console.error(e);process.exitCode=1;});else if(process.argv.includes("--historical"))runHistorical();else (process.argv.includes("--browser")?runCycle4():runCycle4DOM()).catch(e=>{console.error("BLOCKED Cycle 4 harness:",e);process.exitCode=1;});
