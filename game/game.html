@@ -1,29 +1,139 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>TopSkills Game — Explore & collect</title>
-<link rel="stylesheet" href="game.css">
-<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>TopSkills Game: collect all 218 skills</title>
+  <meta name="description" content="Walk a small world and collect the 218 agent skills inside the TopSkills catalogue.">
+  <link rel="stylesheet" href="game.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
 </head>
 <body>
-<div id="world" aria-label="TopSkills exploration world"></div>
-<header class="paper" id="hud">
-<div class="headline"><strong>TopSkills Game</strong><span id="level">Level 1</span></div>
-<div class="stats"><b id="count">0 / 218</b><span id="xpText">0 / 100 XP</span></div>
-<div id="xpTrack" role="progressbar" aria-label="Experience" aria-valuemin="0" aria-valuemax="100"><div id="xpBar"></div></div>
-<details><summary>Chapter progress</summary><div id="chapters"></div></details>
-<nav><button id="mute" aria-pressed="false">Mute sound</button><button id="reset">Reset progress</button><a href="../index.html">Back to catalogue</a></nav>
-<p id="storageWarning" hidden>Progress cannot be saved in this browser session.</p>
-</header>
-<aside id="mapPanel" class="paper"><canvas id="minimap" width="270" height="180" aria-label="Minimap: six chapter zones and remaining pickups"></canvas><div>EXPLORE ALL SIX CHAPTERS</div></aside>
-<div id="combo" role="status"></div>
-<div id="help" class="paper">Walk into the light.<span>WASD / arrows to move · Shift to dash</span></div>
-<section id="pickup" class="paper" aria-label="Collected skill" hidden><button class="close" id="closePickup" aria-label="Close pickup panel">×</button><span id="cardName"></span><h1 id="itemName"></h1><p id="itemFunction"></p><h2>Try this prompt</h2><blockquote id="itemPrompt"></blockquote><strong id="reward"></strong></section>
-<div id="flash"></div><div id="banner" role="status"></div>
-<div id="joystick" aria-label="Touch joystick"><div id="stick"></div></div><button id="dash">DASH</button>
-<section id="win" class="overlay" role="dialog" aria-modal="true" aria-labelledby="winTitle" hidden><div class="paper"><h1 id="winTitle">All 218. Yours.</h1><p>Six chapters explored. Twenty-two cards completed.</p><p id="timePlayed"></p><button id="wander">Keep wandering</button></div></section>
-<section id="error" class="overlay" role="alert" hidden><div class="paper"><h1>The world couldn’t load.</h1><p id="errorMessage"></p><button onclick="location.reload()">Try again</button></div></section>
-<div id="loading" class="overlay"><div class="paper">Preparing your adventure…</div></div>
-<script src="game.js"></script>
-</body></html>
+  <div id="stage" class="stage" aria-hidden="true"></div>
+  <div id="loading" class="loading" role="status">Loading world…</div>
+
+  <header id="hud" class="panel hud" aria-label="Progress">
+    <div class="hud-top">
+      <div class="level-badge" id="level-badge" aria-label="Level">
+        <span class="lv-label">LV</span><span id="hud-level">1</span>
+      </div>
+      <div class="hud-xp">
+        <div class="xp-bar" id="xp-bar" role="progressbar" aria-label="XP towards next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div id="xp-fill" class="xp-fill"></div>
+        </div>
+        <div class="xp-text" id="hud-xp-text">0 / 100 XP</div>
+      </div>
+    </div>
+    <div class="hud-count"><strong id="hud-count">0/218</strong> skills collected</div>
+    <details id="hud-chapters" class="chapters" open>
+      <summary>Chapters</summary>
+      <ul id="chapter-list"></ul>
+    </details>
+    <div class="hud-actions">
+      <button id="btn-mute" type="button" aria-pressed="false">Sound: on</button>
+      <button id="btn-reset" type="button">Reset progress</button>
+    </div>
+    <div id="reset-confirm" class="reset-confirm" hidden>
+      <p>Reset all progress? Collected skills and XP will be cleared.</p>
+      <div class="hud-actions">
+        <button id="btn-reset-yes" type="button" class="danger">Yes, reset</button>
+        <button id="btn-reset-no" type="button">Cancel</button>
+      </div>
+    </div>
+    <a class="back-link" href="../index.html">← Back to catalogue</a>
+  </header>
+
+  <canvas id="minimap" class="panel minimap" width="210" height="140" aria-label="Minimap"></canvas>
+
+  <div id="combo" class="combo" hidden aria-live="polite">
+    <span class="combo-label">COMBO</span> <span id="combo-count">×2</span>
+    <div class="combo-timer"><div id="combo-timer-fill"></div></div>
+  </div>
+  <div id="toast" class="toast" hidden aria-live="polite"></div>
+
+  <aside id="pickup-panel" class="panel pickup" hidden aria-labelledby="pickup-name">
+    <button id="pickup-x" type="button" class="close-x" aria-label="Close and keep playing">×</button>
+    <p class="pickup-kicker" id="pickup-kicker">Skill collected · +10 XP</p>
+    <h2 id="pickup-name"></h2>
+    <p class="pickup-meta" id="pickup-meta"></p>
+    <h3>Function</h3>
+    <p id="pickup-function"></p>
+    <h3>Example prompt</h3>
+    <blockquote id="pickup-prompt"></blockquote>
+    <button id="pickup-close" type="button" class="primary">Close · keep playing</button>
+  </aside>
+
+  <div id="flash" class="flash" aria-hidden="true"></div>
+  <div id="levelup" class="levelup" hidden aria-live="assertive">
+    <span class="levelup-title">LEVEL UP!</span>
+    <span class="levelup-sub" id="levelup-sub">Level 2</span>
+  </div>
+
+  <div id="hint" class="hint">WASD / arrow keys to move · Shift to dash · walk into orbs to collect</div>
+
+  <div id="touch-zone" class="touch-zone" hidden></div>
+  <div id="joystick" class="joystick" hidden><div class="joystick-knob" id="joystick-knob"></div></div>
+  <button id="btn-dash" type="button" class="dash-btn" hidden>DASH</button>
+
+  <div id="win" class="overlay" hidden role="dialog" aria-labelledby="win-title">
+    <div class="panel overlay-card">
+      <p class="pickup-kicker">218 / 218</p>
+      <h2 id="win-title">Every skill collected!</h2>
+      <p>You found all 218 skills across 22 cards and 6 chapters.</p>
+      <dl class="win-stats">
+        <dt>Time played (this session)</dt><dd id="win-time">0:00</dd>
+        <dt>Level</dt><dd id="win-level">11</dd>
+        <dt>Total XP</dt><dd id="win-xp">3280</dd>
+      </dl>
+      <button id="win-keep" type="button" class="primary">Keep wandering</button>
+    </div>
+  </div>
+
+  <div id="error-panel" class="overlay" hidden role="alert">
+    <div class="panel overlay-card">
+      <h2>The game couldn't start</h2>
+      <p id="error-message">three.js could not be loaded.</p>
+      <p class="error-detail" id="error-detail"></p>
+      <div class="hud-actions">
+        <button type="button" class="primary" onclick="location.reload()">Try again</button>
+        <a class="back-link" href="../index.html">← Back to catalogue</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // Readable error panel, defined before game.js so it works even if game.js or the CDN never loads.
+      window.__showGameError = function (message, detail) {
+        var panel = document.getElementById('error-panel');
+        document.getElementById('error-message').textContent = message;
+        document.getElementById('error-detail').textContent = detail || '';
+        document.getElementById('loading').hidden = true;
+        panel.hidden = false;
+      };
+      var script = document.createElement('script');
+      script.src = 'game.js';
+      // Browsers refuse module scripts on file:// pages; game.js runs as either kind, so use a classic tag there.
+      if (location.protocol !== 'file:') script.type = 'module';
+      script.onerror = function () {
+        window.__showGameError('game.js could not be loaded.', 'Make sure game.js sits next to game.html.');
+      };
+      document.body.appendChild(script);
+      setTimeout(function () {
+        if (!window.__gameBooted && document.getElementById('error-panel').hidden) {
+          window.__showGameError(
+            'Timed out loading three.js from the CDN.',
+            'Tried https://unpkg.com/three@0.160.0/build/three.module.js. Check your connection and try again.'
+          );
+        }
+      }, 20000);
+    })();
+  </script>
+</body>
+</html>
