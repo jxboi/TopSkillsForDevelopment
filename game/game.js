@@ -20,6 +20,9 @@
   const XP_PER_PICKUP = 10;
   const XP_PER_CARD = 50;
   const PICKUP_RADIUS = 0.8;
+  // Orbs whose home spot is within this distance get pulled toward the player;
+  // never more than SPAWN_CLEARANCE, so the spawn point can't attract anything.
+  const MAGNET_RADIUS = 1.5;
   const SPAWN_CLEARANCE = 1.5;
   const COMBO_WINDOW = 5; // seconds
 
@@ -254,6 +257,7 @@
     MAX_LEVEL,
     STORAGE_KEY,
     PICKUP_RADIUS,
+    MAGNET_RADIUS,
     SPAWN_CLEARANCE,
     COMBO_WINDOW,
     BOUNDS,
@@ -557,8 +561,42 @@
       group.add(glow, ball, core, label);
       const collected = progress.has(o.item.id);
       if (!collected) scene.add(group);
-      return { data: o, group, glow, label, phase: (i * 2.399) % (Math.PI * 2), collected, color: CHAPTER_STYLE[ch].orb };
+      return { data: o, group, glow, label, phase: (i * 2.399) % (Math.PI * 2), collected, color: CHAPTER_STYLE[ch].orb, pull: 0 };
     });
+
+    // ------------------------------------------------------------ beacon
+    // A light pillar on the nearest uncollected orb, ignoring fog so it reads from across a zone.
+    const BEACON_HEIGHT = 18;
+    const beaconCanvas = document.createElement('canvas');
+    beaconCanvas.width = 4;
+    beaconCanvas.height = 128;
+    {
+      const g = beaconCanvas.getContext('2d');
+      const grad = g.createLinearGradient(0, 0, 0, 128);
+      grad.addColorStop(0, 'rgba(255,255,255,0)');
+      grad.addColorStop(0.55, 'rgba(255,255,255,0.55)');
+      grad.addColorStop(1, 'rgba(255,255,255,1)');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 4, 128);
+    }
+    const beaconTex = canvasTexture(beaconCanvas);
+    const beaconTube = (radius, opacity) => new THREE.Mesh(
+      new THREE.CylinderGeometry(radius, radius, BEACON_HEIGHT, 20, 1, true).translate(0, BEACON_HEIGHT / 2, 0),
+      new THREE.MeshBasicMaterial({ map: beaconTex, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide, fog: false })
+    );
+    const beaconCore = beaconTube(0.16, 0.95);
+    const beaconHalo = beaconTube(0.42, 0.45);
+    const beaconRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.45, 0.6, 32),
+      new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false })
+    );
+    beaconRing.rotation.x = -Math.PI / 2;
+    beaconRing.position.y = 0.04;
+    const beacon = new THREE.Group();
+    beacon.add(beaconHalo, beaconCore, beaconRing);
+    beacon.visible = false;
+    scene.add(beacon);
+    let beaconTarget = null;
 
     // ------------------------------------------------------------ player sprite
     const ADV = {
@@ -653,7 +691,7 @@
     player.add(shadow);
     scene.add(player);
 
-    const motion = { x: spawn.x, z: spawn.z, vx: 0, vz: 0, facing: 1, animPhase: 0, idleClock: 0 };
+    const motion = { x: spawn.x, z: spawn.z, vx: 0, vz: 0, facing: 1, animPhase: 0, idleClock: 0, walkAmt: 0, lean: 0 };
     player.position.set(motion.x, 0, motion.z);
     camera.position.set(motion.x + CAM_OFFSET.x, CAM_OFFSET.y, motion.z + CAM_OFFSET.z);
     const camLook = new THREE.Vector3(motion.x, 0.9, motion.z);
@@ -693,7 +731,46 @@
       scene.add(ring);
       rings.push({ ring, age: 0, life: 0.45 });
     }
+    // Dash trail: a fixed pool of glow puffs dropped behind the player, recycled oldest-first.
+    const TRAIL_LIFE = 0.38;
+    const TRAIL_COLORS = ['#f2a93b', '#fff1c9', '#f2a93b', '#c8412f'];
+    const trail = [];
+    for (let i = 0; i < 36; i++) {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: glowTex, color: TRAIL_COLORS[i % TRAIL_COLORS.length], transparent: true, depthWrite: false,
+      }));
+      s.visible = false;
+      scene.add(s);
+      trail.push({ sprite: s, age: TRAIL_LIFE, size: 0 });
+    }
+    let trailNext = 0;
+    function emitTrail(x, z, vx, vz) {
+      const t = trail[trailNext];
+      trailNext = (trailNext + 1) % trail.length;
+      const sp = Math.hypot(vx, vz) || 1;
+      const back = 0.28 + Math.random() * 0.12;
+      t.sprite.position.set(
+        x - (vx / sp) * back + (Math.random() - 0.5) * 0.25,
+        0.25 + Math.random() * 0.75,
+        z - (vz / sp) * back + (Math.random() - 0.5) * 0.25
+      );
+      t.size = 0.45 + Math.random() * 0.3;
+      t.age = 0;
+      t.sprite.visible = true;
+    }
+    function updateTrail(dt) {
+      trail.forEach((t) => {
+        if (t.age >= TRAIL_LIFE) return;
+        t.age += dt;
+        const f = Math.min(1, t.age / TRAIL_LIFE);
+        t.sprite.visible = f < 1;
+        t.sprite.scale.setScalar(t.size * (1 - f * 0.7));
+        t.sprite.material.opacity = 0.85 * (1 - f);
+        t.sprite.position.y += dt * 0.4;
+      });
+    }
     function updateEffects(dt) {
+      updateTrail(dt);
       for (let i = bursts.length - 1; i >= 0; i--) {
         const b = bursts[i];
         b.age += dt;
@@ -1063,6 +1140,8 @@
       burst(p.x, p.y, p.z, orb.color, 34, 4.2, 0.85, 0.16);
       burst(p.x, p.y, p.z, '#ffffff', 14, 2.6, 0.6, 0.1);
       shockRing(p.x, p.z, orb.color);
+      orb.pull = 0;
+      orb.group.scale.setScalar(1);
       bumpCombo(now);
       pickupChime(combo.count);
       writeStorage(progress.serialize());
@@ -1148,6 +1227,7 @@
     let last = performance.now();
     let moved = 0;
     let dustTimer = 0;
+    let trailTimer = 0;
     let frameNo = 0;
     const hint = $('hint');
     const hintTimer = setTimeout(() => hint.classList.add('gone'), 12000);
@@ -1191,13 +1271,33 @@
         spriteMat.map = FRAMES.idle[Math.floor(motion.idleClock / 0.6) % 2];
       }
 
-      // Dash dust.
+      // Walk feel: hop on each stride and lean into screen-horizontal travel, easing back to idle.
+      // The hop peaks on the legs-together frames (1, 3) and touches down on the stride frames (0, 2).
+      const walkTarget = Math.min(1, speed / MOVE_SPEED);
+      motion.walkAmt += (walkTarget - motion.walkAmt) * (1 - Math.exp(-10 * dt));
+      motion.lean += (-(motion.vx / (MOVE_SPEED * DASH_MULTIPLIER)) * 0.2 - motion.lean) * (1 - Math.exp(-12 * dt));
+      const hop = Math.abs(Math.sin((motion.animPhase - 0.5) * Math.PI / 2)) * motion.walkAmt;
+      sprite.position.y = hop * (input.dash ? 0.11 : 0.08);
+      sprite.rotation.z = motion.lean;
+      sprite.scale.y = 1 + (hop - 0.5) * 0.05 * motion.walkAmt;
+      shadow.scale.setScalar(1 - hop * 0.15);
+
+      // Dash: ground dust plus a glow trail behind the player.
       if (input.dash && speed > MOVE_SPEED * 1.05) {
         dustTimer -= dt;
         if (dustTimer <= 0) {
           dustTimer = 0.06;
           burst(motion.x, 0.08, motion.z, '#9c9480', 5, 0.9, 0.45, 0.12);
         }
+      }
+      if (input.dash && speed > MOVE_SPEED * 0.5) {
+        trailTimer -= dt;
+        while (trailTimer <= 0) {
+          trailTimer += 0.02;
+          emitTrail(motion.x, motion.z, motion.vx, motion.vz);
+        }
+      } else {
+        trailTimer = 0;
       }
 
       // Camera follows behind and above, looking at the character.
@@ -1211,27 +1311,64 @@
       // Cylindrical billboard: the sprite turns to face the camera around Y.
       sprite.rotation.y = Math.atan2(camera.position.x - motion.x, camera.position.z - motion.z);
 
-      // Orbs: bob, glow, fade labels by distance, collect on contact.
+      // Orbs: bob, glow, fade labels by distance, magnet pull, collect on contact.
+      // Distances are from each orb's fixed home spot, so the magnet can only reach MAGNET_RADIUS.
       const r2 = PICKUP_RADIUS * PICKUP_RADIUS;
+      const m2 = MAGNET_RADIUS * MAGNET_RADIUS;
+      let nearest = null;
+      let nearestD2 = Infinity;
+      let targetD2 = Infinity;
       for (let i = 0; i < orbs.length; i++) {
         const o = orbs[i];
         if (o.collected) continue;
         const dx = o.data.x - motion.x;
         const dz = o.data.z - motion.z;
         const d2 = dx * dx + dz * dz;
-        if (d2 < r2) {
+        if (d2 < m2) o.pull = Math.min(1, o.pull + dt * 7);
+        else if (o.pull > 0) o.pull = Math.max(0, o.pull - dt * 4);
+        const d = Math.sqrt(d2);
+        // Contact = the pulled orb is within PICKUP_RADIUS; with no pull this is exactly the v1 rule.
+        if (d2 < r2 || (d2 < m2 && d * (1 - o.pull) < PICKUP_RADIUS)) {
           collectOrb(o, clock);
           continue;
         }
-        o.group.position.y = 0.95 + Math.sin(clock * 2.2 + o.phase) * 0.14;
+        if (d2 < nearestD2) { nearestD2 = d2; nearest = o; }
+        if (o === beaconTarget) targetD2 = d2;
+        const bobY = 0.95 + Math.sin(clock * 2.2 + o.phase) * 0.14;
+        o.group.position.set(
+          o.data.x - dx * o.pull,
+          bobY + (0.7 - bobY) * o.pull,
+          o.data.z - dz * o.pull
+        );
+        o.group.scale.setScalar(1 - o.pull * 0.35);
         o.glow.scale.setScalar(1.1 + Math.sin(clock * 3.1 + o.phase) * 0.18);
-        const d = Math.sqrt(d2);
         if (d > LABEL_GONE) {
           o.label.visible = false;
         } else {
           o.label.visible = true;
           o.label.material.opacity = d < LABEL_FULL ? 1 : 1 - (d - LABEL_FULL) / (LABEL_GONE - LABEL_FULL);
         }
+      }
+
+      // Beacon on the nearest uncollected orb. A small hysteresis stops it flickering
+      // between two near-equidistant orbs; it dims up close so it doesn't hide the orb.
+      if (nearest && (targetD2 === Infinity || Math.sqrt(nearestD2) < Math.sqrt(targetD2) - 0.3)) beaconTarget = nearest;
+      if (!nearest) beaconTarget = null;
+      beacon.visible = !!beaconTarget;
+      if (beaconTarget) {
+        if (beacon.userData.color !== beaconTarget.color) {
+          beacon.userData.color = beaconTarget.color;
+          [beaconCore, beaconHalo, beaconRing].forEach((m) => m.material.color.set(beaconTarget.color));
+        }
+        beacon.position.set(beaconTarget.data.x, 0, beaconTarget.data.z);
+        const dist = Math.sqrt(beaconTarget === nearest ? nearestD2 : targetD2);
+        const far = Math.min(1, Math.max(0, (dist - 2) / 4));
+        const pulse = 0.85 + Math.sin(clock * 3) * 0.15;
+        beaconCore.material.opacity = (0.3 + 0.65 * far) * pulse;
+        beaconHalo.material.opacity = (0.12 + 0.33 * far) * pulse;
+        const ripple = (clock * 0.8) % 1;
+        beaconRing.scale.setScalar(1 + ripple * 0.8);
+        beaconRing.material.opacity = 0.75 * (1 - ripple);
       }
       chapterSigns.forEach((s) => { s.mesh.position.y = s.baseY + Math.sin(clock * 0.8 + s.phase) * 0.25; });
       spawnRing.material.opacity = 0.25 + Math.sin(clock * 2) * 0.1;

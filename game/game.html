@@ -109,6 +109,10 @@
 
   <script>
     (function () {
+      // Phones start with the chapters list collapsed so more of the world shows; the player can still open it.
+      if (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) {
+        document.getElementById('hud-chapters').open = false;
+      }
       // Readable error panel, defined before game.js so it works even if game.js or the CDN never loads.
       window.__showGameError = function (message, detail) {
         var panel = document.getElementById('error-panel');
