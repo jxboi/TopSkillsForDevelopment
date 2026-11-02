@@ -427,3 +427,12 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
   .flash.on { animation-duration: 0.4s; }
   .pickup.pop, .combo.bump, .toast { animation: none; }
 }
+
+/* Narrow phones (320-380px): 200px HUD + 150px minimap no longer fit side by side. */
+@media (max-width: 380px) {
+  .hud { width: 172px; padding: 7px 8px; }
+  .hud-top { gap: 8px; }
+  .level-badge { width: 38px; height: 38px; }
+  .level-badge #hud-level { font-size: 17px; }
+  .minimap { width: 120px; height: 80px; }
+}
