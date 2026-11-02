@@ -49,12 +49,12 @@
   const DECEL = 9;
 
   const CHAPTER_STYLE = {
-    Workflow: { orb: '#f2a93b', tint: '#f1e2bb', ink: '#8a5a12' },
-    Quality: { orb: '#36b06a', tint: '#d3e6d1', ink: '#1f6b3e' },
-    Design: { orb: '#e0527a', tint: '#f2d3da', ink: '#8e2643' },
-    Efficiency: { orb: '#2f95d0', tint: '#cfe2ee', ink: '#18577d' },
-    Knowledge: { orb: '#8a63d6', tint: '#e0d7f0', ink: '#4c3290' },
-    Discovery: { orb: '#e26d2e', tint: '#f3dac8', ink: '#8a3a10' },
+    Workflow: { orb: '#f2a93b', pulse: 1.8, tint: '#eed39a', ink: '#8a5a12' },
+    Quality: { orb: '#36b06a', pulse: 2.2, tint: '#b9ddb9', ink: '#1f6b3e' },
+    Design: { orb: '#e0527a', pulse: 2.6, tint: '#edbdcc', ink: '#8e2643' },
+    Efficiency: { orb: '#2f95d0', pulse: 3.0, tint: '#b6d9ed', ink: '#18577d' },
+    Knowledge: { orb: '#8a63d6', pulse: 1.5, tint: '#cfc0eb', ink: '#4c3290' },
+    Discovery: { orb: '#e26d2e', pulse: 2.0, tint: '#edc3a5', ink: '#8a3a10' },
   };
 
   // ---------------------------------------------------------------- data
@@ -330,8 +330,8 @@
     const camera = new THREE.PerspectiveCamera(55, root.innerWidth / root.innerHeight, 0.1, 260);
     const CAM_OFFSET = new THREE.Vector3(0, 6.2, 8.8);
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xb9b29c, 2.2));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+    scene.add(new THREE.HemisphereLight(0xe6f1ff, 0xb9a184, 1.8));
+    const sun = new THREE.DirectionalLight(0xffe5bc, 2.0);
     sun.position.set(20, 40, 15);
     scene.add(sun);
 
@@ -372,6 +372,21 @@
       draw(text);
       return { canvas, aspect: w / h, draw };
     }
+
+    // One shared, generated soft contact-shadow texture; no shadow maps or render passes.
+    const shadowCanvas = document.createElement('canvas');
+    shadowCanvas.width = shadowCanvas.height = 64;
+    const sg = shadowCanvas.getContext('2d');
+    const shade = sg.createRadialGradient(32, 32, 3, 32, 32, 32);
+    shade.addColorStop(0, 'rgba(35,28,24,0.30)');
+    shade.addColorStop(0.4, 'rgba(35,28,24,0.18)');
+    shade.addColorStop(1, 'rgba(35,28,24,0)');
+    sg.fillStyle = shade;
+    sg.fillRect(0, 0, 64, 64);
+    const shadowMaterial = new THREE.MeshBasicMaterial({
+      map: canvasTexture(shadowCanvas), transparent: true, depthWrite: false,
+    });
+    const shadowGeometry = new THREE.PlaneGeometry(1, 1);
 
     // ------------------------------------------------------------ ground + zones
     const ground = new THREE.Mesh(
@@ -423,13 +438,29 @@
       c.width = 1024;
       c.height = 300;
       const g = c.getContext('2d');
-      g.fillStyle = PAPER;
+      g.fillStyle = style.tint;
       g.fillRect(0, 0, c.width, c.height);
       g.fillStyle = style.orb;
-      g.fillRect(0, 0, c.width, 26);
+      g.fillRect(0, 0, c.width, 36);
       g.lineWidth = 14;
       g.strokeStyle = INK;
       g.strokeRect(7, 7, c.width - 14, c.height - 14);
+      // Chapter-specific print motifs: bars, checks, diamonds, chevrons, books, stars.
+      g.strokeStyle = style.ink;
+      g.fillStyle = style.ink;
+      g.lineWidth = 4;
+      for (let x = 28; x + 30 < c.width - 14; x += 54) {
+        g.beginPath();
+        switch (zone.index) {
+          case 0: g.rect(x, 8, 28, 6); g.rect(x + 8, 22, 20, 6); break;
+          case 1: g.moveTo(x, 17); g.lineTo(x + 9, 26); g.lineTo(x + 27, 8); break;
+          case 2: g.moveTo(x + 14, 5); g.lineTo(x + 27, 18); g.lineTo(x + 14, 31); g.lineTo(x + 1, 18); g.closePath(); break;
+          case 3: g.moveTo(x, 7); g.lineTo(x + 15, 18); g.lineTo(x, 29); g.moveTo(x + 13, 7); g.lineTo(x + 28, 18); g.lineTo(x + 13, 29); break;
+          case 4: g.rect(x, 6, 28, 24); g.moveTo(x + 14, 6); g.lineTo(x + 14, 30); break;
+          case 5: g.moveTo(x + 14, 4); g.lineTo(x + 14, 32); g.moveTo(x, 18); g.lineTo(x + 28, 18); g.moveTo(x + 5, 9); g.lineTo(x + 23, 27); break;
+        }
+        g.stroke();
+      }
       g.fillStyle = INK;
       g.textAlign = 'center';
       g.textBaseline = 'middle';
@@ -502,7 +533,15 @@
         m.updateMatrix();
         rockMesh.setMatrixAt(i, m.matrix);
       });
-      scene.add(trunks, crowns, rockMesh);
+      const shadows = new THREE.InstancedMesh(shadowGeometry, shadowMaterial, spots.length);
+      spots.forEach((spot, i) => {
+        m.position.set(spot.x - 0.25 * spot.s, 0.023, spot.z - 0.18 * spot.s);
+        m.rotation.set(-Math.PI / 2, 0, -0.5);
+        m.scale.set((spot.rock ? 1.4 : 2.5) * spot.s, (spot.rock ? 1.1 : 1.7) * spot.s, 1);
+        m.updateMatrix();
+        shadows.setMatrixAt(i, m.matrix);
+      });
+      scene.add(trunks, crowns, rockMesh, shadows);
     })();
 
     // ------------------------------------------------------------ card signs
@@ -689,8 +728,7 @@
     const sprite = new THREE.Mesh(spriteGeo, spriteMat);
     player.add(sprite);
     const shadow = new THREE.Mesh(
-      new THREE.CircleGeometry(0.34, 24),
-      new THREE.MeshBasicMaterial({ color: INK, transparent: true, opacity: 0.22, depthWrite: false })
+      shadowGeometry, shadowMaterial
     );
     shadow.rotation.x = -Math.PI / 2;
     shadow.position.y = 0.025;
@@ -813,8 +851,9 @@
     }
 
     // ------------------------------------------------------------ audio
-    const audio = { ctx: null, master: null, muted: false };
+    const audio = { ctx: null, master: null, muted: false, unlocked: false, ambient: false };
     function ensureAudio() {
+      if (!audio.unlocked) return null;
       if (!audio.ctx) {
         const AC = root.AudioContext || root.webkitAudioContext;
         if (!AC) return null;
@@ -823,7 +862,7 @@
         audio.master.gain.value = audio.muted ? 0 : 0.5;
         audio.master.connect(audio.ctx.destination);
       }
-      if (audio.ctx.state === 'suspended') audio.ctx.resume();
+      if (audio.ctx.state === 'suspended') audio.ctx.resume().catch(() => {});
       return audio.ctx;
     }
     function tone(freq, delay, dur, type, vol) {
@@ -856,14 +895,47 @@
       [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((f, i) => tone(f, 0.1 + i * 0.09, 0.55, 'triangle', 0.22));
       tone(1567.98, 0.6, 0.9, 'sine', 0.16);
     }
-    const unlockAudio = () => ensureAudio();
-    root.addEventListener('keydown', unlockAudio, { once: true });
-    root.addEventListener('pointerdown', unlockAudio, { once: true });
+    function startAmbient() {
+      const ctx = ensureAudio();
+      if (!ctx || audio.ambient || audio.muted) return;
+      audio.ambient = true;
+      // Three quiet sustained voices, gently breathed by one slow oscillator.
+      const bed = ctx.createGain();
+      bed.gain.setValueAtTime(0, ctx.currentTime);
+      bed.gain.linearRampToValueAtTime(0.045, ctx.currentTime + 3);
+      bed.connect(audio.master);
+      [130.81, 196, 261.63].forEach((frequency) => {
+        const voice = ctx.createOscillator();
+        voice.type = 'sine';
+        voice.frequency.value = frequency;
+        voice.connect(bed);
+        voice.start();
+      });
+      const breath = ctx.createOscillator();
+      const depth = ctx.createGain();
+      breath.frequency.value = 0.09;
+      depth.gain.value = 0.008;
+      breath.connect(depth);
+      depth.connect(bed.gain);
+      breath.start();
+    }
+    const unlockAudio = (event) => {
+      if (!event.isTrusted) return;
+      audio.unlocked = true;
+      if (audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume().catch(() => {});
+      if (event.target !== $('btn-mute')) startAmbient();
+    };
+    root.addEventListener('keydown', unlockAudio);
+    root.addEventListener('pointerdown', unlockAudio);
+    root.addEventListener('pointerup', unlockAudio);
+    root.addEventListener('touchend', unlockAudio);
+    root.addEventListener('click', unlockAudio);
 
     const muteBtn = $('btn-mute');
     muteBtn.addEventListener('click', () => {
       audio.muted = !audio.muted;
       if (audio.master) audio.master.gain.value = audio.muted ? 0 : 0.5;
+      if (!audio.muted) startAmbient();
       muteBtn.textContent = audio.muted ? 'Sound: off' : 'Sound: on';
       muteBtn.setAttribute('aria-pressed', String(audio.muted));
       muteBtn.blur();
@@ -886,6 +958,7 @@
       if (e.key === 'Escape') {
         closePickup();
         hideConfirm();
+        dismissLevel();
       }
     });
     root.addEventListener('keyup', (e) => {
@@ -1145,7 +1218,18 @@
 
     // Level up.
     let levelTimer = 0;
+    function dismissLevel() {
+      clearTimeout(levelTimer);
+      $('levelup').hidden = true;
+      $('flash').classList.remove('on');
+    }
+    $('levelup-close').addEventListener('click', dismissLevel);
     function celebrateLevel(level) {
+      DATA.chapters.forEach((chapter, i) => {
+        const angle = i * Math.PI / 3;
+        burst(motion.x + Math.cos(angle), 1.4, motion.z + Math.sin(angle), CHAPTER_STYLE[chapter].orb, 12, 4, 1.4, 0.15);
+      });
+      shockRing(motion.x, motion.z, '#f2a93b');
       const flash = $('flash');
       flash.classList.remove('on');
       void flash.offsetWidth;
@@ -1156,7 +1240,7 @@
       void banner.offsetWidth;
       banner.hidden = false;
       clearTimeout(levelTimer);
-      levelTimer = setTimeout(() => { banner.hidden = true; }, 2300);
+      levelTimer = setTimeout(() => { banner.hidden = true; }, 3200);
       const badge = $('level-badge');
       badge.classList.remove('pulse');
       void badge.offsetWidth;
@@ -1195,6 +1279,9 @@
     $('btn-reset').addEventListener('click', () => { confirmBox.hidden = !confirmBox.hidden; });
     $('btn-reset-no').addEventListener('click', hideConfirm);
     $('btn-reset-yes').addEventListener('click', () => {
+      clearTimeout(winTimer);
+      winTimer = 0;
+      dismissLevel();
       progress.reset();
       try { root.localStorage.removeItem(STORAGE_KEY); } catch (e) { /* storage unavailable */ }
       orbs.forEach((o) => {
@@ -1215,6 +1302,7 @@
 
     // Win screen.
     let playSeconds = 0;
+    let winTimer = 0;
     function formatTime(sec) {
       const s = Math.floor(sec);
       const h = Math.floor(s / 3600);
@@ -1223,6 +1311,8 @@
       return h > 0 ? h + ':' + String(m).padStart(2, '0') + ':' + ss : m + ':' + ss;
     }
     function showWin() {
+      winTimer = 0;
+      if (progress.collectedCount !== TOTAL_ITEMS) return;
       $('win-time').textContent = formatTime(playSeconds);
       $('win-level').textContent = String(progress.level);
       $('win-xp').textContent = String(progress.xp);
@@ -1260,7 +1350,10 @@
       renderHud({ levelUp: result.leveledUp });
       if (result.leveledUp) celebrateLevel(result.levelAfter);
       showPickup(result);
-      if (result.won) setTimeout(showWin, 1200);
+      if (result.won) {
+        clearTimeout(winTimer);
+        winTimer = setTimeout(showWin, 1200);
+      }
     }
 
     // ------------------------------------------------------------ minimap
@@ -1425,6 +1518,11 @@
       let targetD2 = Infinity;
       let cardNearest = null;
       let cardNearestD2 = Infinity;
+      DATA.chapters.forEach((ch, index) => {
+        const pulse = 0.5 + 0.5 * Math.sin(clock * CHAPTER_STYLE[ch].pulse + index * 0.8);
+        orbMats[ch].opacity = 0.72 + pulse * 0.24;
+        glowMats[ch].opacity = 0.4 + pulse * 0.4;
+      });
       for (let i = 0; i < orbs.length; i++) {
         const o = orbs[i];
         if (o.collected) continue;
@@ -1449,7 +1547,7 @@
           o.data.z - dz * o.pull
         );
         o.group.scale.setScalar(1 - o.pull * 0.35);
-        o.glow.scale.setScalar(1.1 + Math.sin(clock * 3.1 + o.phase) * 0.18);
+        o.glow.scale.setScalar(1.1 + Math.sin(clock * CHAPTER_STYLE[o.data.zone.name].pulse + o.data.zone.index * 0.8) * 0.18);
         if (d > LABEL_GONE) {
           o.label.visible = false;
         } else {
