@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TopSkills Game — Explore & collect</title>
+<link rel="stylesheet" href="game.css">
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+<div id="world" aria-label="TopSkills exploration world"></div>
+<header class="paper" id="hud">
+<div class="headline"><strong>TopSkills Game</strong><span id="level">Level 1</span></div>
+<div class="stats"><b id="count">0 / 218</b><span id="xpText">0 / 100 XP</span></div>
+<div id="xpTrack" role="progressbar" aria-label="Experience" aria-valuemin="0" aria-valuemax="100"><div id="xpBar"></div></div>
+<details><summary>Chapter progress</summary><div id="chapters"></div></details>
+<nav><button id="mute" aria-pressed="false">Mute sound</button><button id="reset">Reset progress</button><a href="../index.html">Back to catalogue</a></nav>
+<p id="storageWarning" hidden>Progress cannot be saved in this browser session.</p>
+</header>
+<aside id="mapPanel" class="paper"><canvas id="minimap" width="270" height="180" aria-label="Minimap: six chapter zones and remaining pickups"></canvas><div>EXPLORE ALL SIX CHAPTERS</div></aside>
+<div id="combo" role="status"></div>
+<div id="help" class="paper">Walk into the light.<span>WASD / arrows to move · Shift to dash</span></div>
+<section id="pickup" class="paper" aria-label="Collected skill" hidden><button class="close" id="closePickup" aria-label="Close pickup panel">×</button><span id="cardName"></span><h1 id="itemName"></h1><p id="itemFunction"></p><h2>Try this prompt</h2><blockquote id="itemPrompt"></blockquote><strong id="reward"></strong></section>
+<div id="flash"></div><div id="banner" role="status"></div>
+<div id="joystick" aria-label="Touch joystick"><div id="stick"></div></div><button id="dash">DASH</button>
+<section id="win" class="overlay" role="dialog" aria-modal="true" aria-labelledby="winTitle" hidden><div class="paper"><h1 id="winTitle">All 218. Yours.</h1><p>Six chapters explored. Twenty-two cards completed.</p><p id="timePlayed"></p><button id="wander">Keep wandering</button></div></section>
+<section id="error" class="overlay" role="alert" hidden><div class="paper"><h1>The world couldn’t load.</h1><p id="errorMessage"></p><button onclick="location.reload()">Try again</button></div></section>
+<div id="loading" class="overlay"><div class="paper">Preparing your adventure…</div></div>
+<script src="game.js"></script>
+</body></html>
