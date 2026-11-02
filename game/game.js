@@ -17,6 +17,10 @@
 
   // ---------------------------------------------------------------- config
   const STORAGE_KEY = 'topskills-game-progress';
+  // Kept apart from STORAGE_KEY so the progress save is never rewritten or cleared by these.
+  const TARGET_KEY = 'topskills-game-target'; // raw card id
+  const HOWTO_KEY = 'topskills-game-howto-seen'; // '1' once the How to Play overlay is closed
+  const ZONE_TOAST_MS = 3200;
   const XP_PER_PICKUP = 10;
   const XP_PER_CARD = 50;
   const PICKUP_RADIUS = 0.8;
@@ -256,6 +260,8 @@
     TOTAL_XP,
     MAX_LEVEL,
     STORAGE_KEY,
+    TARGET_KEY,
+    HOWTO_KEY,
     PICKUP_RADIUS,
     MAGNET_RADIUS,
     SPAWN_CLEARANCE,
@@ -953,14 +959,55 @@
     // ------------------------------------------------------------ HUD
     const chapterList = $('chapter-list');
     const chapterRows = {};
+    const cardRows = {};
+    // Each chapter name expands its cards; a card row picks (or drops) that card as the target.
     DATA.chapters.forEach((ch) => {
       const li = document.createElement('li');
-      li.innerHTML = '<span class="swatch"></span><span class="name"></span><span class="num"></span><span class="bar"><div></div></span>';
+      li.innerHTML = '<span class="swatch"></span><button type="button" class="name" aria-expanded="false"></button><span class="num"></span><span class="bar"><div></div></span><ul class="ch-cards" hidden></ul>';
       li.querySelector('.swatch').style.background = (CHAPTER_STYLE[ch] || CHAPTER_STYLE.Workflow).orb;
-      li.querySelector('.name').textContent = ch;
+      const nameBtn = li.querySelector('.name');
+      nameBtn.textContent = ch;
+      nameBtn.title = 'Show ' + ch + ' cards to pick a target';
+      const cardList = li.querySelector('.ch-cards');
+      CARDS.filter((c) => c.chapter === ch).forEach((card) => {
+        const row = document.createElement('li');
+        row.innerHTML = '<button type="button" class="card-pick" aria-pressed="false"><span class="card-title"></span><span class="card-num"></span></button>';
+        row.querySelector('.card-title').textContent = card.title;
+        const btn = row.querySelector('.card-pick');
+        btn.addEventListener('click', () => {
+          setTarget(targetCardId === card.id ? null : card.id);
+          btn.blur();
+        });
+        cardList.appendChild(row);
+        cardRows[card.id] = btn;
+      });
+      nameBtn.addEventListener('click', () => {
+        const open = cardList.hidden;
+        cardList.hidden = !open;
+        nameBtn.setAttribute('aria-expanded', String(open));
+        nameBtn.blur();
+      });
       chapterList.appendChild(li);
       chapterRows[ch] = li;
     });
+
+    // Target card: steers the beacon to that card's orbs. Stored under TARGET_KEY as a raw card id.
+    const cardById = new Map(CARDS.map((c) => [c.id, c]));
+    let targetCardId = null;
+    {
+      const saved = readKey(TARGET_KEY);
+      if (saved && cardById.has(saved) && !progress.isCardComplete(saved)) targetCardId = saved;
+      else if (saved) removeKey(TARGET_KEY);
+    }
+    function setTarget(cardId) {
+      targetCardId = cardId && cardById.has(cardId) && !progress.isCardComplete(cardId) ? cardId : null;
+      if (targetCardId) writeKey(TARGET_KEY, targetCardId);
+      else removeKey(TARGET_KEY);
+      beaconTarget = null; // snap to the new pool's nearest orb next frame, skipping the hysteresis
+      renderTarget();
+      syncPickupTarget();
+    }
+    $('btn-target-clear').addEventListener('click', (e) => { setTarget(null); e.currentTarget.blur(); });
     const xpFill = $('xp-fill');
     const xpBar = $('xp-bar');
 
@@ -1005,13 +1052,48 @@
         li.querySelector('.bar > div').style.width = ((got / chapterTotals[ch]) * 100).toFixed(1) + '%';
         li.classList.toggle('done', got === chapterTotals[ch]);
       });
+      renderTarget();
       gameState.collectedCount = n;
       gameState.xp = xp;
       gameState.level = level;
     }
 
+    function renderTarget() {
+      CARDS.forEach((card) => {
+        const btn = cardRows[card.id];
+        const got = progress.cardCount(card.id);
+        const done = got === card.items.length;
+        btn.querySelector('.card-num').textContent = done ? '✓' : got + '/' + card.items.length;
+        btn.disabled = done;
+        btn.setAttribute('aria-pressed', String(card.id === targetCardId));
+        btn.title = done ? card.title + ' is complete' : card.id === targetCardId ? 'Clear target' : 'Target this card';
+      });
+      const box = $('hud-target');
+      if (!targetCardId) { box.hidden = true; return; }
+      const card = cardById.get(targetCardId);
+      const got = progress.cardCount(card.id);
+      $('hud-target-name').textContent = card.title;
+      $('hud-target-count').textContent = got + '/' + card.items.length;
+      $('hud-target-fill').style.width = ((got / card.items.length) * 100).toFixed(1) + '%';
+      box.hidden = false;
+    }
+
     // Pickup panel.
     const panel = $('pickup-panel');
+    const pickupTargetBtn = $('pickup-target');
+    let pickupCardId = null;
+    function syncPickupTarget() {
+      const show = !!pickupCardId && !progress.isCardComplete(pickupCardId);
+      pickupTargetBtn.hidden = !show;
+      if (!show) return;
+      const on = pickupCardId === targetCardId;
+      pickupTargetBtn.textContent = on ? 'Targeted ✓ · clear target' : 'Target this card';
+      pickupTargetBtn.setAttribute('aria-pressed', String(on));
+    }
+    pickupTargetBtn.addEventListener('click', () => {
+      setTarget(pickupCardId === targetCardId ? null : pickupCardId);
+      pickupTargetBtn.blur();
+    });
     function showPickup(result) {
       const { item, card } = result;
       $('pickup-kicker').textContent = 'Skill collected · +' + result.xpGained + ' XP' + (result.cardCompleted ? ' · card complete!' : '');
@@ -1019,6 +1101,8 @@
       $('pickup-meta').textContent = 'Card: ' + card.title + ' · ' + card.chapter + ' chapter' + (item.category ? ' · ' + item.category : '');
       $('pickup-function').textContent = item.fn;
       $('pickup-prompt').textContent = item.prompt;
+      pickupCardId = card.id;
+      syncPickupTarget();
       panel.hidden = false;
       panel.scrollTop = 0;
       panel.classList.remove('pop');
@@ -1040,6 +1124,23 @@
       el.style.animation = '';
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+    }
+
+    // Zone-complete toast: its own element so it never replaces a card-complete toast.
+    let zoneToastTimer = 0;
+    function zoneToast(zoneName) {
+      const el = $('zone-toast');
+      $('zone-toast-title').textContent = zoneName + ' complete';
+      $('zone-toast-sub').textContent = 'All ' + chapterTotals[zoneName] + ' skills in this chapter collected';
+      el.style.setProperty('--zone-color', (CHAPTER_STYLE[zoneName] || CHAPTER_STYLE.Workflow).orb);
+      el.hidden = true;
+      void el.offsetWidth;
+      el.hidden = false;
+      clearTimeout(zoneToastTimer);
+      zoneToastTimer = setTimeout(() => { el.hidden = true; }, ZONE_TOAST_MS);
+    }
+    function chapterCount(ch) {
+      return CARDS.filter((c) => c.chapter === ch).reduce((s, c) => s + progress.cardCount(c.id), 0);
     }
 
     // Level up.
@@ -1151,7 +1252,11 @@
         cardChime();
         const cl = layout.clusters.find((c) => c.card.id === result.card.id);
         burst(cl.x, 3, cl.z, '#e8bf4a', 60, 5, 1.2, 0.2);
+        if (result.card.id === targetCardId) setTarget(null); // nothing left to point at
       }
+      // Counts only ever rise by one per pickup, so this fires exactly on the zone's last orb.
+      const zoneName = orb.data.zone.name;
+      if (chapterCount(zoneName) === chapterTotals[zoneName]) zoneToast(zoneName);
       renderHud({ levelUp: result.leveledUp });
       if (result.leveledUp) celebrateLevel(result.levelAfter);
       showPickup(result);
@@ -1318,6 +1423,8 @@
       let nearest = null;
       let nearestD2 = Infinity;
       let targetD2 = Infinity;
+      let cardNearest = null;
+      let cardNearestD2 = Infinity;
       for (let i = 0; i < orbs.length; i++) {
         const o = orbs[i];
         if (o.collected) continue;
@@ -1333,6 +1440,7 @@
           continue;
         }
         if (d2 < nearestD2) { nearestD2 = d2; nearest = o; }
+        if (targetCardId && o.data.card.id === targetCardId && d2 < cardNearestD2) { cardNearestD2 = d2; cardNearest = o; }
         if (o === beaconTarget) targetD2 = d2;
         const bobY = 0.95 + Math.sin(clock * 2.2 + o.phase) * 0.14;
         o.group.position.set(
@@ -1350,10 +1458,14 @@
         }
       }
 
-      // Beacon on the nearest uncollected orb. A small hysteresis stops it flickering
-      // between two near-equidistant orbs; it dims up close so it doesn't hide the orb.
-      if (nearest && (targetD2 === Infinity || Math.sqrt(nearestD2) < Math.sqrt(targetD2) - 0.3)) beaconTarget = nearest;
-      if (!nearest) beaconTarget = null;
+      // Beacon on the nearest uncollected orb of the target card if one is set, otherwise the
+      // nearest uncollected orb overall. A small hysteresis stops it flickering between two
+      // near-equidistant orbs; it dims up close so it doesn't hide the orb.
+      const useCard = !!cardNearest;
+      const want = useCard ? cardNearest : nearest;
+      const wantD2 = useCard ? cardNearestD2 : nearestD2;
+      if (want && (targetD2 === Infinity || Math.sqrt(wantD2) < Math.sqrt(targetD2) - 0.3)) beaconTarget = want;
+      if (!want) beaconTarget = null;
       beacon.visible = !!beaconTarget;
       if (beaconTarget) {
         if (beacon.userData.color !== beaconTarget.color) {
@@ -1361,7 +1473,7 @@
           [beaconCore, beaconHalo, beaconRing].forEach((m) => m.material.color.set(beaconTarget.color));
         }
         beacon.position.set(beaconTarget.data.x, 0, beaconTarget.data.z);
-        const dist = Math.sqrt(beaconTarget === nearest ? nearestD2 : targetD2);
+        const dist = Math.sqrt(beaconTarget === want ? wantD2 : targetD2);
         const far = Math.min(1, Math.max(0, (dist - 2) / 4));
         const pulse = 0.85 + Math.sin(clock * 3) * 0.15;
         beaconCore.material.opacity = (0.3 + 0.65 * far) * pulse;
@@ -1386,6 +1498,22 @@
       root.requestAnimationFrame(frame);
     }
 
+    // First-run How to Play: shown until closed once; any click/tap on it or any key closes it.
+    // Uses HOWTO_KEY only, never STORAGE_KEY. If storage is blocked it simply shows each visit.
+    const howto = $('howto');
+    function closeHowto() {
+      if (howto.hidden) return;
+      howto.hidden = true;
+      writeKey(HOWTO_KEY, '1');
+      root.removeEventListener('keydown', closeHowto, true);
+    }
+    if (readKey(HOWTO_KEY) !== '1') {
+      howto.hidden = false;
+      howto.addEventListener('click', closeHowto);
+      root.addEventListener('keydown', closeHowto, true);
+      $('howto-start').focus();
+    }
+
     renderHud({ instant: true });
     $('loading').hidden = true;
     root.requestAnimationFrame((now) => { last = now; frame(now); });
@@ -1405,6 +1533,16 @@
     } catch (e) {
       /* storage full or blocked: progress just won't persist */
     }
+  }
+  // Plain-string side keys (target card, How to Play flag); never touch STORAGE_KEY.
+  function readKey(key) {
+    try { return root.localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function writeKey(key, value) {
+    try { root.localStorage.setItem(key, value); } catch (e) { /* not persisted */ }
+  }
+  function removeKey(key) {
+    try { root.localStorage.removeItem(key); } catch (e) { /* not persisted */ }
   }
 
   boot();

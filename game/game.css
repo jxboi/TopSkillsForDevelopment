@@ -82,6 +82,8 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
   padding: 10px 12px 10px;
   z-index: 20;
   font-size: 13px;
+  max-height: calc(100vh - 24px); /* an expanded card list scrolls instead of running off screen */
+  overflow-y: auto;
 }
 .hud-top { display: flex; gap: 10px; align-items: center; }
 .level-badge {
@@ -151,6 +153,75 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
 }
 .chapters .bar > div { height: 100%; background: var(--ink); transition: width 0.4s; }
 .chapters li.done .name::after { content: " ✓"; font-weight: 700; }
+/* Chapter name toggles its card list; card rows pick the target. */
+.chapters button.name {
+  justify-self: start;
+  min-width: 0;
+  max-width: 100%;
+  padding: 1px 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chapters button.name::before { content: "▸ "; font-size: 9px; }
+.chapters button.name[aria-expanded="true"]::before { content: "▾ "; }
+.chapters button.name:hover { background: none; text-decoration: underline; }
+.chapters ul.ch-cards { grid-column: 1 / 4; margin: 4px 0 2px; }
+.chapters .ch-cards li { display: block; margin: 0 0 3px; }
+.card-pick {
+  display: flex;
+  width: 100%;
+  gap: 6px;
+  justify-content: space-between;
+  padding: 3px 6px;
+  border-width: 1px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-align: left;
+}
+.card-pick .card-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-pick .card-num { flex: none; font-family: var(--mono); }
+.card-pick[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.card-pick:disabled { cursor: default; color: var(--ink-soft); border-style: dashed; }
+.card-pick:disabled:hover { background: var(--paper); }
+.card-pick:disabled:active { transform: none; }
+
+/* ---------- Target card ---------- */
+.hud-target {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "label num clear" "name name name" "bar bar bar";
+  column-gap: 6px;
+  row-gap: 3px;
+  align-items: center;
+  margin: 2px 0 6px;
+  padding: 5px 6px 6px;
+  border: 1.5px solid var(--ink);
+  background: #fff6e2;
+  font-size: 12px;
+}
+.hud-target .target-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 1px 4px;
+}
+.hud-target .target-label { grid-area: label; justify-self: start; }
+.hud-target .target-name { grid-area: name; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hud-target .target-num { grid-area: num; justify-self: end; font-family: var(--mono); font-size: 11px; }
+.hud-target .target-clear { grid-area: clear; width: 20px; height: 20px; padding: 0; border-width: 1.5px; font-size: 14px; line-height: 1; }
+.hud-target .bar { grid-area: bar; height: 4px; background: #e2dfd3; }
+.hud-target .bar > div { height: 100%; background: var(--accent); border-right: 1px solid var(--ink); transition: width 0.4s; }
 
 .hud-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .reset-confirm { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--ink); }
@@ -216,6 +287,33 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
 }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
+/* Zone complete: celebratory, never takes input, fades out on its own (JS hides it after 3.2s). */
+.zone-toast {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  z-index: 32;
+  pointer-events: none;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  background: var(--ink);
+  color: var(--paper);
+  border-top: 8px solid var(--zone-color, var(--accent));
+  box-shadow: 6px 6px 0 var(--zone-color, var(--accent));
+  padding: 10px 22px 12px;
+  text-align: center;
+  animation: zone-toast 3.2s ease-out forwards;
+}
+.zone-toast-title { display: block; font-size: 26px; font-weight: 900; letter-spacing: 0.03em; line-height: 1.1; }
+.zone-toast-sub { display: block; margin-top: 4px; font-family: var(--mono); font-size: 12px; }
+@keyframes zone-toast {
+  0% { opacity: 0; transform: translate(-50%, -10px) scale(0.9); }
+  10% { opacity: 1; transform: translate(-50%, 0) scale(1.04); }
+  16% { transform: translate(-50%, 0) scale(1); }
+  78% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -6px); }
+}
+
 /* ---------- Pickup panel ---------- */
 .pickup {
   position: fixed;
@@ -262,6 +360,8 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
   font-family: var(--mono);
   font-size: 12.5px;
 }
+.pickup-target { display: block; width: 100%; margin: 0 0 8px; padding: 7px 10px; font-size: 13px; }
+.pickup-target[aria-pressed="true"] { background: #fff6e2; }
 .close-x {
   position: absolute;
   top: 8px;
@@ -405,6 +505,19 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
 }
 .win-stats dt { font-weight: 700; }
 .win-stats dd { margin: 0; font-family: var(--mono); text-align: right; }
+.howto { cursor: pointer; }
+.howto-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 14px;
+  margin: 4px 0 18px;
+  padding: 12px 0;
+  border-top: var(--rule);
+  border-bottom: var(--rule);
+}
+.howto-list dt { font-weight: 800; text-transform: uppercase; font-size: 12px; letter-spacing: 0.1em; padding-top: 2px; }
+.howto-list dd { margin: 0; }
+.overlay-card .howto-note { margin: 10px 0 0; font-size: 12px; color: var(--ink-soft); }
 .error-detail { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); word-break: break-word; }
 
 /* ---------- Small screens ---------- */
@@ -419,6 +532,12 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
   .hint { display: none; }
   .combo { top: auto; bottom: 18px; font-size: 16px; }
   .toast { top: auto; bottom: 74px; font-size: 12px; }
+  .hud { max-height: calc(100vh - 16px); }
+  .zone-toast { top: 56%; padding: 8px 16px 10px; }
+  .zone-toast-title { font-size: 20px; }
+  .zone-toast-sub { font-size: 11px; }
+  .overlay-card { padding: 16px 16px 18px; font-size: 14px; }
+  .overlay-card h2 { font-size: 22px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -426,6 +545,8 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
   @keyframes levelup-fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
   .flash.on { animation-duration: 0.4s; }
   .pickup.pop, .combo.bump, .toast { animation: none; }
+  .zone-toast { animation-name: zone-toast-fade; }
+  @keyframes zone-toast-fade { 0% { opacity: 0; transform: translateX(-50%); } 8%, 78% { opacity: 1; transform: translateX(-50%); } 100% { opacity: 0; transform: translateX(-50%); } }
 }
 
 /* Narrow phones (320-380px): 200px HUD + 150px minimap no longer fit side by side. */
