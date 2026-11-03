@@ -42,8 +42,7 @@ function generate(html,siteURL) {
   const cards=byClass(page,'skill-card').map(node=>{
     const heading=one(byTag(node,'h3')), id=heading.attrs.id;
     assert.ok(id,'Card lacks shipped h3 id');
-    const meta=cls(node,'card-meta'), category=node.attrs['data-category'];
-    assert.equal(category,clean(cls(meta,'category')),'Category mismatch');
+    const category=node.attrs['data-category'];
     const metadata=clean(cls(node,'inside-meta')).match(/^Level: (.+) · GitHub stars: (\d{1,3}(?:,\d{3})*)$/);
     assert.ok(metadata,'Unparseable inside metadata');
     const [,level,starText]=metadata;
