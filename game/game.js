@@ -1,5 +1,5 @@
 /*
- * TopSkills Game v5: walk the world, collect the 218 Inside items ("skills").
+ * TopSkills Game v6: walk the world, collect the 218 Inside items ("skills").
  * v5 adds the collection showcase and draws orbs as instanced layers.
  *
  * Runs as an ES module (served) or a classic script (opened from file://);
@@ -165,6 +165,36 @@
     };
   }
 
+  // Pure derived rewards: no writes, XP awards, or separate badge persistence.
+  function deriveQuests(progress) {
+    const quests = [];
+    const add = (id, name, mark, goal, current, unit) => quests.push({
+      id, name, mark, goal, current: Math.min(current, goal), unit, complete: current >= goal,
+    });
+    add('first', 'First pickup', '+1', 1, progress.collectedCount, 'skills');
+    [25, 50, 100, TOTAL_ITEMS].forEach((goal) =>
+      add('skills-' + goal, 'Collector ' + goal, 'S' + goal, goal, progress.collectedCount, 'skills'));
+    DATA.chapters.forEach((chapter, index) => {
+      const cards = CARDS.filter((card) => card.chapter === chapter);
+      const total = cards.reduce((sum, card) => sum + card.items.length, 0);
+      const count = cards.reduce((sum, card) => sum + progress.cardCount(card.id), 0);
+      add('chapter-' + index, chapter + ' complete', 'CH' + (index + 1), total, count, 'skills');
+    });
+    const cardsDone = CARDS.filter((card) => progress.isCardComplete(card.id)).length;
+    [1, 5, 10, CARDS.length].forEach((goal) =>
+      add('cards-' + goal, goal === 1 ? 'Card finisher' : 'Card collector ' + goal, 'C' + goal, goal, cardsDone, 'cards'));
+    DATA.chapters.forEach((chapter, index) => {
+      const cards = CARDS.filter((card) => card.chapter === chapter);
+      const count = cards.reduce((sum, card) => sum + progress.cardCount(card.id), 0);
+      // Quality has 6 skills and Efficiency 5: every explorer badge must be earnable.
+      const goal = Math.min(10, cards.reduce((sum, card) => sum + card.items.length, 0));
+      add('explorer-' + index, chapter + ' explorer', 'EX' + (index + 1), goal, count, 'skills');
+    });
+    [2, 5, 11].forEach((goal) =>
+      add('level-' + goal, 'Level ' + goal, 'L' + goal, goal, progress.level, 'level'));
+    return quests;
+  }
+
   // ---------------------------------------------------------------- layout
   function clusterRadius(count) {
     return ORB_SPACING * Math.sqrt(count) + 1.5;
@@ -263,6 +293,7 @@
   const gameState = { collectedCount: 0, xp: 0, level: 1, totalItems: TOTAL_ITEMS };
   root.__gameState = gameState;
   root.TopSkillsGame = {
+    deriveQuests,
     DATA,
     CARDS,
     ITEMS,
@@ -1092,6 +1123,7 @@
         hideConfirm();
         dismissLevel();
         setShowcase(false);
+        setQuests(false);
       }
       if (e.code === 'KeyC' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) setShowcase(showcaseEl.hidden);
     });
@@ -1261,6 +1293,7 @@
       });
       renderTarget();
       renderShowcase();
+      renderQuests();
       gameState.collectedCount = n;
       gameState.xp = xp;
       gameState.level = level;
@@ -1357,6 +1390,7 @@
       $('sc-level').textContent = 'Level ' + progress.level + ' · ' + progress.xp + ' XP';
     }
     function setShowcase(open) {
+      if (open) setQuests(false);
       showcaseEl.hidden = !open;
       showcaseBtn.setAttribute('aria-expanded', String(open));
       renderShowcase();
@@ -1364,6 +1398,40 @@
     }
     showcaseBtn.addEventListener('click', () => { setShowcase(showcaseEl.hidden); showcaseBtn.blur(); });
     $('showcase-close').addEventListener('click', (e) => { setShowcase(false); e.currentTarget.blur(); });
+
+    const questsEl = $('quests');
+    const questsBtn = $('btn-quests');
+    const questRows = new Map();
+    deriveQuests(progress).forEach((quest) => {
+      const row = document.createElement('li');
+      row.innerHTML = '<span class="quest-mark" aria-hidden="true"></span><strong class="quest-name"></strong><span class="quest-progress"></span><span class="quest-state"></span>';
+      row.querySelector('.quest-mark').textContent = quest.mark;
+      row.querySelector('.quest-name').textContent = quest.name;
+      $('quest-list').appendChild(row);
+      questRows.set(quest.id, row);
+    });
+    function renderQuests() {
+      if (questsEl.hidden) return;
+      const quests = deriveQuests(progress);
+      quests.forEach((quest) => {
+        const row = questRows.get(quest.id);
+        row.classList.toggle('earned', quest.complete);
+        row.querySelector('.quest-progress').textContent = quest.unit === 'level'
+          ? 'Level ' + quest.current + ' of ' + quest.goal
+          : quest.current + '/' + quest.goal + ' ' + quest.unit;
+        row.querySelector('.quest-state').textContent = quest.complete ? 'Complete · badge earned' : 'Badge unearned';
+      });
+      $('quests-summary').textContent = quests.filter((quest) => quest.complete).length + '/' + quests.length + ' badges earned';
+    }
+    function setQuests(open) {
+      if (open) setShowcase(false);
+      questsEl.hidden = !open;
+      questsBtn.setAttribute('aria-expanded', String(open));
+      renderQuests();
+      fitPickup();
+    }
+    questsBtn.addEventListener('click', () => { setQuests(questsEl.hidden); questsBtn.blur(); });
+    $('quests-close').addEventListener('click', (e) => { setQuests(false); e.currentTarget.blur(); });
 
     // Pickup panel.
     const panel = $('pickup-panel');
@@ -1402,8 +1470,8 @@
     const COMPACT_MQ = '(max-width: 720px), (max-height: 520px)'; // the CSS small-screen block
     function fitPickup() {
       panel.style.maxHeight = '';
-      if (panel.hidden || showcaseEl.hidden) return;
-      const c = $('showcase-close').getBoundingClientRect();
+      if (panel.hidden || (showcaseEl.hidden && questsEl.hidden)) return;
+      const c = $(questsEl.hidden ? 'showcase-close' : 'quests-close').getBoundingClientRect();
       const top = panel.offsetTop;
       const bottom = top + panel.offsetHeight;
       const left = panel.offsetLeft;

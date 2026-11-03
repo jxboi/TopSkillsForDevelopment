@@ -1,4 +1,4 @@
-/* TopSkills Game v5. Panels use the site's stark-print tokens. */
+/* TopSkills Game v6. Panels use the site's stark-print tokens. */
 :root {
   --paper: #fafaf7;
   --ink: #1a1a18;
@@ -645,7 +645,7 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
   .showcase { top: 96px; max-height: calc(100vh - 214px); padding-left: 8px; } /* tucked under the smaller minimap */
   .showcase > .pickup-kicker { margin-right: 24px; letter-spacing: 0; }
   .showcase .close-x { right: 6px; }
-  /* Sound + Collection share the first row, Reset the second (two rows, as in v4). */
+  /* Sound, Collection, Quests and Reset wrap across rows on narrow phones. */
   .hud-actions button { font-size: 11px; padding: 5px 6px; }
 }
 
@@ -661,3 +661,43 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
 .levelup::after { animation-delay: 0.15s; }
 @keyframes levelup-ripple { from { opacity: 0.8; transform: scale(0.9); } to { opacity: 0; transform: scale(1.35); } }
 @media (prefers-reduced-motion: reduce) { .levelup::before, .levelup::after { display: none; } }
+
+/* Quests share the showcase placement; only their list scrolls, keeping Close reachable. */
+.quests {
+  padding: 0;
+  overflow: hidden;
+  max-height: min(440px, calc(100vh - 180px));
+  display: flex;
+  flex-direction: column;
+}
+.quests-header { position: relative; flex: none; padding: 12px 14px 8px; border-bottom: 1px solid var(--ink); }
+.quests-header h2 { margin: 0 32px 6px 0; font-size: 16px; }
+.quests-header p { margin: 4px 0 0; }
+.quests-note { color: var(--ink-soft); font-size: 11px; }
+.quests-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px; }
+.quests-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.quest-list { list-style: none; padding: 0; margin: 0; }
+.quest-list li { display: grid; grid-template-columns: 48px 1fr; gap: 4px 10px; padding: 12px 0; border-bottom: 1px solid #d5d2c7; overflow-wrap: anywhere; }
+.quest-list li:last-child { border-bottom: 0; }
+.quest-mark { grid-row: span 3; align-self: start; border: 1px dashed var(--ink-soft); padding: 7px 2px; text-align: center; font: 700 12px var(--mono); color: var(--ink-soft); }
+.quest-progress { font-family: var(--mono); font-size: 12px; }
+.quest-state { font-size: 11px; color: var(--ink-soft); }
+.earned .quest-mark { background: var(--ink); color: var(--paper); border: 1px solid var(--ink); }
+.earned .quest-state { color: var(--ink); font-weight: 700; }
+@media (max-width: 720px), (max-height: 520px) {
+  .quests { padding: 0; max-height: calc(100vh - 234px); }
+  .quests-header { padding: 9px 8px 8px; }
+  .quests-header h2 { font-size: 13px; margin-right: 24px; }
+  .quests-scroll { padding: 0 8px; }
+  .quest-list li { grid-template-columns: 1fr; gap: 5px; }
+  .quest-mark { grid-row: auto; justify-self: start; min-width: 40px; }
+}
+@media (max-width: 380px) {
+  .quests { padding: 0; max-height: calc(100vh - 214px); }
+}
+@media (max-height: 520px) {
+  .quests-note { display: none; }
+}
+@media (min-width: 721px) and (min-height: 521px) {
+  .quests { max-height: 220px; }
+}

@@ -45,6 +45,7 @@
     <div class="hud-actions">
       <button id="btn-mute" type="button" aria-pressed="false">Sound: on</button>
       <button id="btn-showcase" type="button" aria-expanded="false" aria-controls="showcase" title="Collection showcase (C)">Collection</button>
+      <button id="btn-quests" type="button" aria-expanded="false" aria-controls="quests">Quests</button>
       <button id="btn-reset" type="button">Reset progress</button>
     </div>
     <div id="reset-confirm" class="reset-confirm" hidden>
@@ -109,6 +110,18 @@
       <dt>Best combo</dt><dd id="sc-combo">–</dd>
       <dt>Progress</dt><dd id="sc-level">Level 1 · 0 XP</dd>
     </dl>
+  </section>
+
+  <section id="quests" class="panel showcase quests" hidden aria-labelledby="quests-title">
+    <div class="quests-header">
+      <h2 id="quests-title">Quests</h2>
+      <button id="quests-close" type="button" class="close-x" aria-label="Close quests">×</button>
+      <p id="quests-summary" role="status" aria-live="polite">0/24 badges earned</p>
+      <p class="quests-note">Cosmetic badges only · no bonus XP. Explore 10 skills per chapter, or all if fewer.</p>
+    </div>
+    <div class="quests-scroll" tabindex="0" aria-label="Quest progress and badges">
+      <ul id="quest-list" class="quest-list"></ul>
+    </div>
   </section>
 
   <div id="hint" class="hint">WASD / arrow keys to move · Shift to dash · walk into orbs to collect</div>
