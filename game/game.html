@@ -44,6 +44,7 @@
     </details>
     <div class="hud-actions">
       <button id="btn-mute" type="button" aria-pressed="false">Sound: on</button>
+      <button id="btn-showcase" type="button" aria-expanded="false" aria-controls="showcase" title="Collection showcase (C)">Collection</button>
       <button id="btn-reset" type="button">Reset progress</button>
     </div>
     <div id="reset-confirm" class="reset-confirm" hidden>
@@ -82,11 +83,33 @@
   </aside>
 
   <div id="flash" class="flash" aria-hidden="true"></div>
-  <div id="levelup" class="levelup" hidden aria-live="assertive">
+  <div id="levelup" class="levelup" hidden>
     <button id="levelup-close" type="button" aria-label="Dismiss level celebration">×</button>
-    <span class="levelup-title">LEVEL UP!</span>
-    <span class="levelup-sub" id="levelup-sub">Level 2</span>
+    <div aria-live="assertive" aria-atomic="true">
+      <span class="levelup-title">LEVEL UP!</span>
+      <span class="levelup-sub" id="levelup-sub">Level 2</span>
+    </div>
   </div>
+
+  <!-- Completion showcase: never modal, placed clear of the player and touch controls. -->
+  <section id="showcase" class="panel showcase" hidden aria-labelledby="showcase-title">
+    <button id="showcase-close" type="button" class="close-x" aria-label="Close collection showcase">×</button>
+    <p class="pickup-kicker" id="showcase-title">Collection</p>
+    <div class="sc-head">
+      <p><strong id="sc-cards">0/22</strong> cards complete</p>
+      <p><strong id="sc-skills">0/218</strong> skills · <span id="sc-pct">0%</span></p>
+    </div>
+    <ul id="sc-tiles" class="sc-tiles" role="list" aria-label="Cards"></ul>
+    <p id="sc-tile-name" class="sc-tile-name idle">Hover or tap a tile to name its card</p>
+    <h3>Chapters</h3>
+    <ul id="sc-chapters" class="sc-chapters"></ul>
+    <h3>This run</h3>
+    <dl class="sc-run">
+      <dt>Time played</dt><dd id="sc-time">0:00</dd>
+      <dt>Best combo</dt><dd id="sc-combo">–</dd>
+      <dt>Progress</dt><dd id="sc-level">Level 1 · 0 XP</dd>
+    </dl>
+  </section>
 
   <div id="hint" class="hint">WASD / arrow keys to move · Shift to dash · walk into orbs to collect</div>
 

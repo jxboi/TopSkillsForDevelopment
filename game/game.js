@@ -1,5 +1,6 @@
 /*
- * TopSkills Game v1: walk the world, collect the 218 Inside items ("skills").
+ * TopSkills Game v5: walk the world, collect the 218 Inside items ("skills").
+ * v5 adds the collection showcase and draws orbs as instanced layers.
  *
  * Runs as an ES module (served) or a classic script (opened from file://);
  * three.js comes from the import map in game.html via dynamic import(), so a
@@ -20,6 +21,7 @@
   // Kept apart from STORAGE_KEY so the progress save is never rewritten or cleared by these.
   const TARGET_KEY = 'topskills-game-target'; // raw card id
   const HOWTO_KEY = 'topskills-game-howto-seen'; // '1' once the How to Play overlay is closed
+  const RUN_KEY = 'topskills-game-run'; // JSON { seconds, bestCombo } for the showcase; cleared on reset
   const ZONE_TOAST_MS = 3200;
   const XP_PER_PICKUP = 10;
   const XP_PER_CARD = 50;
@@ -48,14 +50,22 @@
   const ACCEL = 12;
   const DECEL = 9;
 
+  // Pulse: rate in rad/s and a shape (breathe = sine, beat = quick flash then decay, double = two
+  // blinks then rest). Neighbouring zones in the 3x2 grid differ by at least 2x in rate.
   const CHAPTER_STYLE = {
-    Workflow: { orb: '#f2a93b', pulse: 1.8, tint: '#eed39a', ink: '#8a5a12' },
-    Quality: { orb: '#36b06a', pulse: 2.2, tint: '#b9ddb9', ink: '#1f6b3e' },
-    Design: { orb: '#e0527a', pulse: 2.6, tint: '#edbdcc', ink: '#8e2643' },
-    Efficiency: { orb: '#2f95d0', pulse: 3.0, tint: '#b6d9ed', ink: '#18577d' },
-    Knowledge: { orb: '#8a63d6', pulse: 1.5, tint: '#cfc0eb', ink: '#4c3290' },
-    Discovery: { orb: '#e26d2e', pulse: 2.0, tint: '#edc3a5', ink: '#8a3a10' },
+    Workflow: { orb: '#f2a93b', pulse: 1.0, shape: 'breathe', tint: '#eed39a', ink: '#8a5a12', motif: 0 },
+    Quality: { orb: '#36b06a', pulse: 2.4, shape: 'beat', tint: '#b9ddb9', ink: '#1f6b3e', motif: 1 },
+    Design: { orb: '#e0527a', pulse: 1.1, shape: 'double', tint: '#edbdcc', ink: '#8e2643', motif: 2 },
+    Efficiency: { orb: '#2f95d0', pulse: 2.6, shape: 'double', tint: '#b6d9ed', ink: '#18577d', motif: 3 },
+    Knowledge: { orb: '#8a63d6', pulse: 1.2, shape: 'beat', tint: '#cfc0eb', ink: '#4c3290', motif: 4 },
+    Discovery: { orb: '#16a0a0', pulse: 3.0, shape: 'breathe', tint: '#b2dfdb', ink: '#0c5c5a', motif: 5 },
   };
+  function pulseShape(shape, t) {
+    const f = ((t / (Math.PI * 2)) % 1 + 1) % 1;
+    if (shape === 'beat') return f < 0.08 ? f / 0.08 : Math.exp(-5 * (f - 0.08));
+    if (shape === 'double') return Math.max(Math.exp(-(((f - 0.1) / 0.06) ** 2)), Math.exp(-(((f - 0.32) / 0.06) ** 2)));
+    return 0.5 + 0.5 * Math.sin(t);
+  }
 
   // ---------------------------------------------------------------- data
   const CARDS = DATA.cards.map((card) => ({
@@ -262,6 +272,7 @@
     STORAGE_KEY,
     TARGET_KEY,
     HOWTO_KEY,
+    RUN_KEY,
     PICKUP_RADIUS,
     MAGNET_RADIUS,
     SPAWN_CLEARANCE,
@@ -391,14 +402,14 @@
     // ------------------------------------------------------------ ground + zones
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(600, 600),
-      new THREE.MeshBasicMaterial({ color: '#d6d0bc' })
+      new THREE.MeshLambertMaterial({ color: '#d6d0bc' })
     );
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
     const play = new THREE.Mesh(
       new THREE.PlaneGeometry(BOUNDS.x * 2, BOUNDS.z * 2),
-      new THREE.MeshBasicMaterial({ color: '#ebe7d9' })
+      new THREE.MeshLambertMaterial({ color: '#ebe7d9' })
     );
     play.rotation.x = -Math.PI / 2;
     play.position.y = 0.005;
@@ -425,7 +436,7 @@
       const style = CHAPTER_STYLE[zone.name] || CHAPTER_STYLE.Workflow;
       const tile = new THREE.Mesh(
         new THREE.PlaneGeometry(ZONE_SIZE, ZONE_SIZE),
-        new THREE.MeshBasicMaterial({ color: style.tint })
+        new THREE.MeshLambertMaterial({ color: style.tint })
       );
       tile.rotation.x = -Math.PI / 2;
       tile.position.set(zone.cx, 0.01, zone.cz);
@@ -451,7 +462,7 @@
       g.lineWidth = 4;
       for (let x = 28; x + 30 < c.width - 14; x += 54) {
         g.beginPath();
-        switch (zone.index) {
+        switch (style.motif) {
           case 0: g.rect(x, 8, 28, 6); g.rect(x + 8, 22, 20, 6); break;
           case 1: g.moveTo(x, 17); g.lineTo(x + 9, 26); g.lineTo(x + 27, 8); break;
           case 2: g.moveTo(x + 14, 5); g.lineTo(x + 27, 18); g.lineTo(x + 14, 31); g.lineTo(x + 1, 18); g.closePath(); break;
@@ -578,37 +589,136 @@
       g.fillRect(0, 0, 128, 128);
     }
     const glowTex = canvasTexture(glowCanvas);
+
+    // Orbs are instanced layers, not one object per orb: each zone has a ball, core and glow
+    // InstancedMesh, and every name label sits in one atlas texture drawn by a single instanced
+    // mesh. step() packs only the orbs inside the camera frustum and fog range into each layer.
+    // Glows and labels are camera-facing quads, as the v4 sprites were.
+    function billboard(material, atlas) {
+      material.onBeforeCompile = (shader) => {
+        shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>', [
+          'vec4 mvPosition = modelViewMatrix * vec4( instanceMatrix[3].xyz, 1.0 );',
+          'mvPosition.xy += position.xy * vec2( length( instanceMatrix[0].xyz ), length( instanceMatrix[1].xyz ) );',
+          'gl_Position = projectionMatrix * mvPosition;',
+        ].join('\n'));
+        if (!atlas) return;
+        // Per-instance atlas rect (u, v, width, height) and opacity.
+        shader.vertexShader = 'attribute vec4 aUvRect;\nattribute float aAlpha;\nvarying float vAlpha;\n'
+          + shader.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\nvMapUv = aUvRect.xy + uv * aUvRect.zw;\nvAlpha = aAlpha;');
+        shader.fragmentShader = 'varying float vAlpha;\n'
+          + shader.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\ndiffuseColor.a *= vAlpha;');
+      };
+      material.customProgramCacheKey = () => (atlas ? 'billboard-atlas' : 'billboard');
+      return material;
+    }
+    // Translation plus a scale, written straight into an instance matrix array.
+    function writeMatrix(arr, i, x, y, z, sx, sy) {
+      const k = i * 16;
+      arr.fill(0, k, k + 16);
+      arr[k] = sx;
+      arr[k + 5] = sy;
+      arr[k + 10] = sx;
+      arr[k + 12] = x;
+      arr[k + 13] = y;
+      arr[k + 14] = z;
+      arr[k + 15] = 1;
+    }
+
     const orbGeo = new THREE.SphereGeometry(0.26, 20, 14);
     const coreGeo = new THREE.SphereGeometry(0.11, 12, 8);
+    const glowGeo = new THREE.PlaneGeometry(1, 1);
     const coreMat = new THREE.MeshBasicMaterial({ color: '#ffffff' });
-    const orbMats = {};
-    const glowMats = {};
-    Object.keys(CHAPTER_STYLE).forEach((ch) => {
-      orbMats[ch] = new THREE.MeshBasicMaterial({ color: CHAPTER_STYLE[ch].orb, transparent: true, opacity: 0.88 });
-      glowMats[ch] = new THREE.SpriteMaterial({ map: glowTex, color: CHAPTER_STYLE[ch].orb, transparent: true, opacity: 0.75, depthWrite: false });
+    const layers = layout.zones.map((zone) => {
+      const style = CHAPTER_STYLE[zone.name] || CHAPTER_STYLE.Workflow;
+      const count = layout.orbs.filter((o) => o.zone === zone).length;
+      const ballMat = new THREE.MeshBasicMaterial({ color: style.orb, transparent: true, opacity: 0.88 });
+      const glowMat = billboard(new THREE.MeshBasicMaterial({ map: glowTex, color: style.orb, transparent: true, opacity: 0.75, depthWrite: false }));
+      const balls = new THREE.InstancedMesh(orbGeo, ballMat, count);
+      const cores = new THREE.InstancedMesh(coreGeo, coreMat, count);
+      const glows = new THREE.InstancedMesh(glowGeo, glowMat, count);
+      cores.instanceMatrix = balls.instanceMatrix; // same transform, one upload
+      [balls, cores, glows].forEach((m) => {
+        m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        m.frustumCulled = false; // culled per orb in step()
+        m.count = 0;
+        m.visible = false;
+      });
+      balls.renderOrder = 1;
+      glows.renderOrder = 2;
+      scene.add(balls, cores, glows);
+      return { zone, style, ballMat, glowMat, balls, cores, glows, glowScale: 1.1, shown: 0 };
     });
+    const frustum = new THREE.Frustum();
+    const viewProj = new THREE.Matrix4();
+    const cullSphere = new THREE.Sphere();
+    const ORB_CULL_R = 0.7; // ball + largest glow
+    const FOG_FAR2 = scene.fog.far * scene.fog.far; // past this an orb is drawn in pure fog colour
+
+    // Label atlas: the same 30px label each v4 orb had in its own texture, shelf-packed.
+    const LABEL_FONT = '700 30px ' + FONT;
+    const LABEL_PX = 42; // 30px text + 6px padding above and below
+    const LABEL_H = 0.26; // world units
+    const ATLAS_W = 2048;
+    const ATLAS_GAP = 4; // keeps neighbours out of the smaller mip levels
+    const atlasCanvas = document.createElement('canvas');
+    const actx = atlasCanvas.getContext('2d');
+    actx.font = LABEL_FONT;
+    let ax = 0;
+    let ay = 0;
+    const labelRects = layout.orbs.map((o) => {
+      const w = Math.ceil(actx.measureText(o.item.name).width) + 20;
+      if (ax + w > ATLAS_W) { ax = 0; ay += LABEL_PX + ATLAS_GAP; }
+      const rect = { x: ax, y: ay, w };
+      ax += w + ATLAS_GAP;
+      return rect;
+    });
+    atlasCanvas.width = ATLAS_W;
+    atlasCanvas.height = 2 ** Math.ceil(Math.log2(ay + LABEL_PX));
+    actx.font = LABEL_FONT;
+    actx.textAlign = 'center';
+    actx.textBaseline = 'middle';
+    layout.orbs.forEach((o, i) => {
+      const r = labelRects[i];
+      actx.fillStyle = 'rgba(250,250,247,0.92)';
+      actx.fillRect(r.x, r.y, r.w, LABEL_PX);
+      actx.fillStyle = INK;
+      actx.fillText(o.item.name, r.x + r.w / 2, r.y + LABEL_PX / 2 + 30 * 0.04);
+    });
+    const labelGeo = new THREE.PlaneGeometry(1, 1);
+    const labelUvs = new THREE.InstancedBufferAttribute(new Float32Array(layout.orbs.length * 4), 4).setUsage(THREE.DynamicDrawUsage);
+    const labelAlphas = new THREE.InstancedBufferAttribute(new Float32Array(layout.orbs.length), 1).setUsage(THREE.DynamicDrawUsage);
+    labelGeo.setAttribute('aUvRect', labelUvs);
+    labelGeo.setAttribute('aAlpha', labelAlphas);
+    const labels = new THREE.InstancedMesh(labelGeo, billboard(new THREE.MeshBasicMaterial({
+      map: canvasTexture(atlasCanvas), transparent: true, depthWrite: false,
+    }), true), layout.orbs.length);
+    labels.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    labels.frustumCulled = false; // only labels near the player are filled in each frame
+    labels.renderOrder = 3;
+    labels.count = 0;
+    scene.add(labels);
+    const shownLabels = [];
 
     const LABEL_FULL = 6;
     const LABEL_GONE = 11;
     const orbs = layout.orbs.map((o, i) => {
-      const ch = o.zone.name in CHAPTER_STYLE ? o.zone.name : 'Workflow';
-      const group = new THREE.Group();
-      group.position.set(o.x, 0.95, o.z);
-      const ball = new THREE.Mesh(orbGeo, orbMats[ch]);
-      const core = new THREE.Mesh(coreGeo, coreMat);
-      const glow = new THREE.Sprite(glowMats[ch]);
-      glow.scale.setScalar(1.2);
-      const tc = textCanvas(o.item.name, { size: 30, weight: 700, fg: INK, bg: 'rgba(250,250,247,0.92)', padX: 10, padY: 6 });
-      const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTexture(tc.canvas), transparent: true, depthWrite: false }));
-      const lh = 0.26;
-      label.scale.set(lh * tc.aspect, lh, 1);
-      label.position.y = 0.58;
-      group.add(glow, ball, core, label);
-      const collected = progress.has(o.item.id);
-      if (!collected) scene.add(group);
-      return { data: o, group, glow, label, phase: (i * 2.399) % (Math.PI * 2), collected, color: CHAPTER_STYLE[ch].orb, pull: 0 };
+      const layer = layers[o.zone.index];
+      const r = labelRects[i];
+      return {
+        data: o,
+        layer,
+        pos: new THREE.Vector3(o.x, 0.95, o.z),
+        scale: 1,
+        labelAspect: r.w / LABEL_PX,
+        labelUv: [r.x / ATLAS_W, 1 - (r.y + LABEL_PX) / atlasCanvas.height, r.w / ATLAS_W, LABEL_PX / atlasCanvas.height],
+        labelAlpha: 0,
+        camD: 0,
+        phase: (i * 2.399) % (Math.PI * 2),
+        collected: progress.has(o.item.id),
+        color: layer.style.orb,
+        pull: 0,
+      };
     });
-
     // ------------------------------------------------------------ beacon
     // A light pillar on the nearest uncollected orb, ignoring fog so it reads from across a zone.
     const BEACON_HEIGHT = 18;
@@ -849,6 +959,14 @@
         }
       }
     }
+    // Reset: drop every live burst, ring and trail puff at once.
+    function clearEffects() {
+      bursts.forEach((b) => { scene.remove(b.points); b.points.geometry.dispose(); b.points.material.dispose(); });
+      bursts.length = 0;
+      rings.forEach((r) => { scene.remove(r.ring); r.ring.geometry.dispose(); r.ring.material.dispose(); });
+      rings.length = 0;
+      trail.forEach((t) => { t.age = TRAIL_LIFE; t.sprite.visible = false; });
+    }
 
     // ------------------------------------------------------------ audio
     const audio = { ctx: null, master: null, muted: false, unlocked: false, ambient: false };
@@ -919,17 +1037,31 @@
       depth.connect(bed.gain);
       breath.start();
     }
+    // Unlock listeners stay until ambient is actually playing (a context resumed outside a real
+    // gesture, as on iOS after a pointerdown, stays suspended), then they are removed.
+    const UNLOCK_EVENTS = ['keydown', 'pointerdown', 'pointerup', 'touchend', 'click'];
+    function dropUnlockIfRunning() {
+      if (!audio.ambient || !audio.ctx || audio.ctx.state !== 'running') return;
+      UNLOCK_EVENTS.forEach((type) => root.removeEventListener(type, unlockAudio));
+    }
     const unlockAudio = (event) => {
       if (!event.isTrusted) return;
       audio.unlocked = true;
-      if (audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume().catch(() => {});
       if (event.target !== $('btn-mute')) startAmbient();
+      if (audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume().then(dropUnlockIfRunning, () => {});
+      else dropUnlockIfRunning();
     };
-    root.addEventListener('keydown', unlockAudio);
-    root.addEventListener('pointerdown', unlockAudio);
-    root.addEventListener('pointerup', unlockAudio);
-    root.addEventListener('touchend', unlockAudio);
-    root.addEventListener('click', unlockAudio);
+    UNLOCK_EVENTS.forEach((type) => root.addEventListener(type, unlockAudio));
+    // Hidden tab: rAF stops but oscillators would keep droning, so suspend the context; resume on
+    // return only while Sound is on (unmuting later resumes it through ensureAudio()).
+    document.addEventListener('visibilitychange', () => {
+      if (!audio.ctx) return;
+      if (document.hidden) {
+        if (audio.ctx.state === 'running') audio.ctx.suspend().catch(() => {});
+      } else if (!audio.muted && audio.ctx.state === 'suspended') {
+        audio.ctx.resume().catch(() => {});
+      }
+    });
 
     const muteBtn = $('btn-mute');
     muteBtn.addEventListener('click', () => {
@@ -959,7 +1091,9 @@
         closePickup();
         hideConfirm();
         dismissLevel();
+        setShowcase(false);
       }
+      if (e.code === 'KeyC' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) setShowcase(showcaseEl.hidden);
     });
     root.addEventListener('keyup', (e) => {
       if (e.key === 'Shift') shiftHeld = false;
@@ -1126,6 +1260,7 @@
         li.classList.toggle('done', got === chapterTotals[ch]);
       });
       renderTarget();
+      renderShowcase();
       gameState.collectedCount = n;
       gameState.xp = xp;
       gameState.level = level;
@@ -1150,6 +1285,85 @@
       $('hud-target-fill').style.width = ((got / card.items.length) * 100).toFixed(1) + '%';
       box.hidden = false;
     }
+
+    // Completion showcase: a non-modal panel, placed clear of the player and touch controls, that
+    // reads straight from progress, run and combo each time it renders.
+    const showcaseEl = $('showcase');
+    const showcaseBtn = $('btn-showcase');
+    const scTiles = {};
+    const scChapters = {};
+    // Each tile is a button named after its card; hover, focus or tap names it in the caption.
+    const tileName = $('sc-tile-name');
+    let pickedTileId = null;
+    function nameTile(cardId) {
+      if (pickedTileId) scTiles[pickedTileId].classList.remove('picked');
+      pickedTileId = cardId;
+      scTiles[cardId].classList.add('picked');
+      const card = cardById.get(cardId);
+      tileName.classList.remove('idle');
+      tileName.innerHTML = '<b></b> · <span></span> <span class="sc-tile-of"></span>';
+      tileName.querySelector('b').textContent = card.title;
+      tileName.querySelector('span').textContent = card.chapter;
+      tileName.querySelector('.sc-tile-of').textContent = progress.cardCount(cardId) + '/' + card.items.length;
+    }
+    CARDS.forEach((card) => {
+      const li = document.createElement('li');
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'sc-tile';
+      tile.style.setProperty('--c', (CHAPTER_STYLE[card.chapter] || CHAPTER_STYLE.Workflow).orb);
+      tile.appendChild(document.createElement('i'));
+      ['mouseenter', 'focus', 'click'].forEach((type) => tile.addEventListener(type, () => nameTile(card.id)));
+      li.appendChild(tile);
+      $('sc-tiles').appendChild(li);
+      scTiles[card.id] = tile;
+    });
+    DATA.chapters.forEach((ch) => {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="swatch"></span><span class="sc-name"></span><span class="sc-pct"><b></b><span class="sc-of"></span></span><span class="bar"><div></div></span>';
+      li.querySelector('.swatch').style.background = (CHAPTER_STYLE[ch] || CHAPTER_STYLE.Workflow).orb;
+      li.querySelector('.sc-name').textContent = ch;
+      $('sc-chapters').appendChild(li);
+      scChapters[ch] = li;
+    });
+    // Floor, so 100% only shows once every skill in it is collected.
+    const percent = (got, total) => Math.floor((got / total) * 100) + '%';
+    function renderShowcase() {
+      if (showcaseEl.hidden) return;
+      const n = progress.collectedCount;
+      let cardsDone = 0;
+      CARDS.forEach((card) => {
+        const got = progress.cardCount(card.id);
+        const done = got === card.items.length;
+        if (done) cardsDone++;
+        scTiles[card.id].classList.toggle('done', done);
+        scTiles[card.id].firstChild.style.height = ((got / card.items.length) * 100).toFixed(1) + '%';
+        scTiles[card.id].setAttribute('aria-label', card.title + ', ' + card.chapter + ': ' + got + ' of ' + card.items.length + ' skills' + (done ? ', complete' : ''));
+      });
+      if (pickedTileId) nameTile(pickedTileId);
+      $('sc-cards').textContent = cardsDone + '/' + CARDS.length;
+      $('sc-skills').textContent = n + '/' + TOTAL_ITEMS;
+      $('sc-pct').textContent = percent(n, TOTAL_ITEMS);
+      DATA.chapters.forEach((ch) => {
+        const got = chapterCount(ch);
+        const li = scChapters[ch];
+        li.querySelector('.sc-pct b').textContent = percent(got, chapterTotals[ch]);
+        li.querySelector('.sc-of').textContent = ' · ' + got + '/' + chapterTotals[ch];
+        li.querySelector('.bar > div').style.width = ((got / chapterTotals[ch]) * 100).toFixed(1) + '%';
+        li.classList.toggle('done', got === chapterTotals[ch]);
+      });
+      $('sc-time').textContent = formatTime(run.seconds);
+      $('sc-combo').textContent = run.bestCombo > 0 ? '×' + run.bestCombo : '–';
+      $('sc-level').textContent = 'Level ' + progress.level + ' · ' + progress.xp + ' XP';
+    }
+    function setShowcase(open) {
+      showcaseEl.hidden = !open;
+      showcaseBtn.setAttribute('aria-expanded', String(open));
+      renderShowcase();
+      fitPickup();
+    }
+    showcaseBtn.addEventListener('click', () => { setShowcase(showcaseEl.hidden); showcaseBtn.blur(); });
+    $('showcase-close').addEventListener('click', (e) => { setShowcase(false); e.currentTarget.blur(); });
 
     // Pickup panel.
     const panel = $('pickup-panel');
@@ -1177,10 +1391,27 @@
       pickupCardId = card.id;
       syncPickupTarget();
       panel.hidden = false;
+      fitPickup();
       panel.scrollTop = 0;
       panel.classList.remove('pop');
       void panel.offsetWidth;
       panel.classList.add('pop');
+    }
+    // The pickup sits above the showcase, so cap its height (it scrolls) to keep the showcase's
+    // close button uncovered. Layout offsets ignore the pop-in transform.
+    const COMPACT_MQ = '(max-width: 720px), (max-height: 520px)'; // the CSS small-screen block
+    function fitPickup() {
+      panel.style.maxHeight = '';
+      if (panel.hidden || showcaseEl.hidden) return;
+      const c = $('showcase-close').getBoundingClientRect();
+      const top = panel.offsetTop;
+      const bottom = top + panel.offsetHeight;
+      const left = panel.offsetLeft;
+      if (left + panel.offsetWidth <= c.left || left >= c.right || bottom <= c.top - 8 || top >= c.bottom + 8) return;
+      // Small screens anchor the pickup to the bottom (it grows up), desktop to the top.
+      const bottomAnchored = root.matchMedia && root.matchMedia(COMPACT_MQ).matches;
+      const room = bottomAnchored ? bottom - (c.bottom + 8) : (c.top - 8) - top;
+      panel.style.maxHeight = Math.max(96, Math.floor(room)) + 'px';
     }
     function closePickup() { panel.hidden = true; }
     $('pickup-close').addEventListener('click', closePickup);
@@ -1225,11 +1456,14 @@
     }
     $('levelup-close').addEventListener('click', dismissLevel);
     function celebrateLevel(level) {
-      DATA.chapters.forEach((chapter, i) => {
-        const angle = i * Math.PI / 3;
-        burst(motion.x + Math.cos(angle), 1.4, motion.z + Math.sin(angle), CHAPTER_STYLE[chapter].orb, 12, 4, 1.4, 0.15);
-      });
-      shockRing(motion.x, motion.z, '#f2a93b');
+      // Reduced motion: no 3D particle bursts or expanding ring; the banner fades in place.
+      if (!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        DATA.chapters.forEach((chapter, i) => {
+          const angle = i * Math.PI / 3;
+          burst(motion.x + Math.cos(angle), 1.4, motion.z + Math.sin(angle), (CHAPTER_STYLE[chapter] || CHAPTER_STYLE.Workflow).orb, 12, 4, 1.4, 0.15);
+        });
+        shockRing(motion.x, motion.z, '#f2a93b');
+      }
       const flash = $('flash');
       flash.classList.remove('on');
       void flash.offsetWidth;
@@ -1248,12 +1482,33 @@
       levelChime();
     }
 
+    // Run stats for the showcase: play time and best combo since the last reset, kept under
+    // RUN_KEY (never STORAGE_KEY). The win screen keeps its own per-session timer.
+    const run = { seconds: 0, bestCombo: 0 };
+    {
+      let saved = null;
+      try { saved = JSON.parse(readKey(RUN_KEY) || 'null'); } catch (e) { /* corrupt: start fresh */ }
+      if (saved && typeof saved === 'object') {
+        run.seconds = Math.max(0, Number(saved.seconds) || 0);
+        run.bestCombo = Math.max(0, Math.floor(Number(saved.bestCombo) || 0));
+      }
+    }
+    function saveRun() {
+      writeKey(RUN_KEY, JSON.stringify({ seconds: Math.floor(run.seconds), bestCombo: run.bestCombo }));
+    }
+    document.addEventListener('visibilitychange', () => { if (document.hidden) saveRun(); });
+    root.addEventListener('pagehide', saveRun);
+
     // Combo.
     const combo = { count: 0, last: -Infinity };
     const comboEl = $('combo');
     function bumpCombo(now) {
       combo.count = now - combo.last <= COMBO_WINDOW ? combo.count + 1 : 1;
       combo.last = now;
+      if (combo.count > run.bestCombo) {
+        run.bestCombo = combo.count;
+        saveRun();
+      }
       if (combo.count >= 2) {
         $('combo-count').textContent = '×' + combo.count;
         comboEl.hidden = false;
@@ -1273,6 +1528,10 @@
       $('combo-timer-fill').style.width = ((left / COMBO_WINDOW) * 100).toFixed(1) + '%';
     }
 
+    // Win state; declared before the reset handler, which cancels a pending win.
+    let playSeconds = 0;
+    let winTimer = 0;
+
     // Reset with a confirm step.
     const confirmBox = $('reset-confirm');
     function hideConfirm() { confirmBox.hidden = true; }
@@ -1284,15 +1543,19 @@
       dismissLevel();
       progress.reset();
       try { root.localStorage.removeItem(STORAGE_KEY); } catch (e) { /* storage unavailable */ }
-      orbs.forEach((o) => {
-        if (o.collected) { o.collected = false; scene.add(o.group); }
-      });
+      orbs.forEach((o) => { o.collected = false; }); // step() draws them again next frame
+      run.seconds = 0;
+      run.bestCombo = 0;
+      removeKey(RUN_KEY);
       cardSigns.forEach((s) => s.update());
       motion.x = spawn.x;
       motion.z = spawn.z;
       motion.vx = motion.vz = 0;
       combo.count = 0;
       comboEl.hidden = true;
+      clearTimeout(zoneToastTimer);
+      $('zone-toast').hidden = true;
+      clearEffects();
       closePickup();
       $('win').hidden = true;
       hideConfirm();
@@ -1301,8 +1564,6 @@
     });
 
     // Win screen.
-    let playSeconds = 0;
-    let winTimer = 0;
     function formatTime(sec) {
       const s = Math.floor(sec);
       const h = Math.floor(s / 3600);
@@ -1326,13 +1587,12 @@
       const result = progress.collect(orb.data.item.id);
       if (!result) return;
       orb.collected = true;
-      scene.remove(orb.group);
-      const p = orb.group.position;
+      const p = orb.pos;
       burst(p.x, p.y, p.z, orb.color, 34, 4.2, 0.85, 0.16);
       burst(p.x, p.y, p.z, '#ffffff', 14, 2.6, 0.6, 0.1);
       shockRing(p.x, p.z, orb.color);
       orb.pull = 0;
-      orb.group.scale.setScalar(1);
+      orb.scale = 1;
       bumpCombo(now);
       pickupChime(combo.count);
       writeStorage(progress.serialize());
@@ -1416,6 +1676,7 @@
       camera.fov = w / h < 1 ? 68 : 55;
       camera.updateProjectionMatrix();
       sizeMinimap();
+      fitPickup();
     }
     root.addEventListener('resize', resize);
     resize();
@@ -1429,6 +1690,22 @@
     let frameNo = 0;
     const hint = $('hint');
     const hintTimer = setTimeout(() => hint.classList.add('gone'), 12000);
+
+    // Showcase "Time played" counts real foreground time, not the capped simulation dt, so slow
+    // frames don't undercount. The baseline resets on return from a hidden tab: no jump.
+    let runLast = performance.now();
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) runLast = performance.now(); });
+    function tickRun(now) {
+      const wall = document.hidden ? 0 : Math.max(0, (now - runLast) / 1000);
+      runLast = Math.max(runLast, now);
+      if (wall === 0) return;
+      const wholeSecond = Math.floor(run.seconds);
+      run.seconds += wall;
+      if (Math.floor(run.seconds) !== wholeSecond) {
+        if (Math.floor(run.seconds / 5) !== Math.floor(wholeSecond / 5)) saveRun();
+        renderShowcase();
+      }
+    }
 
     function step(dt) {
       clock += dt;
@@ -1518,11 +1795,17 @@
       let targetD2 = Infinity;
       let cardNearest = null;
       let cardNearestD2 = Infinity;
-      DATA.chapters.forEach((ch, index) => {
-        const pulse = 0.5 + 0.5 * Math.sin(clock * CHAPTER_STYLE[ch].pulse + index * 0.8);
-        orbMats[ch].opacity = 0.72 + pulse * 0.24;
-        glowMats[ch].opacity = 0.4 + pulse * 0.4;
+      camera.updateMatrixWorld();
+      frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+      // Pulse is computed once per zone (opacity and glow size for all its orbs).
+      layers.forEach((L) => {
+        L.shown = 0;
+        const pulse = pulseShape(L.style.shape, clock * L.style.pulse + L.zone.index * 0.8);
+        L.ballMat.opacity = 0.66 + pulse * 0.3;
+        L.glowMat.opacity = 0.35 + pulse * 0.45;
+        L.glowScale = 1.1 + (pulse * 2 - 1) * 0.18;
       });
+      shownLabels.length = 0;
       for (let i = 0; i < orbs.length; i++) {
         const o = orbs[i];
         if (o.collected) continue;
@@ -1541,20 +1824,44 @@
         if (targetCardId && o.data.card.id === targetCardId && d2 < cardNearestD2) { cardNearestD2 = d2; cardNearest = o; }
         if (o === beaconTarget) targetD2 = d2;
         const bobY = 0.95 + Math.sin(clock * 2.2 + o.phase) * 0.14;
-        o.group.position.set(
-          o.data.x - dx * o.pull,
-          bobY + (0.7 - bobY) * o.pull,
-          o.data.z - dz * o.pull
-        );
-        o.group.scale.setScalar(1 - o.pull * 0.35);
-        o.glow.scale.setScalar(1.1 + Math.sin(clock * CHAPTER_STYLE[o.data.zone.name].pulse + o.data.zone.index * 0.8) * 0.18);
-        if (d > LABEL_GONE) {
-          o.label.visible = false;
-        } else {
-          o.label.visible = true;
-          o.label.material.opacity = d < LABEL_FULL ? 1 : 1 - (d - LABEL_FULL) / (LABEL_GONE - LABEL_FULL);
+        o.pos.set(o.data.x - dx * o.pull, bobY + (0.7 - bobY) * o.pull, o.data.z - dz * o.pull);
+        o.scale = 1 - o.pull * 0.35;
+        const camD = camera.position.distanceToSquared(o.pos);
+        cullSphere.center.copy(o.pos);
+        cullSphere.radius = ORB_CULL_R;
+        if (camD < FOG_FAR2 && frustum.intersectsSphere(cullSphere)) {
+          const L = o.layer;
+          const glow = o.scale * L.glowScale;
+          writeMatrix(L.balls.instanceMatrix.array, L.shown, o.pos.x, o.pos.y, o.pos.z, o.scale, o.scale);
+          writeMatrix(L.glows.instanceMatrix.array, L.shown, o.pos.x, o.pos.y, o.pos.z, glow, glow);
+          L.shown++;
+        }
+        cullSphere.radius = Math.max(ORB_CULL_R, LABEL_H * o.labelAspect * 0.5 + 0.6);
+        if (d <= LABEL_GONE && frustum.intersectsSphere(cullSphere)) {
+          o.labelAlpha = d < LABEL_FULL ? 1 : 1 - (d - LABEL_FULL) / (LABEL_GONE - LABEL_FULL);
+          o.camD = camD;
+          shownLabels.push(o);
         }
       }
+      layers.forEach((L) => {
+        [L.balls, L.cores, L.glows].forEach((m) => { m.count = L.shown; m.visible = L.shown > 0; });
+        L.balls.instanceMatrix.needsUpdate = true;
+        L.glows.instanceMatrix.needsUpdate = true;
+      });
+      // Labels near the player only, far to near so overlapping labels stack like sorted sprites.
+      shownLabels.sort((a, b) => b.camD - a.camD);
+      const labelArr = labels.instanceMatrix.array;
+      shownLabels.forEach((o, i) => {
+        const h = LABEL_H * o.scale;
+        writeMatrix(labelArr, i, o.pos.x, o.pos.y + 0.58 * o.scale, o.pos.z, h * o.labelAspect, h);
+        labelUvs.array.set(o.labelUv, i * 4);
+        labelAlphas.array[i] = o.labelAlpha;
+      });
+      labels.count = shownLabels.length;
+      labels.visible = shownLabels.length > 0;
+      labels.instanceMatrix.needsUpdate = true;
+      labelUvs.needsUpdate = true;
+      labelAlphas.needsUpdate = true;
 
       // Beacon on the nearest uncollected orb of the target card if one is set, otherwise the
       // nearest uncollected orb overall. A small hysteresis stops it flickering between two
@@ -1590,6 +1897,7 @@
     function frame(now) {
       const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
       last = now;
+      tickRun(now);
       step(dt);
       renderer.render(scene, camera);
       if ((frameNo++ & 1) === 0) drawMinimap();
@@ -1614,7 +1922,7 @@
 
     renderHud({ instant: true });
     $('loading').hidden = true;
-    root.requestAnimationFrame((now) => { last = now; frame(now); });
+    root.requestAnimationFrame((now) => { last = now; runLast = now; frame(now); });
   }
 
   function readStorage() {
