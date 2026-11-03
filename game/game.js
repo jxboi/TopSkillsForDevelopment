@@ -289,11 +289,68 @@
     };
   }
 
+  // Finite numbers only (Symbol, Infinity, NaN and junk become 0), floored and clamped to >= 0.
+  function safeCount(v) {
+    let n;
+    try { n = Number(v); } catch (e) { return 0; }
+    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+  }
+
+  function formatTime(sec) {
+    const s = safeCount(sec);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const ss = String(s % 60).padStart(2, '0');
+    return h > 0 ? h + ':' + String(m).padStart(2, '0') + ':' + ss : m + ':' + ss;
+  }
+
+  // ---------------------------------------------------------------- daily challenge and share
+  // Pure and storage-free: the daily card comes from the date alone, its progress from `progress`.
+  function localDateKey(date) {
+    const d = date || new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  // Days are grouped into 22-day cycles; each cycle is a seeded shuffle of all cards, so a card
+  // never repeats within a cycle and everyone on the same local date gets the same card.
+  function dailyCardFor(dateKey) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateKey));
+    if (!m) return null;
+    const y = +m[1];
+    const mo = +m[2];
+    const d = +m[3];
+    const t = Date.UTC(y, mo - 1, d);
+    const check = new Date(t);
+    if (check.getUTCFullYear() !== y || check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d) return null;
+    const day = Math.floor(t / 86400000);
+    const cycle = Math.floor(day / CARDS.length);
+    const order = CARDS.map((_, i) => i);
+    const rand = mulberry32(cycle ^ 0x5eed);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return CARDS[order[day - cycle * CARDS.length]];
+  }
+  // snapshot: { level, xp, collectedCount, cardsComplete, seconds }.
+  function shareTextFor(snapshot) {
+    const s = snapshot || {};
+    return [
+      'TopSkills Game · Level ' + Math.max(1, safeCount(s.level)) + ' · ' + safeCount(s.xp) + ' XP',
+      'Skills collected: ' + Math.min(TOTAL_ITEMS, safeCount(s.collectedCount)) + '/' + TOTAL_ITEMS,
+      'Cards completed: ' + Math.min(CARDS.length, safeCount(s.cardsComplete)) + '/' + CARDS.length,
+      'Time played: ' + formatTime(s.seconds),
+    ].join('\n');
+  }
+
   // ---------------------------------------------------------------- public surface
   const gameState = { collectedCount: 0, xp: 0, level: 1, totalItems: TOTAL_ITEMS };
   root.__gameState = gameState;
   root.TopSkillsGame = {
     deriveQuests,
+    dailyCardFor,
+    localDateKey,
+    shareTextFor,
+    formatTime,
     DATA,
     CARDS,
     ITEMS,
@@ -1245,6 +1302,7 @@
       beaconTarget = null; // snap to the new pool's nearest orb next frame, skipping the hysteresis
       renderTarget();
       syncPickupTarget();
+      renderQuests(); // the daily section's target button mirrors the target
     }
     $('btn-target-clear').addEventListener('click', (e) => { setTarget(null); e.currentTarget.blur(); });
     const xpFill = $('xp-fill');
@@ -1389,8 +1447,67 @@
       $('sc-combo').textContent = run.bestCombo > 0 ? '×' + run.bestCombo : '–';
       $('sc-level').textContent = 'Level ' + progress.level + ' · ' + progress.xp + ' XP';
     }
+    // Share run: copy a plain-text summary; if the clipboard is missing or refuses, show the text
+    // in a selectable box instead. Every failure path is caught, so nothing reaches the console.
+    const shareStatus = $('share-status');
+    const shareFallback = $('share-fallback');
+    let shareTimer = 0;
+    function shareStatusText(text) {
+      shareStatus.textContent = text;
+      clearTimeout(shareTimer);
+      if (text) shareTimer = setTimeout(() => { shareStatus.textContent = ''; }, 2200);
+    }
+    function shareSnapshot() {
+      return {
+        level: progress.level,
+        xp: progress.xp,
+        collectedCount: progress.collectedCount,
+        cardsComplete: CARDS.filter((card) => progress.isCardComplete(card.id)).length,
+        seconds: run.seconds,
+      };
+    }
+    function showShareFallback(text) {
+      shareFallback.value = text;
+      shareFallback.hidden = false;
+      clearTimeout(shareTimer);
+      shareStatus.textContent = 'Copy the text below';
+      try {
+        shareFallback.focus({ preventScroll: true });
+        shareFallback.select();
+      } catch (e) { /* selection unsupported: the text is still there to copy */ }
+      fitPickup();
+    }
+    function hideShareFallback() {
+      shareFallback.hidden = true;
+      shareFallback.value = '';
+    }
+    // Bumped on every share click and on Showcase close, so a late or out-of-order clipboard
+    // settle cannot write stale UI.
+    let shareGen = 0;
+    $('btn-share').addEventListener('click', (e) => {
+      e.currentTarget.blur();
+      const gen = ++shareGen;
+      const live = () => gen === shareGen && !showcaseEl.hidden;
+      const text = shareTextFor(shareSnapshot());
+      let pending = null;
+      try {
+        const clip = root.navigator && root.navigator.clipboard;
+        if (clip && typeof clip.writeText === 'function') pending = clip.writeText(text);
+      } catch (err) { pending = null; }
+      if (!pending || typeof pending.then !== 'function') { showShareFallback(text); return; }
+      pending.then(
+        () => { if (!live()) return; hideShareFallback(); shareStatusText('Copied!'); },
+        () => { if (!live()) return; showShareFallback(text); }
+      );
+    });
     function setShowcase(open) {
       if (open) setQuests(false);
+      if (!open) {
+        shareGen++;
+        hideShareFallback();
+        clearTimeout(shareTimer);
+        shareStatus.textContent = '';
+      }
       showcaseEl.hidden = !open;
       showcaseBtn.setAttribute('aria-expanded', String(open));
       renderShowcase();
@@ -1410,8 +1527,48 @@
       $('quest-list').appendChild(row);
       questRows.set(quest.id, row);
     });
+    // Daily challenge: re-derived from the local date on load and each time Quests opens, so a day
+    // rollover shows up without a timer. Targeting reuses setTarget; no XP beyond the card's own bonus.
+    let dailyCard = null;
+    let dailyKey = '';
+    function deriveDaily() {
+      dailyKey = localDateKey();
+      dailyCard = dailyCardFor(dailyKey);
+    }
+    deriveDaily();
+    const dailyTargetBtn = $('daily-target');
+    function renderDaily() {
+      if (!dailyCard) {
+        $('daily-date').textContent = '';
+        $('daily-name').textContent = '';
+        $('daily-progress').textContent = '';
+        $('daily-state').textContent = '';
+        $('daily-fill').style.width = '0%';
+        $('daily').classList.remove('done');
+        dailyTargetBtn.hidden = true;
+        return;
+      }
+      const got = progress.cardCount(dailyCard.id);
+      const total = dailyCard.items.length;
+      const done = got === total;
+      $('daily-date').textContent = dailyKey;
+      $('daily-name').textContent = dailyCard.title + ' · ' + dailyCard.chapter;
+      $('daily-progress').textContent = got + '/' + total + ' skills';
+      $('daily-state').textContent = done ? 'Complete · today’s card done' : 'In progress';
+      $('daily-fill').style.width = ((got / total) * 100).toFixed(1) + '%';
+      $('daily').classList.toggle('done', done);
+      const on = dailyCard.id === targetCardId;
+      dailyTargetBtn.hidden = done;
+      dailyTargetBtn.textContent = on ? 'Targeted ✓ · clear target' : 'Target this card';
+      dailyTargetBtn.setAttribute('aria-pressed', String(on));
+    }
+    dailyTargetBtn.addEventListener('click', () => {
+      if (dailyCard) setTarget(dailyCard.id === targetCardId ? null : dailyCard.id);
+      dailyTargetBtn.blur();
+    });
     function renderQuests() {
       if (questsEl.hidden) return;
+      renderDaily();
       const quests = deriveQuests(progress);
       quests.forEach((quest) => {
         const row = questRows.get(quest.id);
@@ -1424,7 +1581,10 @@
       $('quests-summary').textContent = quests.filter((quest) => quest.complete).length + '/' + quests.length + ' badges earned';
     }
     function setQuests(open) {
-      if (open) setShowcase(false);
+      if (open) {
+        setShowcase(false);
+        deriveDaily();
+      }
       questsEl.hidden = !open;
       questsBtn.setAttribute('aria-expanded', String(open));
       renderQuests();
@@ -1632,13 +1792,6 @@
     });
 
     // Win screen.
-    function formatTime(sec) {
-      const s = Math.floor(sec);
-      const h = Math.floor(s / 3600);
-      const m = Math.floor((s % 3600) / 60);
-      const ss = String(s % 60).padStart(2, '0');
-      return h > 0 ? h + ':' + String(m).padStart(2, '0') + ':' + ss : m + ':' + ss;
-    }
     function showWin() {
       winTimer = 0;
       if (progress.collectedCount !== TOTAL_ITEMS) return;

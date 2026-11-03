@@ -701,3 +701,31 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
 @media (min-width: 721px) and (min-height: 521px) {
   .quests { max-height: 220px; }
 }
+
+/* v7 daily challenge: first block in the quests scroll, so the header and Close stay fixed. */
+.daily { display: grid; gap: 4px; padding: 12px 0; border-bottom: 2px solid var(--ink); overflow-wrap: anywhere; }
+.daily-kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.daily-kicker span { font-family: var(--mono); font-weight: 400; letter-spacing: 0; color: var(--ink-soft); }
+.daily-name { font-size: 14px; }
+.daily-meta { font-family: var(--mono); font-size: 12px; }
+.daily .bar { display: block; height: 4px; background: #e2dfd3; }
+.daily .bar > div { height: 100%; width: 0; background: var(--ink); transition: width 0.4s; }
+.daily-target { justify-self: start; margin-top: 4px; }
+.daily-target[aria-pressed="true"] { background: #fff6e2; }
+.daily.done .daily-meta { font-weight: 700; }
+.daily.done .bar > div { background: var(--accent); }
+
+/* v7 share run: sits under the run stats it summarizes. */
+.sc-share { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; }
+.share-status { font-size: 12px; font-weight: 700; }
+.share-status:empty { display: none; }
+.share-fallback {
+  display: block; width: 100%; margin-top: 6px; padding: 6px 8px; resize: none;
+  border: 1px solid var(--ink); background: #f0eee6; color: var(--ink);
+  font: 12px/1.4 var(--mono);
+}
+@media (max-width: 720px), (max-height: 520px) {
+  .daily { padding: 9px 0; }
+  .daily-name { font-size: 13px; }
+  .daily-target, #btn-share { font-size: 12px; padding: 5px 8px; }
+}

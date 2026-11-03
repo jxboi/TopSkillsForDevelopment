@@ -110,6 +110,11 @@
       <dt>Best combo</dt><dd id="sc-combo">–</dd>
       <dt>Progress</dt><dd id="sc-level">Level 1 · 0 XP</dd>
     </dl>
+    <div class="sc-share">
+      <button id="btn-share" type="button">Share run</button>
+      <span id="share-status" class="share-status" role="status" aria-live="polite"></span>
+    </div>
+    <textarea id="share-fallback" class="share-fallback" readonly rows="4" hidden aria-label="Run summary to copy"></textarea>
   </section>
 
   <section id="quests" class="panel showcase quests" hidden aria-labelledby="quests-title">
@@ -120,6 +125,13 @@
       <p class="quests-note">Cosmetic badges only · no bonus XP. Explore 10 skills per chapter, or all if fewer.</p>
     </div>
     <div class="quests-scroll" tabindex="0" aria-label="Quest progress and badges">
+      <section id="daily" class="daily" aria-labelledby="daily-kicker">
+        <p class="daily-kicker" id="daily-kicker">Today <span id="daily-date"></span></p>
+        <strong class="daily-name" id="daily-name"></strong>
+        <span class="daily-meta"><span id="daily-progress">0/0 skills</span> · <span id="daily-state">In progress</span></span>
+        <span class="bar"><div id="daily-fill"></div></span>
+        <button id="daily-target" type="button" class="daily-target" aria-pressed="false">Target this card</button>
+      </section>
       <ul id="quest-list" class="quest-list"></ul>
     </div>
   </section>
