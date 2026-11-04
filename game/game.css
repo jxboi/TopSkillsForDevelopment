@@ -626,14 +626,21 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
   .sc-run dd { text-align: left; margin-right: 14px; }
 }
 
+@keyframes levelup-fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes zone-toast-fade { 0% { opacity: 0; transform: translateX(-50%); } 8%, 78% { opacity: 1; transform: translateX(-50%); } 100% { opacity: 0; transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) {
   .levelup { animation-duration: 3.1s; animation-name: levelup-fade; }
-  @keyframes levelup-fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
   .flash.on { animation-duration: 0.4s; }
   .pickup.pop, .combo.bump, .toast { animation: none; }
   .zone-toast { animation-name: zone-toast-fade; }
-  @keyframes zone-toast-fade { 0% { opacity: 0; transform: translateX(-50%); } 8%, 78% { opacity: 1; transform: translateX(-50%); } 100% { opacity: 0; transform: translateX(-50%); } }
 }
+
+.reduced-motion .levelup { animation-duration: 3.1s; animation-name: levelup-fade; }
+.reduced-motion .flash.on { animation-duration: 0.4s; }
+.reduced-motion .pickup.pop, .reduced-motion .combo.bump,
+.reduced-motion .toast, .reduced-motion .level-badge.pulse { animation: none; }
+.reduced-motion .zone-toast { animation-name: zone-toast-fade; }
+.reduced-motion .levelup::before, .reduced-motion .levelup::after { display: none; }
 
 /* Narrow phones (320-380px): 200px HUD + 150px minimap no longer fit side by side. */
 @media (max-width: 380px) {
@@ -645,7 +652,7 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
   .showcase { top: 96px; max-height: calc(100vh - 214px); padding-left: 8px; } /* tucked under the smaller minimap */
   .showcase > .pickup-kicker { margin-right: 24px; letter-spacing: 0; }
   .showcase .close-x { right: 6px; }
-  /* Sound, Collection, Quests and Reset wrap across rows on narrow phones. */
+  /* Sound, Collection, Quests, Settings and Reset wrap across rows on narrow phones. */
   .hud-actions button { font-size: 11px; padding: 5px 6px; }
 }
 
@@ -728,4 +735,73 @@ button.danger { background: #b8321f; border-color: var(--ink); color: var(--pape
   .daily { padding: 9px 0; }
   .daily-name { font-size: 13px; }
   .daily-target, #btn-share { font-size: 12px; padding: 5px 8px; }
+}
+
+/* v8 preferences: the header stays outside the scrolling settings controls. */
+.settings { padding: 0; display: flex; flex-direction: column; overflow: hidden; max-height: min(440px, calc(100vh - 180px)); }
+@media (min-width: 721px) and (min-height: 521px) {
+  .settings { max-height: 220px; }
+}
+.settings-header { position: relative; flex: none; padding: 12px 14px; border-bottom: 1px solid var(--ink); }
+.settings-header h2 { margin: 0 32px 0 0; font-size: 16px; overflow-wrap: anywhere; }
+.settings-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px 14px; overflow-wrap: anywhere; }
+.settings-scroll > label { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; cursor: pointer; }
+.settings input { flex: none; accent-color: var(--ink); }
+.settings input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.settings-scroll p { font-size: 12px; line-height: 1.4; }
+.key-binding { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 8px 0; border-bottom: 1px solid var(--ink-soft); }
+.key-binding span { font-family: var(--mono); }
+.key-binding button { margin-left: auto; }
+#key-status:empty { display: none; }
+.settings button { max-width: 100%; overflow-wrap: anywhere; }
+@media (max-width: 720px), (max-height: 520px) {
+  .settings { max-height: calc(100vh - 234px); padding: 0; }
+  .settings-header, .settings-scroll { padding: 9px 8px; }
+  .settings-header h2 { font-size: 13px; margin-right: 24px; }
+  .key-binding { flex-direction: column; align-items: flex-start; }
+  .key-binding button { margin-left: 0; }
+}
+@media (max-width: 380px) {
+  .settings { max-height: calc(100vh - 214px); }
+}
+/* Colour-only variant. Chapter hues remain the original six distinct colours. */
+.high-contrast {
+  --paper: #fff; --ink: #000; --ink-soft: #292929;
+  --rule: 2px solid var(--ink); --shadow: 4px 4px 0 var(--ink); --accent: #ef9b00;
+}
+.high-contrast .panel { border-color: #000; }
+.high-contrast .bar, .high-contrast .combo-timer { background: #bbb; }
+.high-contrast .quest-list li, .high-contrast .key-binding { border-color: #000; }
+.high-contrast .sc-tile i { opacity: 1; }
+.high-contrast button:hover { background: #ddd; }
+.high-contrast button.primary:hover { background: #222; }
+.high-contrast :focus-visible { outline-color: #005fcc; }
+/* Font-only opt-in, retaining the HUD/minimap column widths and their 12px gap. */
+.larger-hud .hud, .larger-hud .showcase, .larger-hud .pickup { font-size: 16px; }
+.larger-hud .hud button, .larger-hud .showcase button, .larger-hud .pickup button,
+.larger-hud .xp-text, .larger-hud .hud-count, .larger-hud .chapters summary,
+.larger-hud .chapters li, .larger-hud .chapters .num, .larger-hud .chapters button.name,
+.larger-hud .back-link, .larger-hud .hud-target, .larger-hud .target-label,
+.larger-hud .target-num, .larger-hud .card-pick .card-count,
+.larger-hud .showcase h3, .larger-hud .sc-tile-name, .larger-hud .sc-tile-of,
+.larger-hud .sc-chapters li, .larger-hud .sc-chapters .sc-pct,
+.larger-hud .quest-progress, .larger-hud .quest-state, .larger-hud .quest-mark,
+.larger-hud .quests-note, .larger-hud .daily-kicker, .larger-hud .daily-meta,
+.larger-hud .daily-name, .larger-hud .share-status, .larger-hud .share-fallback,
+.larger-hud .settings-scroll p { font-size: 15px; }
+.larger-hud .hud-count strong, .larger-hud .sc-head strong { font-size: 20px; }
+.larger-hud .level-badge #hud-level { font-size: 26px; }
+.larger-hud .lv-label { font-size: 12px; }
+.larger-hud .settings-header h2, .larger-hud .quests-header h2 { font-size: 17px; }
+.larger-hud .hud-actions button { max-width: 100%; }
+.larger-hud .xp-text, .larger-hud .hud-count { overflow-wrap: anywhere; }
+.larger-hud .showcase { overflow-wrap: anywhere; }
+@media (max-width: 720px), (max-height: 520px) {
+  .larger-hud .showcase:not(.quests):not(.settings) > .pickup-kicker { margin-top: 30px; }
+}
+@media (max-width: 720px) {
+  .larger-hud .settings, .larger-hud .settings * { overflow-wrap: normal; word-break: normal; }
+  .larger-hud .settings .key-binding { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .larger-hud .settings .key-binding strong { grid-row: 1; }
+  .larger-hud .settings .key-binding button { justify-self: start; }
 }

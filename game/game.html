@@ -46,6 +46,7 @@
       <button id="btn-mute" type="button" aria-pressed="false">Sound: on</button>
       <button id="btn-showcase" type="button" aria-expanded="false" aria-controls="showcase" title="Collection showcase (C)">Collection</button>
       <button id="btn-quests" type="button" aria-expanded="false" aria-controls="quests">Quests</button>
+      <button id="btn-settings" type="button" aria-expanded="false" aria-controls="settings">Settings</button>
       <button id="btn-reset" type="button">Reset progress</button>
     </div>
     <div id="reset-confirm" class="reset-confirm" hidden>
@@ -133,6 +134,26 @@
         <button id="daily-target" type="button" class="daily-target" aria-pressed="false">Target this card</button>
       </section>
       <ul id="quest-list" class="quest-list"></ul>
+    </div>
+  </section>
+
+  <section id="settings" class="panel showcase settings" hidden aria-labelledby="settings-title">
+    <div class="settings-header">
+      <h2 id="settings-title">Settings</h2>
+      <button id="settings-close" type="button" class="close-x" aria-label="Close settings">×</button>
+    </div>
+    <div class="settings-scroll">
+      <label><input id="setting-reducedMotion" type="checkbox"> Reduced motion</label>
+      <label><input id="setting-highContrast" type="checkbox"> High contrast</label>
+      <label><input id="setting-largerHudText" type="checkbox"> Larger HUD text</label>
+      <h3>Movement keys</h3>
+      <p>Choose Change, then press a key. Escape cancels. Shared keys swap directions. C, Space, Escape, Shift, Tab, Enter and modifiers are reserved.</p>
+      <div class="key-binding"><strong>Up</strong><span id="key-up"></span><button type="button" data-direction="up" aria-label="Change up key">Change</button></div>
+      <div class="key-binding"><strong>Down</strong><span id="key-down"></span><button type="button" data-direction="down" aria-label="Change down key">Change</button></div>
+      <div class="key-binding"><strong>Left</strong><span id="key-left"></span><button type="button" data-direction="left" aria-label="Change left key">Change</button></div>
+      <div class="key-binding"><strong>Right</strong><span id="key-right"></span><button type="button" data-direction="right" aria-label="Change right key">Change</button></div>
+      <p id="key-status" role="status" aria-live="polite"></p>
+      <button id="settings-reset" type="button">Reset to defaults</button>
     </div>
   </section>
 

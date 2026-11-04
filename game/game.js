@@ -22,6 +22,41 @@
   const TARGET_KEY = 'topskills-game-target'; // raw card id
   const HOWTO_KEY = 'topskills-game-howto-seen'; // '1' once the How to Play overlay is closed
   const RUN_KEY = 'topskills-game-run'; // JSON { seconds, bestCombo } for the showcase; cleared on reset
+  const SETTINGS_KEY = 'topskills-game-settings'; // Preferences: never cleared by progress reset.
+  const DIRECTIONS = ['up', 'down', 'left', 'right'];
+  // Reserved shortcuts: C = Collection, Escape = close/cancel, Space = reserved dash.
+  // Shift is the existing dash control. Pure modifiers cannot be movement bindings.
+  const BLOCKED_KEYS = new Set(['KeyC', 'Escape', 'Space', 'Tab', 'Enter', 'ShiftLeft', 'ShiftRight',
+    'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight', 'CapsLock']);
+  const validMovementKey = code => typeof code === 'string' &&
+    /^(Key[A-Z]|Digit[0-9]|Arrow(Up|Down|Left|Right)|Numpad[0-9]|Comma|Period|Slash|Semicolon|Quote|BracketLeft|BracketRight|Backslash|Backquote|Minus|Equal|Enter|Tab|Backspace|Delete|Insert|Home|End|PageUp|PageDown)$/.test(code) && !BLOCKED_KEYS.has(code);
+  function defaultSettings() {
+    return { reducedMotion: false, highContrast: false, largerHudText: false,
+      movementKeys: { up: ['KeyW', 'ArrowUp'], down: ['KeyS', 'ArrowDown'],
+        left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'] } };
+  }
+  function loadSettings() {
+    const value = defaultSettings();
+    try {
+      const saved = JSON.parse(readKey(SETTINGS_KEY));
+      if (!saved || typeof saved !== 'object') return value;
+      ['reducedMotion', 'highContrast', 'largerHudText'].forEach(k => { value[k] = saved[k] === true; });
+      const map = saved.movementKeys;
+      const seen = new Set();
+      if (map && DIRECTIONS.every(d => Array.isArray(map[d]) && map[d].length > 0 && map[d].length <= 2 &&
+        map[d].every(code => { if (!validMovementKey(code) || seen.has(code)) return false; seen.add(code); return true; }))) {
+        value.movementKeys = Object.fromEntries(DIRECTIONS.map(d => [d, [...map[d]]]));
+      }
+    } catch (e) { /* Invalid or unavailable preferences use defaults. */ }
+    return value;
+  }
+  let settings = loadSettings();
+  const activeKeymap = Object.create(null);
+  function syncKeymap() {
+    Object.keys(activeKeymap).forEach(code => delete activeKeymap[code]);
+    DIRECTIONS.forEach(d => settings.movementKeys[d].forEach(code => { activeKeymap[code] = d; }));
+  }
+  syncKeymap();
   const ZONE_TOAST_MS = 3200;
   const XP_PER_PICKUP = 10;
   const XP_PER_CARD = 50;
@@ -346,6 +381,9 @@
   const gameState = { collectedCount: 0, xp: 0, level: 1, totalItems: TOTAL_ITEMS };
   root.__gameState = gameState;
   root.TopSkillsGame = {
+    get settings() { return JSON.parse(JSON.stringify(settings)); },
+    get activeKeymap() { return { ...activeKeymap }; },
+    SETTINGS_KEY,
     deriveQuests,
     dailyCardFor,
     localDateKey,
@@ -942,6 +980,7 @@
     // ------------------------------------------------------------ particles
     const bursts = [];
     function burst(x, y, z, color, count, speed, life, size) {
+      if (settings.reducedMotion) return;
       const pos = new Float32Array(count * 3);
       const vel = new Float32Array(count * 3);
       for (let i = 0; i < count; i++) {
@@ -964,6 +1003,7 @@
     }
     const rings = [];
     function shockRing(x, z, color) {
+      if (settings.reducedMotion) return;
       const ring = new THREE.Mesh(
         new THREE.RingGeometry(0.3, 0.42, 32),
         new THREE.MeshBasicMaterial({ color, transparent: true, depthWrite: false, side: THREE.DoubleSide })
@@ -1002,6 +1042,7 @@
     }
     function updateTrail(dt) {
       trail.forEach((t) => {
+        if (settings.reducedMotion) { t.age = TRAIL_LIFE; t.sprite.visible = false; }
         if (t.age >= TRAIL_LIFE) return;
         t.age += dt;
         const f = Math.min(1, t.age / TRAIL_LIFE);
@@ -1162,13 +1203,33 @@
     });
 
     // ------------------------------------------------------------ input
-    const KEYMAP = {
-      KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down',
-      KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
-    };
+    const KEYMAP = activeKeymap;
+    let capturingDirection = null;
     const held = new Set();
     let shiftHeld = false;
     root.addEventListener('keydown', (e) => {
+      if (capturingDirection) {
+        e.preventDefault();
+        if (e.key === 'Escape') { cancelCapture(); return; }
+        if (['Shift', 'Control', 'Alt', 'Meta', 'AltGraph', 'CapsLock'].includes(e.key)) return;
+        if (e.repeat) return;
+        if (!validMovementKey(e.code) || e.ctrlKey || e.metaKey || e.altKey) {
+          $('key-status').textContent = 'That key is reserved or unsupported. Choose another key.';
+          return;
+        }
+        const direction = capturingDirection;
+        const owner = KEYMAP[e.code];
+        if (owner && owner !== direction) {
+          const displaced = settings.movementKeys[direction][0];
+          settings.movementKeys[direction] = [e.code, ...settings.movementKeys[direction].slice(1)];
+          settings.movementKeys[owner] = [displaced, ...settings.movementKeys[owner].filter(k => k !== e.code)];
+        } else {
+          settings.movementKeys[direction] = [e.code, ...settings.movementKeys[direction].slice(1).filter(k => k !== e.code)];
+        }
+        cancelCapture();
+        saveSettings();
+        return;
+      }
       if (e.key === 'Shift') shiftHeld = true;
       const dir = KEYMAP[e.code];
       if (dir) {
@@ -1181,6 +1242,7 @@
         dismissLevel();
         setShowcase(false);
         setQuests(false);
+        setSettings(false);
       }
       if (e.code === 'KeyC' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) setShowcase(showcaseEl.hidden);
     });
@@ -1501,7 +1563,7 @@
       );
     });
     function setShowcase(open) {
-      if (open) setQuests(false);
+      if (open) { setQuests(false); setSettings(false); }
       if (!open) {
         shareGen++;
         hideShareFallback();
@@ -1583,6 +1645,7 @@
     function setQuests(open) {
       if (open) {
         setShowcase(false);
+        setSettings(false);
         deriveDaily();
       }
       questsEl.hidden = !open;
@@ -1592,6 +1655,62 @@
     }
     questsBtn.addEventListener('click', () => { setQuests(questsEl.hidden); questsBtn.blur(); });
     $('quests-close').addEventListener('click', (e) => { setQuests(false); e.currentTarget.blur(); });
+
+    const settingsEl = $('settings');
+    const settingsBtn = $('btn-settings');
+    const optionNames = ['reducedMotion', 'highContrast', 'largerHudText'];
+    function keyName(code) { return code.replace(/^Key|^Digit/, '').replace(/^Arrow/, 'Arrow '); }
+    function renderSettings() {
+      optionNames.forEach(k => { $('setting-' + k).checked = settings[k]; });
+      DIRECTIONS.forEach(d => { $('key-' + d).textContent = settings.movementKeys[d].map(keyName).join(' / '); });
+      document.body.classList.toggle('reduced-motion', settings.reducedMotion);
+      document.body.classList.toggle('high-contrast', settings.highContrast);
+      document.body.classList.toggle('larger-hud', settings.largerHudText);
+    }
+    function saveSettings() {
+      held.clear();
+      syncKeymap();
+      writeKey(SETTINGS_KEY, JSON.stringify(settings));
+      renderSettings();
+      fitPickup();
+    }
+    function cancelCapture() {
+      capturingDirection = null;
+      $('key-status').textContent = '';
+      settingsEl.querySelectorAll('[data-direction]').forEach(button => {
+        button.textContent = 'Change';
+        button.blur();
+      });
+    }
+    function setSettings(open) {
+      if (open) { setShowcase(false); setQuests(false); }
+      cancelCapture();
+      settingsEl.hidden = !open;
+      settingsBtn.setAttribute('aria-expanded', String(open));
+      fitPickup();
+    }
+    settingsBtn.addEventListener('click', () => { setSettings(settingsEl.hidden); settingsBtn.blur(); });
+    $('settings-close').addEventListener('click', e => { setSettings(false); e.currentTarget.blur(); });
+    optionNames.forEach(k => $('setting-' + k).addEventListener('change', e => {
+      settings[k] = e.target.checked;
+      e.target.blur();
+      // Keep held movement active when toggling visual preferences mid-stride.
+      writeKey(SETTINGS_KEY, JSON.stringify(settings));
+      renderSettings();
+      fitPickup();
+    }));
+    settingsEl.querySelectorAll('[data-direction]').forEach(button => button.addEventListener('click', () => {
+      cancelCapture();
+      capturingDirection = button.dataset.direction;
+      button.textContent = 'Press key…';
+      $('key-status').textContent = 'Press a key for ' + capturingDirection + '. Escape cancels.';
+      button.blur();
+    }));
+    $('settings-reset').addEventListener('click', e => {
+      e.currentTarget.blur();
+      cancelCapture(); settings = defaultSettings(); saveSettings();
+    });
+    renderSettings();
 
     // Pickup panel.
     const panel = $('pickup-panel');
@@ -1630,8 +1749,8 @@
     const COMPACT_MQ = '(max-width: 720px), (max-height: 520px)'; // the CSS small-screen block
     function fitPickup() {
       panel.style.maxHeight = '';
-      if (panel.hidden || (showcaseEl.hidden && questsEl.hidden)) return;
-      const c = $(questsEl.hidden ? 'showcase-close' : 'quests-close').getBoundingClientRect();
+      if (panel.hidden || (showcaseEl.hidden && questsEl.hidden && settingsEl.hidden)) return;
+      const c = $(!settingsEl.hidden ? 'settings-close' : questsEl.hidden ? 'showcase-close' : 'quests-close').getBoundingClientRect();
       const top = panel.offsetTop;
       const bottom = top + panel.offsetHeight;
       const left = panel.offsetLeft;
@@ -1972,21 +2091,21 @@
       const walkTarget = Math.min(1, speed / MOVE_SPEED);
       motion.walkAmt += (walkTarget - motion.walkAmt) * (1 - Math.exp(-10 * dt));
       motion.lean += (-(motion.vx / (MOVE_SPEED * DASH_MULTIPLIER)) * 0.2 - motion.lean) * (1 - Math.exp(-12 * dt));
-      const hop = Math.abs(Math.sin((motion.animPhase - 0.5) * Math.PI / 2)) * motion.walkAmt;
+      const hop = settings.reducedMotion ? 0 : Math.abs(Math.sin((motion.animPhase - 0.5) * Math.PI / 2)) * motion.walkAmt;
       sprite.position.y = hop * (input.dash ? 0.11 : 0.08);
       sprite.rotation.z = motion.lean;
-      sprite.scale.y = 1 + (hop - 0.5) * 0.05 * motion.walkAmt;
+      sprite.scale.y = settings.reducedMotion ? 1 : 1 + (hop - 0.5) * 0.05 * motion.walkAmt;
       shadow.scale.setScalar(1 - hop * 0.15);
 
       // Dash: ground dust plus a glow trail behind the player.
-      if (input.dash && speed > MOVE_SPEED * 1.05) {
+      if (!settings.reducedMotion && input.dash && speed > MOVE_SPEED * 1.05) {
         dustTimer -= dt;
         if (dustTimer <= 0) {
           dustTimer = 0.06;
           burst(motion.x, 0.08, motion.z, '#9c9480', 5, 0.9, 0.45, 0.12);
         }
       }
-      if (input.dash && speed > MOVE_SPEED * 0.5) {
+      if (!settings.reducedMotion && input.dash && speed > MOVE_SPEED * 0.5) {
         trailTimer -= dt;
         while (trailTimer <= 0) {
           trailTimer += 0.02;
@@ -2021,7 +2140,7 @@
       // Pulse is computed once per zone (opacity and glow size for all its orbs).
       layers.forEach((L) => {
         L.shown = 0;
-        const pulse = pulseShape(L.style.shape, clock * L.style.pulse + L.zone.index * 0.8);
+        const pulse = settings.reducedMotion ? 0.5 : pulseShape(L.style.shape, clock * L.style.pulse + L.zone.index * 0.8);
         L.ballMat.opacity = 0.66 + pulse * 0.3;
         L.glowMat.opacity = 0.35 + pulse * 0.45;
         L.glowScale = 1.1 + (pulse * 2 - 1) * 0.18;
@@ -2044,7 +2163,7 @@
         if (d2 < nearestD2) { nearestD2 = d2; nearest = o; }
         if (targetCardId && o.data.card.id === targetCardId && d2 < cardNearestD2) { cardNearestD2 = d2; cardNearest = o; }
         if (o === beaconTarget) targetD2 = d2;
-        const bobY = 0.95 + Math.sin(clock * 2.2 + o.phase) * 0.14;
+        const bobY = 0.95 + (settings.reducedMotion ? 0 : Math.sin(clock * 2.2 + o.phase) * 0.14);
         o.pos.set(o.data.x - dx * o.pull, bobY + (0.7 - bobY) * o.pull, o.data.z - dz * o.pull);
         o.scale = 1 - o.pull * 0.35;
         const camD = camera.position.distanceToSquared(o.pos);
@@ -2101,15 +2220,15 @@
         beacon.position.set(beaconTarget.data.x, 0, beaconTarget.data.z);
         const dist = Math.sqrt(beaconTarget === want ? wantD2 : targetD2);
         const far = Math.min(1, Math.max(0, (dist - 2) / 4));
-        const pulse = 0.85 + Math.sin(clock * 3) * 0.15;
+        const pulse = settings.reducedMotion ? 0.85 : 0.85 + Math.sin(clock * 3) * 0.15;
         beaconCore.material.opacity = (0.3 + 0.65 * far) * pulse;
         beaconHalo.material.opacity = (0.12 + 0.33 * far) * pulse;
-        const ripple = (clock * 0.8) % 1;
+        const ripple = settings.reducedMotion ? 0 : (clock * 0.8) % 1;
         beaconRing.scale.setScalar(1 + ripple * 0.8);
         beaconRing.material.opacity = 0.75 * (1 - ripple);
       }
-      chapterSigns.forEach((s) => { s.mesh.position.y = s.baseY + Math.sin(clock * 0.8 + s.phase) * 0.25; });
-      spawnRing.material.opacity = 0.25 + Math.sin(clock * 2) * 0.1;
+      chapterSigns.forEach((s) => { s.mesh.position.y = s.baseY + (settings.reducedMotion ? 0 : Math.sin(clock * 0.8 + s.phase) * 0.25); });
+      spawnRing.material.opacity = 0.25 + (settings.reducedMotion ? 0 : Math.sin(clock * 2) * 0.1);
 
       updateEffects(dt);
       updateCombo(clock);
